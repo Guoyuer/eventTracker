@@ -1,104 +1,94 @@
 import 'package:flutter/material.dart';
-import 'package:heatmap_calendar/heatmap_calendar.dart';
-import 'package:heatmap_calendar/time_utils.dart';
+import 'package:flutter_event_tracker/settingPage.dart';
+import 'DAO/AbstractProvider.dart';
+import 'heatMapPage.dart';
+import 'eventsPage.dart';
+import 'eventEditor.dart';
+import 'dart:async';
+import 'package:sqflite/sqflite.dart';
+
+import 'package:flutter/widgets.dart';
+import 'package:path/path.dart';
+import 'package:sqflite/sqflite.dart';
+import 'common/const.dart';
+import 'unitsManagerPage.dart';
 
 void main() {
-  runApp(EventTracker());
+  WidgetsFlutterBinding.ensureInitialized();
+  Global.init().then((e) => runApp(EventTracker()));
 }
 
 class EventTracker extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      routes: {
+        "eventEditor": (context) => new EventEditor(),
+        "unitsManager": (context) => new UnitsManager(),
+      },
       title: 'Event Tracker',
       theme: ThemeData(
         primarySwatch: Colors.blue,
         visualDensity: VisualDensity.adaptivePlatformDensity,
       ),
-      home: ScaffoldRoute(),
+      home: MainPages(),
     );
   }
 }
 
-class ScaffoldRoute extends StatefulWidget {
+class MainPages extends StatefulWidget {
   @override
-  _ScaffoldRouteState createState() => _ScaffoldRouteState();
+  _MainPagesState createState() => _MainPagesState();
 }
 
-class _ScaffoldRouteState extends State<ScaffoldRoute> {
-  int _selectedIndex = 1;
+class _MainPagesState extends State<MainPages> {
+  int _selectedIndex = 0;
+  final List<Widget> _children = [EventsList(), HeatMap(), SettingPage()];
+  bool floatingButtonVisible = true;
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        //导航栏
-        title: Text("App Name"),
+        title: Text("Event Tracker"),
         actions: <Widget>[
-          //导航栏右侧菜单
           IconButton(icon: Icon(Icons.share), onPressed: () {}),
         ],
       ),
       // drawer: new MyDrawer(), //抽屉
-      body: heatmap,
+      body: _children[_selectedIndex],
       bottomNavigationBar: BottomNavigationBar(
         // 底部导航
         items: <BottomNavigationBarItem>[
-          BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
           BottomNavigationBarItem(
-              icon: Icon(Icons.business), label: 'Business'),
-          BottomNavigationBarItem(icon: Icon(Icons.school), label: 'School'),
+              icon: Icon(Icons.event_note_rounded), label: '事项'),
+          BottomNavigationBarItem(
+              icon: Icon(Icons.pie_chart_outline_rounded), label: '统计'),
+          BottomNavigationBarItem(icon: Icon(Icons.settings), label: '选项'),
         ],
         currentIndex: _selectedIndex,
         fixedColor: Colors.blue,
         onTap: _onItemTapped,
       ),
-      floatingActionButton: FloatingActionButton(
-          //悬浮按钮
-          child: Icon(Icons.add),
-          onPressed: _onAdd),
+      floatingActionButton: new Visibility(
+          visible: floatingButtonVisible,
+          child: FloatingActionButton(
+            //悬浮按钮
+              child: Icon(Icons.note_add_rounded),
+              onPressed: () {
+                Navigator.pushNamed(context, "eventEditor");
+              })),
     );
   }
 
   void _onItemTapped(int index) {
     setState(() {
+      if (index == 0) {
+        floatingButtonVisible = true;
+      } else {
+        floatingButtonVisible = false;
+      }
       _selectedIndex = index;
     });
   }
-
-  void _onAdd() {}
 }
-
-var heatmap = HeatMapCalendar(
-  input: {
-    TimeUtils.removeTime(DateTime.now().subtract(Duration(days: 3))): 5,
-    TimeUtils.removeTime(DateTime.now().subtract(Duration(days: 2))): 35,
-    TimeUtils.removeTime(DateTime.now().subtract(Duration(days: 1))): 14,
-    TimeUtils.removeTime(DateTime.now()): 5,
-  },
-  colorThresholds: {
-    1: Colors.green[100],
-    10: Colors.green[300],
-    30: Colors.green[500]
-  },
-  weekDaysLabels: ['S', 'M', 'T', 'W', 'T', 'F', 'S'],
-  monthsLabels: [
-    "",
-    "Jan",
-    "Feb",
-    "Mar",
-    "Apr",
-    "May",
-    "Jun",
-    "Jul",
-    "Aug",
-    "Sep",
-    "Oct",
-    "Nov",
-    "Dec",
-  ],
-  squareSize: 16.0,
-  textOpacity: 0.3,
-  labelTextColor: Colors.blueGrey,
-  dayTextColor: Colors.blue[500],
-);
