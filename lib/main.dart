@@ -9,13 +9,14 @@ import 'package:sqflite/sqflite.dart';
 
 import 'package:flutter/widgets.dart';
 import 'package:path/path.dart';
-import 'package:sqflite/sqflite.dart';
 import 'common/const.dart';
 import 'unitsManagerPage.dart';
 
 void main() {
-  WidgetsFlutterBinding.ensureInitialized();
-  Global.init().then((e) => runApp(EventTracker()));
+  runApp(EventTracker());
+  // WidgetsFlutterBinding.ensureInitialized();
+  //
+  // Global.init().then((e) => runApp(EventTracker()));
 }
 
 class EventTracker extends StatelessWidget {
@@ -73,7 +74,7 @@ class _MainPagesState extends State<MainPages> {
       floatingActionButton: new Visibility(
           visible: floatingButtonVisible,
           child: FloatingActionButton(
-            //悬浮按钮
+              //悬浮按钮
               child: Icon(Icons.note_add_rounded),
               onPressed: () {
                 Navigator.pushNamed(context, "eventEditor");

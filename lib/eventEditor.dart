@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_event_tracker/common/const.dart';
 import 'DAO/model/Unit.dart';
 import 'DAO/UnitsProvider.dart';
 
@@ -11,25 +12,6 @@ class _EventEditorState extends State<EventEditor> {
   TextEditingController _eventNameController = new TextEditingController();
   TextEditingController _eventDiscController = new TextEditingController();
   final _formKey = new GlobalKey<FormState>();
-  UnitDbProvider provider = new UnitDbProvider();
-  List<String> units;
-
-  _EventEditorState() {
-    getAllUsers();
-  }
-
-  void getAllUsers() async {
-    units = await provider.getAllUsers();
-    print(units);
-  }
-
-
-  // static insert() async {
-  //   UnitDbProvider provider = new UnitDbProvider();
-  //   UnitModel unit = UnitModel("TTTTest");
-  //   // userModel.id = 1143824942687547394;
-  //   provider.insert(unit);
-  // }
 
   @override
   Widget build(BuildContext context) {

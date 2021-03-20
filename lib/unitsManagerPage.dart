@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_event_tracker/DAO/model/Unit.dart';
+import 'package:sqflite/sqflite.dart';
 import 'DAO/UnitsProvider.dart';
-import 'common/const.dart';
+import 'common/customWidget.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 
 // ignore: must_be_immutable
 class UnitsManager extends StatefulWidget {
@@ -11,86 +14,176 @@ class UnitsManager extends StatefulWidget {
 }
 
 class _UnitsManagerState extends State<UnitsManager> {
-  List<Widget> listChildren = List<Widget>();
-  TextEditingController _textFieldController = TextEditingController();
-  String codeDialog;
-  String valueText;
+  UnitDbProvider db = UnitDbProvider();
+  Future<List<String>> _units;
+  TextEditingController controller = TextEditingController();
 
-  Future<void> _displayTextInputDialog(BuildContext context) async {
-    return showDialog(
-        context: context,
-        builder: (context) {
-          return AlertDialog(
-            title: Text('请输入单位'),
-            content: TextField(
-              onChanged: (value) {
-                setState(() {
-                  valueText = value;
-                });
-              },
-              controller: _textFieldController,
-              decoration: InputDecoration(hintText: "Text Field in Dialog"),
+  // FToast toastMsg;
+
+  @override
+  void initState() {
+    super.initState();
+    _units = db.getAllUsers();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return FutureBuilder<List<String>>(
+        future: _units,
+        builder: (ctx, snapshot) {
+          Widget _body;
+          List<String> units = snapshot.data;
+          switch (snapshot.connectionState) {
+            case ConnectionState.done:
+              _body = _buildListView(units);
+              break;
+            default:
+              _body = _buildLoadingScreen();
+              break;
+          }
+
+          return Scaffold(
+            appBar: AppBar(
+              title: Text("单位管理"),
             ),
-            actions: <Widget>[
+            body: _body,
+          );
+        });
+  }
+
+  Widget _buildLoadingScreen() {
+    return Center(
+      child: Container(
+        width: 50,
+        height: 50,
+        child: CircularProgressIndicator(),
+      ),
+    );
+  }
+
+  Widget stackBehindDismiss() {
+    return Container(
+      alignment: Alignment.centerRight,
+      padding: EdgeInsets.only(right: 20.0),
+      color: Colors.red,
+      child: Icon(
+        Icons.delete,
+        color: Colors.white,
+      ),
+    );
+  }
+
+  Widget _buildListView(List<String> units) {
+    return ListView.builder(
+      scrollDirection: Axis.vertical,
+      // shrinkWrap: true,
+      itemBuilder: (ctx, idx) {
+        if (idx == units.length) {
+          return Container(
+              padding: EdgeInsets.symmetric(horizontal: 80),
+              child: myRaisedButton(Text("添加新单位"), () {
+                _displayTextInputDialog(context);
+              }));
+        } else {
+          return Dismissible(
+            background: stackBehindDismiss(),
+            key: ObjectKey(units[idx]),
+            child: ListTile(
+                contentPadding: EdgeInsets.symmetric(horizontal: 20),
+                title: Text(units[idx])),
+            confirmDismiss: confirmDismissFunc,
+            onDismissed: (direction) {
+              db.delete(UnitModel(units[idx]));
+              setState(() {
+                units.removeAt(idx);
+              });
+            },
+          );
+        }
+      },
+      itemCount: units.length + 1,
+    );
+  }
+
+  Future<bool> confirmDismissFunc(DismissDirection direction) async {
+    return await showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            title: Text("是否删除？"),
+            actions: [
               FlatButton(
-                color: Colors.red,
-                textColor: Colors.white,
-                child: Text('取消'),
-                onPressed: () {
-                  setState(() {
-                    listNeedUpdate = false;
-                    Navigator.pop(context);
-                  });
-                },
-              ),
+                  onPressed: () => Navigator.of(context).pop(false),
+                  child: Text("取消")),
               FlatButton(
-                color: Colors.green,
-                textColor: Colors.white,
-                child: Text('OK'),
-                onPressed: () {
-                  setState(() {
-                    codeDialog = valueText;
-                    Navigator.pop(context);
-                    listNeedUpdate = true;
-                  });
-                },
-              ),
+                  onPressed: () => Navigator.of(context).pop(true),
+                  child: Text("删除"))
             ],
           );
         });
   }
 
-  bool listNeedUpdate = true;
+  Future<void> _displayTextInputDialog(BuildContext context) async {
+    return showDialog(
+        context: context,
+        builder: (context) {
+          return StatefulBuilder(builder: (context, setState) {
+            return AlertDialog(
+              title: Text('请输入单位'),
+              content: TextField(
+                onChanged: (value) {
+                  setState(() {
+                    // print(OKButton().enabled);
+                  });
+                },
+                controller: controller,
+              ),
+              // decoration: InputDecoration(hintText: "如：米"),
 
-  @override
-  Widget build(BuildContext context) {
-    if (listNeedUpdate) {
-      setState(() {
-        listChildren.clear();
-        listChildren.addAll(Global.units.map((e) {
-          //加入全部单位
-          return CheckboxListTile(
-              title: Text(e),
-              value: true,
-              onChanged: (bool v) {
-                print(v);
+              actions: <Widget>[
+                FlatButton(
+                  color: Colors.red,
+                  textColor: Colors.white,
+                  child: Text('取消'),
+                  onPressed: () {
+                    setState(() {
+                      // listNeedUpdate = false;
+                      Navigator.pop(context); //false表示不需要刷新
+                    });
+                  },
+                ),
+                addUnitButton(),
+              ],
+            );
+          });
+        });
+  }
+
+  FlatButton addUnitButton() {
+    return FlatButton(
+      color: Colors.green,
+      textColor: Colors.white,
+      child: Text('添加'),
+      onPressed: controller.text.isEmpty
+          ? null
+          : () {
+              db.insert(UnitModel(controller.text)).then((value) {
+                setState(() {
+                  _units = db.getAllUsers();
+                });
+                controller.clear();
+                Navigator.pop(context); // 这句肯定要在最后
+              }).catchError((msg) {
+                Fluttertoast.showToast(
+                    msg: "添加失败，可能是因为重复",
+                    toastLength: Toast.LENGTH_SHORT,
+                    gravity: ToastGravity.CENTER,
+                    timeInSecForIosWeb: 1,
+                    backgroundColor: Colors.blueAccent,
+                    textColor: Colors.white,
+                    fontSize: 16.0);
               });
-        }));
-        listChildren.add(RaisedButton(
-            child: Text("添加新单位"),
-            onPressed: () {
-              _displayTextInputDialog(context);
-            }));
-      });
-    }
-
-    return Scaffold(
-      body: ListView(
-        children: listChildren,
-      ),
-      appBar: AppBar(
-        title: Text("单位管理"),
-      ),
+            },
     );
   }
 }

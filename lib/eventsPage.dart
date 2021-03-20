@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_event_tracker/common/customWidget.dart';
 
 class EventsList extends StatelessWidget {
   @override
@@ -28,14 +29,6 @@ class EventTile extends StatelessWidget {
 class AddRecordButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    return RaisedButton(
-      color: Colors.blue,
-      highlightColor: Colors.blue[700],
-      colorBrightness: Brightness.dark,
-      splashColor: Colors.grey,
-      child: Text("+纪录"),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20.0)),
-      onPressed: () {},
-    );
+    return myRaisedButton(Text("+记录"), () {});
   }
 }

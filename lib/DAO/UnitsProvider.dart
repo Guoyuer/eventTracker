@@ -33,20 +33,19 @@ class UnitDbProvider extends BaseDbProvider {
   }
 
   ///插入到数据库
-  Future insert(UnitModel unit) async {
+  Future<int> insert(UnitModel unit) async {
     Database db = await getDataBase();
-    return await db.rawInsert(
-        "insert into $name ($columnId,$columnUnit) values (?,?)",
-        [unit.id, unit.unit]);
+    // db.insert(table, values)
+    return await db
+        .rawInsert("insert into $name ($columnUnit) values (?)", [unit.unit]);
   }
 
-  ///更新数据库
-  // Future<void> update(UnitModel model) async {
-  //   Database database = await getDataBase();
-  //   await database.rawUpdate(
-  //       "update $name set $columnMobile = ?,$columnHeadImage = ? where $columnId= ?",
-  //       [model.mobile, model.headImage, model.id]);
-  // }
+  ///删除记录
+  Future<int> delete(UnitModel model) async {
+    Database db = await getDataBase();
+    return await db
+        .delete(tableName(), where: '$columnUnit = ?', whereArgs: [model.unit]);
+  }
 
   ///获取事件数据
   Future<UnitModel> getUnitInfo(int id) async {
@@ -62,6 +61,7 @@ class UnitDbProvider extends BaseDbProvider {
     List<String> units = List();
     Database db = await getDataBase();
     List<Map> maps = await db.query(name, columns: [columnId, columnUnit]);
+    Future.delayed(Duration(seconds: 5));
     if (maps.length > 0) {
       maps.forEach((f) {
         units.add(f['unit']);
