@@ -1,16 +1,18 @@
-import 'model/Unit.dart';
+import 'model/Event.dart';
 import 'package:sqflite/sqlite_api.dart';
 
 import 'AbstractProvider.dart';
 
-class UnitDbProvider extends BaseDbProvider {
+class EventsDbProvider extends BaseDbProvider {
   ///表名
-  final String name = 'units';
+  final String name = 'events';
 
   final String columnId = "id";
-  final String columnUnit = "unit";
+  final String columnName = "name";
+  final String columnDescription = "description";
+  final String columnUnits = "units";
 
-  UnitDbProvider();
+  EventsDbProvider();
 
   @override
   tableName() {
@@ -21,7 +23,11 @@ class UnitDbProvider extends BaseDbProvider {
   createTableString() {
     return '''
         create table $name (
-        $columnId integer primary key autoincrement,$columnUnit text unique not null)
+        $columnId integer primary key autoincrement,
+        $columnName text unique not null,
+        $columnDescription text,
+        $columnUnits units
+        )
       ''';
   }
 
@@ -33,21 +39,21 @@ class UnitDbProvider extends BaseDbProvider {
   // }
 
   ///插入到数据库
-  Future<int> insert(UnitModel unit) async {
+  Future<int> insert(EventModel event) async {
     Database db = await getDataBase();
-    // db.insert(table, values)
-    return await db
-        .rawInsert("insert into $name ($columnUnit) values (?)", [unit.unit]);
+    return await db.rawInsert(
+        "insert into $name ($columnName, $columnDescription, $columnUnits) values (?,?,?)",
+        [event.name, event.description, event.units]);
   }
 
   ///删除记录
-  Future<int> delete(UnitModel model) async {
+  Future<int> delete(EventModel model) async {
     Database db = await getDataBase();
     return await db
-        .delete(tableName(), where: '$columnUnit = ?', whereArgs: [model.unit]);
+        .delete(tableName(), where: '$columnName = ?', whereArgs: [model.name]);
   }
 
-  // ///获取事件数据
+  ///获取事件数据
   // Future<UnitModel> getUnitInfo(int id) async {
   //   Database db = await getDataBase();
   //   List<Map<String, dynamic>> maps = await _getUnitProvider(db, id);
@@ -57,15 +63,9 @@ class UnitDbProvider extends BaseDbProvider {
   //   return null;
   // }
 
-  Future<List<String>> getAllUnits() async {
-    List<String> units = List();
+  Future<List<Map>> getEventsProfile() async {
     Database db = await getDataBase();
-    List<Map> maps = await db.query(name, columns: [columnId, columnUnit]);
-    if (maps.length > 0) {
-      maps.forEach((f) {
-        units.add(f['unit']);
-      });
-    }
-    return units;
+    List<Map> maps = await db.query(name, columns: [columnId, columnName]);
+    return maps;
   }
 }

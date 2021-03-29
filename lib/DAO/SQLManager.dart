@@ -16,7 +16,7 @@ class SQLManager {
 
     _database = await openDatabase(path,
         version: 1, onCreate: (Database db, int version) async {});
-    print(await _database.query("sqlite_master"));
+    // print(await _database.query("sqlite_master"));
     _database.rawQuery("PRAGMA journal_mode=DELETE");
   }
 

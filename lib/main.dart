@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_event_tracker/settingPage.dart';
 import 'DAO/AbstractProvider.dart';
 import 'heatMapPage.dart';
-import 'eventsPage.dart';
+import 'eventsList.dart';
 import 'eventEditor.dart';
 import 'dart:async';
 import 'package:sqflite/sqflite.dart';
@@ -44,9 +44,9 @@ class MainPages extends StatefulWidget {
 
 class _MainPagesState extends State<MainPages> {
   int _selectedIndex = 0;
-  final List<Widget> _children = [EventsList(), HeatMap(), SettingPage()];
+  final List<Widget> _children = [EventList(), HeatMap(), SettingPage()];
   bool floatingButtonVisible = true;
-
+  dynamic eventData; //添加event用，接收返回值
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -76,8 +76,9 @@ class _MainPagesState extends State<MainPages> {
           child: FloatingActionButton(
               //悬浮按钮
               child: Icon(Icons.note_add_rounded),
-              onPressed: () {
-                Navigator.pushNamed(context, "eventEditor");
+              onPressed: () async {
+                eventData = Navigator.of(context).pushNamed("eventEditor");
+                print(eventData.then((value) => print(value)));
               })),
     );
   }

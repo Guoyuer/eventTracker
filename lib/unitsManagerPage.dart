@@ -18,12 +18,10 @@ class _UnitsManagerState extends State<UnitsManager> {
   Future<List<String>> _units;
   TextEditingController controller = TextEditingController();
 
-  // FToast toastMsg;
-
   @override
   void initState() {
     super.initState();
-    _units = db.getAllUsers();
+    _units = db.getAllUnits();
   }
 
   @override
@@ -38,7 +36,7 @@ class _UnitsManagerState extends State<UnitsManager> {
               _body = _buildListView(units);
               break;
             default:
-              _body = _buildLoadingScreen();
+              _body = loadingScreen();
               break;
           }
 
@@ -49,16 +47,6 @@ class _UnitsManagerState extends State<UnitsManager> {
             body: _body,
           );
         });
-  }
-
-  Widget _buildLoadingScreen() {
-    return Center(
-      child: Container(
-        width: 50,
-        height: 50,
-        child: CircularProgressIndicator(),
-      ),
-    );
   }
 
   Widget stackBehindDismiss() {
@@ -112,10 +100,10 @@ class _UnitsManagerState extends State<UnitsManager> {
           return AlertDialog(
             title: Text("是否删除？"),
             actions: [
-              FlatButton(
+              TextButton(
                   onPressed: () => Navigator.of(context).pop(false),
                   child: Text("取消")),
-              FlatButton(
+              TextButton(
                   onPressed: () => Navigator.of(context).pop(true),
                   child: Text("删除"))
             ],
@@ -169,7 +157,7 @@ class _UnitsManagerState extends State<UnitsManager> {
           : () {
               db.insert(UnitModel(controller.text)).then((value) {
                 setState(() {
-                  _units = db.getAllUsers();
+                  _units = db.getAllUnits();
                 });
                 controller.clear();
                 Navigator.pop(context); // 这句肯定要在最后

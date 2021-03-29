@@ -14,3 +14,14 @@ RaisedButton myRaisedButton(Widget child, Function onPressCallBack) {
       child: child,
       onPressed: onPressCallBack);
 }
+
+
+Widget loadingScreen() {
+  return Center(
+    child: Container(
+      width: 50,
+      height: 50,
+      child: CircularProgressIndicator(),
+    ),
+  );
+}
