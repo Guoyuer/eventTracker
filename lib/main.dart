@@ -4,19 +4,13 @@ import 'DAO/AbstractProvider.dart';
 import 'heatMapPage.dart';
 import 'eventsList.dart';
 import 'eventEditor.dart';
-import 'dart:async';
-import 'package:sqflite/sqflite.dart';
 
+import 'common/util.dart';
 import 'package:flutter/widgets.dart';
-import 'package:path/path.dart';
-import 'common/const.dart';
 import 'unitsManagerPage.dart';
 
 void main() {
   runApp(EventTracker());
-  // WidgetsFlutterBinding.ensureInitialized();
-  //
-  // Global.init().then((e) => runApp(EventTracker()));
 }
 
 class EventTracker extends StatelessWidget {
@@ -78,7 +72,7 @@ class _MainPagesState extends State<MainPages> {
               child: Icon(Icons.note_add_rounded),
               onPressed: () async {
                 eventData = Navigator.of(context).pushNamed("eventEditor");
-                print(eventData.then((value) => print(value)));
+                eventData.then((value) => writeEvent(value));
               })),
     );
   }

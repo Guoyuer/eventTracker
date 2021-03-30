@@ -16,11 +16,11 @@ class _EventEditorState extends State<EventEditor> {
   UnitDbProvider dbUnit = UnitDbProvider();
   EventsDbProvider dbEvent = EventsDbProvider();
 
-  TextEditingController _eventNameController = new TextEditingController();
-  TextEditingController _eventDiscController = new TextEditingController();
+  // TextEditingController _eventNameController = new TextEditingController();
+  // TextEditingController _eventDiscController = new TextEditingController();
   Future<List<String>> _units;
-  Map<String, bool> _unitsChoices = Map();
-  bool careTime = false;
+  String selectedUnit;
+  bool careTime = true;
   final _formKey = new GlobalKey<FormState>();
   Map<String, dynamic> data = Map();
 
@@ -68,7 +68,7 @@ class _EventEditorState extends State<EventEditor> {
                           prefixIcon: Icon(Icons.subject_rounded)),
                     ),
                     SwitchListTile(
-                        title: Text("关注时间"),
+                        title: Text("关注时长"),
                         value: careTime,
                         onChanged: (bool val) {
                           setState(() {
@@ -81,22 +81,18 @@ class _EventEditorState extends State<EventEditor> {
                           List<String> units = snapshot.data;
                           switch (snapshot.connectionState) {
                             case ConnectionState.done:
-                              if (_unitsChoices.isEmpty) {
-                                for (String unit in units) {
-                                  _unitsChoices[unit] = false;
-                                }
-                              }
                               return ListView.builder(
                                   physics: const NeverScrollableScrollPhysics(),
                                   shrinkWrap: true,
                                   itemCount: units.length,
                                   itemBuilder: (ctx, idx) {
-                                    return SwitchListTile(
+                                    return RadioListTile(
                                         title: Text(units[idx]),
-                                        value: _unitsChoices[units[idx]],
-                                        onChanged: (bool val) {
+                                        groupValue: selectedUnit,
+                                        value: units[idx],
+                                        onChanged: (String val) {
                                           setState(() {
-                                            _unitsChoices[units[idx]] = val;
+                                            selectedUnit = val;
                                           });
                                         });
                                   });
@@ -109,7 +105,7 @@ class _EventEditorState extends State<EventEditor> {
                       if (_formKey.currentState.validate()) {
                         _formKey.currentState.save();
                         data["careTime"] = careTime;
-                        data['units'] = _unitsChoices;
+                        data['unit'] = selectedUnit;
                         Navigator.pop(context, data);
                       }
                     })

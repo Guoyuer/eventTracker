@@ -10,7 +10,8 @@ class EventsDbProvider extends BaseDbProvider {
   final String columnId = "id";
   final String columnName = "name";
   final String columnDescription = "description";
-  final String columnUnits = "units";
+  final String columnUnit = "unit";
+  final String columnCareTime = "careTime";
 
   EventsDbProvider();
 
@@ -26,7 +27,8 @@ class EventsDbProvider extends BaseDbProvider {
         $columnId integer primary key autoincrement,
         $columnName text unique not null,
         $columnDescription text,
-        $columnUnits units
+        $columnCareTime careTime integer not null,
+        $columnUnit text
         )
       ''';
   }
@@ -42,8 +44,8 @@ class EventsDbProvider extends BaseDbProvider {
   Future<int> insert(EventModel event) async {
     Database db = await getDataBase();
     return await db.rawInsert(
-        "insert into $name ($columnName, $columnDescription, $columnUnits) values (?,?,?)",
-        [event.name, event.description, event.units]);
+        "insert into $name ($columnName, $columnDescription, $columnUnit,$columnCareTime) values (?,?,?,?)",
+        [event.name, event.description, event.unit, event.careTime]);
   }
 
   ///删除记录
@@ -65,7 +67,8 @@ class EventsDbProvider extends BaseDbProvider {
 
   Future<List<Map>> getEventsProfile() async {
     Database db = await getDataBase();
-    List<Map> maps = await db.query(name, columns: [columnId, columnName]);
+    List<Map> maps = await db.query(name,
+        columns: [columnId, columnName, columnCareTime, columnUnit]);
     return maps;
   }
 }

@@ -29,31 +29,25 @@ class _EventListState extends State<EventList> {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-        child: new ListView(
-      children: [new EventTile()],
-    ));
+    return FutureBuilder<List<Map>>(
+        future: _events,
+        builder: (ctx, snapshot) {
+          List<Map> data = snapshot.data;
+          switch (snapshot.connectionState) {
+            case ConnectionState.done:
+              return ListView.builder(
+                  shrinkWrap: true,
+                  itemCount: data.length,
+                  itemBuilder: (ctx, idx) {
+                    return AnimationEventTile(data[idx]['name']);
+                  });
+              break;
+            default:
+              return loadingScreen();
+          }
+        });
   }
 }
 
-class EventTile extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return Row(
-      children: <Widget>[
-        new Flexible(
-            child:
-                new ListTile(title: Text("title"), subtitle: Text("subtitle"))),
-        new AddRecordButton(),
-        SizedBox(width: 10)
-      ],
-    );
-  }
-}
 
-class AddRecordButton extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return myRaisedButton(Text("+记录"), () {});
-  }
-}
+
