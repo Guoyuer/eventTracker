@@ -3,14 +3,13 @@ import '../DAO/UnitsProvider.dart';
 
 // ignore: must_be_immutable
 
-class Global {
-  // static List<String> units;
-  // static UnitDbProvider unitProvider = new UnitDbProvider();
-  // static getAllUnits() async{
-  //   units = await unitProvider.getAllUsers();
-  // }
-  // static Future init() async {
-  //   getAllUnits();
-  //   print(units);
-  // }
+enum EventStatus {
+  none, // 不care时间
+  active, //正在进行
+  paused, //暂停中，这个暂时不做，会让逻辑复杂。
+  notActive, //不在进行
+}
+
+class ReloadEventsNotification extends Notification {
+  ReloadEventsNotification();
 }

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:heatmap_calendar/heatmap_calendar.dart';
-import 'package:heatmap_calendar/time_utils.dart';
+import 'heatMap/heatmap_calendar.dart';
+import 'heatMap/time_utils.dart';
 
 var heatmap = HeatMapCalendar(
   input: {
@@ -39,6 +39,13 @@ var heatmap = HeatMapCalendar(
 class HeatMap extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    return Text("heatMap");
+    return Scrollbar(
+      child: SingleChildScrollView(
+        scrollDirection: Axis.horizontal,
+        child: Center(
+          child: heatmap,
+        ),
+      ),
+    );
   }
 }

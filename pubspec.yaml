@@ -23,11 +23,10 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-  heatmap_calendar: ^1.2.8
+  #  heatmap_calendar: ^1.2.8
   sqflite:
   path:
   path_provider:
-  enum_to_string:
   fluttertoast: ^7.1.6
   checkbox_formfield:
 

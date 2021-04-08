@@ -1,10 +1,18 @@
+import 'package:flutter/material.dart';
+
 import 'model/Event.dart';
 import 'package:sqflite/sqlite_api.dart';
 
-import 'AbstractProvider.dart';
+import 'foundation.dart';
 
-class EventsDbProvider extends BaseDbProvider {
+class EventsDbProvider {
   ///表名
+  static final EventsDbProvider _ins = new EventsDbProvider.internal();
+
+  EventsDbProvider.internal();
+
+  factory EventsDbProvider() => _ins;
+
   final String name = 'events';
 
   final String columnId = "id";
@@ -12,37 +20,17 @@ class EventsDbProvider extends BaseDbProvider {
   final String columnDescription = "description";
   final String columnUnit = "unit";
   final String columnCareTime = "careTime";
+  final String columnLastRecord = "lastRecord";
 
-  EventsDbProvider();
-
-  @override
-  tableName() {
-    return name;
+  void createTableHook() async {
+    var dbHelper = Helper();
+    var db = await dbHelper.db;
   }
-
-  @override
-  createTableString() {
-    return '''
-        create table $name (
-        $columnId integer primary key autoincrement,
-        $columnName text unique not null,
-        $columnDescription text,
-        $columnCareTime careTime integer not null,
-        $columnUnit text
-        )
-      ''';
-  }
-
-  // ///查询数据库
-  // Future _getUnitProvider(Database db, int id) async {
-  //   List<Map<String, dynamic>> maps =
-  //       await db.rawQuery("select * from $name where $columnId = $id");
-  //   return maps;
-  // }
 
   ///插入到数据库
   Future<int> insert(EventModel event) async {
-    Database db = await getDataBase();
+    var dbHelper = Helper();
+    var db = await dbHelper.db;
     return await db.rawInsert(
         "insert into $name ($columnName, $columnDescription, $columnUnit,$columnCareTime) values (?,?,?,?)",
         [event.name, event.description, event.unit, event.careTime]);
@@ -50,9 +38,10 @@ class EventsDbProvider extends BaseDbProvider {
 
   ///删除记录
   Future<int> delete(EventModel model) async {
-    Database db = await getDataBase();
+    var dbHelper = Helper();
+    var db = await dbHelper.db;
     return await db
-        .delete(tableName(), where: '$columnName = ?', whereArgs: [model.name]);
+        .delete('events', where: '$columnName = ?', whereArgs: [model.name]);
   }
 
   ///获取事件数据
@@ -65,10 +54,44 @@ class EventsDbProvider extends BaseDbProvider {
   //   return null;
   // }
 
-  Future<List<Map>> getEventsProfile() async {
-    Database db = await getDataBase();
-    List<Map> maps = await db.query(name,
-        columns: [columnId, columnName, columnCareTime, columnUnit]);
-    return maps;
+  Future<List<EventModelDisplay>> getEventsProfile() async {
+    var dbHelper = Helper();
+    var db = await dbHelper.db;
+    List<Map> tmpEvents = await db.query('events', columns: [
+      columnId,
+      columnName,
+      columnCareTime,
+      columnUnit,
+      columnLastRecord
+    ]);
+    List<EventModelDisplay> events = [];
+
+    for (int i = 0; i < tmpEvents.length; i++) {
+      bool careTime;
+      bool isActive = false;
+      if (tmpEvents[i]['careTime'] == 1) {
+        careTime = true;
+      } else {
+        careTime = false;
+      }
+      //检索每个events对应的状态
+      if (tmpEvents[i]['lastRecord'] != null) {
+        List<Map> records = await db.query('records',
+            columns: ['endTime'],
+            where: 'id = ?',
+            whereArgs: [tmpEvents[i]['lastRecord']]);
+        //只有careTime = true时，isActive才有意义
+        Map record = records[0];
+        if (record['endTime'] == null) {
+          isActive = true;
+        } else {
+          isActive = false;
+        }
+      }
+      events.add(EventModelDisplay(
+          tmpEvents[i]['id'], tmpEvents[i]['name'], careTime, isActive));
+    }
+
+    return events;
   }
 }

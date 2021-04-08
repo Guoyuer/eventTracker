@@ -1,11 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_event_tracker/settingPage.dart';
-import 'DAO/AbstractProvider.dart';
 import 'heatMapPage.dart';
 import 'eventsList.dart';
 import 'eventEditor.dart';
-
+import 'DAO/RecordsProvider.dart';
+import 'DAO/UnitsProvider.dart';
+import 'DAO/EventsProvider.dart';
+import 'EventDetails.dart';
 import 'common/util.dart';
+import 'common/const.dart';
 import 'package:flutter/widgets.dart';
 import 'unitsManagerPage.dart';
 
@@ -20,6 +23,7 @@ class EventTracker extends StatelessWidget {
       routes: {
         "eventEditor": (context) => new EventEditor(),
         "unitsManager": (context) => new UnitsManager(),
+        "EventDetails": (context) => new EventDetails(),
       },
       title: 'Event Tracker',
       theme: ThemeData(
@@ -32,15 +36,24 @@ class EventTracker extends StatelessWidget {
 }
 
 class MainPages extends StatefulWidget {
+  // final UniqueKey _key = UniqueKey();
+
   @override
   _MainPagesState createState() => _MainPagesState();
 }
 
 class _MainPagesState extends State<MainPages> {
   int _selectedIndex = 0;
-  final List<Widget> _children = [EventList(), HeatMap(), SettingPage()];
+
   bool floatingButtonVisible = true;
+  List<Widget> _children = [EventList(), HeatMap(), SettingPage()];
   dynamic eventData; //添加event用，接收返回值
+
+  @override
+  void initState() {
+    super.initState();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -50,8 +63,16 @@ class _MainPagesState extends State<MainPages> {
           IconButton(icon: Icon(Icons.share), onPressed: () {}),
         ],
       ),
-      // drawer: new MyDrawer(), //抽屉
-      body: _children[_selectedIndex],
+      body: NotificationListener<ReloadEventsNotification>(
+        child: IndexedStack(children: _children, index: _selectedIndex),
+        onNotification: (notification) {
+          setState(() {
+            _children.removeAt(0);
+            _children.insert(0, EventList(key: GlobalKey()));
+          });
+          return true;
+        },
+      ),
       bottomNavigationBar: BottomNavigationBar(
         // 底部导航
         items: <BottomNavigationBarItem>[
@@ -70,9 +91,15 @@ class _MainPagesState extends State<MainPages> {
           child: FloatingActionButton(
               //悬浮按钮
               child: Icon(Icons.note_add_rounded),
-              onPressed: () async {
+              onPressed: () {
                 eventData = Navigator.of(context).pushNamed("eventEditor");
-                eventData.then((value) => writeEvent(value));
+                eventData.then((value) {
+                  writeEvent(value);
+                  setState(() {
+                    _children.removeAt(0);
+                    _children.insert(0, EventList(key: GlobalKey()));
+                  });
+                });
               })),
     );
   }

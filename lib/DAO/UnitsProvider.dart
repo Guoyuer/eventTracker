@@ -1,40 +1,25 @@
 import 'model/Unit.dart';
 import 'package:sqflite/sqlite_api.dart';
 
-import 'AbstractProvider.dart';
+import 'foundation.dart';
 
-class UnitDbProvider extends BaseDbProvider {
+class UnitsDbProvider {
   ///表名
   final String name = 'units';
 
   final String columnId = "id";
   final String columnUnit = "unit";
 
-  UnitDbProvider();
+  static final UnitsDbProvider _ins = new UnitsDbProvider.internal();
 
-  @override
-  tableName() {
-    return name;
-  }
+  UnitsDbProvider.internal();
 
-  @override
-  createTableString() {
-    return '''
-        create table $name (
-        $columnId integer primary key autoincrement,$columnUnit text unique not null)
-      ''';
-  }
-
-  // ///查询数据库
-  // Future _getUnitProvider(Database db, int id) async {
-  //   List<Map<String, dynamic>> maps =
-  //       await db.rawQuery("select * from $name where $columnId = $id");
-  //   return maps;
-  // }
+  factory UnitsDbProvider() => _ins;
 
   ///插入到数据库
   Future<int> insert(UnitModel unit) async {
-    Database db = await getDataBase();
+    var dbHelper = Helper();
+    var db = await dbHelper.db;
     // db.insert(table, values)
     return await db
         .rawInsert("insert into $name ($columnUnit) values (?)", [unit.unit]);
@@ -42,24 +27,16 @@ class UnitDbProvider extends BaseDbProvider {
 
   ///删除记录
   Future<int> delete(UnitModel model) async {
-    Database db = await getDataBase();
+    var dbHelper = Helper();
+    var db = await dbHelper.db;
     return await db
-        .delete(tableName(), where: '$columnUnit = ?', whereArgs: [model.unit]);
+        .delete('units', where: '$columnUnit = ?', whereArgs: [model.unit]);
   }
-
-  // ///获取事件数据
-  // Future<UnitModel> getUnitInfo(int id) async {
-  //   Database db = await getDataBase();
-  //   List<Map<String, dynamic>> maps = await _getUnitProvider(db, id);
-  //   if (maps.length > 0) {
-  //     return UnitModel.fromMap(maps.first);
-  //   }
-  //   return null;
-  // }
 
   Future<List<String>> getAllUnits() async {
     List<String> units = List();
-    Database db = await getDataBase();
+    var dbHelper = Helper();
+    var db = await dbHelper.db;
     List<Map> maps = await db.query(name, columns: [columnId, columnUnit]);
     if (maps.length > 0) {
       maps.forEach((f) {

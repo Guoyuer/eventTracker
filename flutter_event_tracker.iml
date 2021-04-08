@@ -12,6 +12,12 @@
       <excludeFolder url="file://$MODULE_DIR$/.dart_tool" />
       <excludeFolder url="file://$MODULE_DIR$/.pub" />
       <excludeFolder url="file://$MODULE_DIR$/build" />
+      <excludeFolder url="file://$MODULE_DIR$/lib/heatmap_calendar-1.2.8/example/.dart_tool" />
+      <excludeFolder url="file://$MODULE_DIR$/lib/heatmap_calendar-1.2.8/example/build" />
+      <excludeFolder url="file://$MODULE_DIR$/lib/heatmap_calendar-1.2.8/example/.pub" />
+      <excludeFolder url="file://$MODULE_DIR$/lib/heatmap_calendar-1.2.8/.pub" />
+      <excludeFolder url="file://$MODULE_DIR$/lib/heatmap_calendar-1.2.8/build" />
+      <excludeFolder url="file://$MODULE_DIR$/lib/heatmap_calendar-1.2.8/.dart_tool" />
     </content>
     <orderEntry type="jdk" jdkName="Android API 30 Platform" jdkType="Android SDK" />
     <orderEntry type="sourceFolder" forTests="false" />

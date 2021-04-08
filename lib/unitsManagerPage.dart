@@ -14,7 +14,7 @@ class UnitsManager extends StatefulWidget {
 }
 
 class _UnitsManagerState extends State<UnitsManager> {
-  UnitDbProvider db = UnitDbProvider();
+  UnitsDbProvider db = UnitsDbProvider();
   Future<List<String>> _units;
   TextEditingController controller = TextEditingController();
 

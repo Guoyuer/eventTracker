@@ -13,7 +13,7 @@ class EventEditor extends StatefulWidget {
 }
 
 class _EventEditorState extends State<EventEditor> {
-  UnitDbProvider dbUnit = UnitDbProvider();
+  UnitsDbProvider dbUnit = UnitsDbProvider();
   EventsDbProvider dbEvent = EventsDbProvider();
 
   // TextEditingController _eventNameController = new TextEditingController();
@@ -75,6 +75,12 @@ class _EventEditorState extends State<EventEditor> {
                             careTime = val;
                           });
                         }),
+                    Divider(
+                      height: 20,
+                      thickness: 5,
+                      // indent: 20,
+                      // endIndent: 20,
+                    ),
                     FutureBuilder<List<String>>(
                         future: _units,
                         builder: (ctx, snapshot) {
@@ -89,6 +95,7 @@ class _EventEditorState extends State<EventEditor> {
                                     return RadioListTile(
                                         title: Text(units[idx]),
                                         groupValue: selectedUnit,
+                                        toggleable: true,
                                         value: units[idx],
                                         onChanged: (String val) {
                                           setState(() {
