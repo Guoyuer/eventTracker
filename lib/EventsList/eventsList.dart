@@ -1,19 +1,19 @@
+import 'package:duration/locale.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_event_tracker/DAO/model/Event.dart';
-import 'package:flutter_event_tracker/DAO/model/Record.dart';
-import 'common/const.dart';
-import 'common/util.dart';
-import 'DAO/RecordsProvider.dart';
+import 'package:moor_flutter/moor_flutter.dart';
+import '../common/const.dart';
+import '../common/util.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 
 // import 'package:flutter_event_tracker/common/customWidget.dart';
-import 'DAO/EventsProvider.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_event_tracker/DAO/model/Unit.dart';
 import 'package:sqflite/sqflite.dart';
-import 'DAO/UnitsProvider.dart';
-import 'common/customWidget.dart';
+import '../common/customWidget.dart';
+import '../DAO/base.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+import 'package:duration/duration.dart';
+
+part 'util.dart';
 
 class EventList extends StatefulWidget {
   EventList({Key key}) : super(key: key);
@@ -23,22 +23,22 @@ class EventList extends StatefulWidget {
 }
 
 class _EventListState extends State<EventList> {
-  EventsDbProvider db = EventsDbProvider();
-  Future<List<EventModelDisplay>> _events;
+  // EventsDbProvider db = EventsDbProvider();
+  Future<List<BaseEventDisplayModel>> _events;
   String a;
 
   @override
   void initState() {
     super.initState();
-    _events = db.getEventsProfile();
+    _events = DBHandle().db.getEventsProfile();
   }
 
   @override
   Widget build(BuildContext context) {
-    return FutureBuilder<List<EventModelDisplay>>(
+    return FutureBuilder<List<BaseEventDisplayModel>>(
         future: _events,
         builder: (ctx, snapshot) {
-          List<EventModelDisplay> events = snapshot.data;
+          List<BaseEventDisplayModel> events = snapshot.data;
           switch (snapshot.connectionState) {
             case ConnectionState.done:
               return ListView.builder(
@@ -57,39 +57,29 @@ class _EventListState extends State<EventList> {
   }
 }
 
-void startRecord(BuildContext context) {
-  int eventId = EventDataHolder.of(context).event.id;
-  var record = RecordModel(eventId, startTime: DateTime.now());
-  RecordsUtils.writeRecord(record)
-      .then((_) => ReloadEventsNotification().dispatch(context));
-}
-
-void stopRecord(BuildContext context) {
-  int eventId = EventDataHolder.of(context).event.id;
-  RecordsUtils.stopRecord(eventId, context)
-      .then((_) => ReloadEventsNotification().dispatch(context));
-}
 
 class EventTileButton extends StatelessWidget {
   // final int eventId; //按钮要记住，因为操作数据库的时候要用。
 
   @override
   Widget build(BuildContext context) {
-    // int eventId = EventDataHolder.of(context).event.id;
-    bool isActive = EventDataHolder.of(context).event.isActive;
-    bool careTime = EventDataHolder.of(context).event.careTime;
-    EventStatus status = getStatus(careTime, isActive);
+    BaseEventDisplayModel event = EventDataHolder.of(context).event;
+    EventStatus status = getEventStatus(event);
     switch (status) {
-      case EventStatus.none:
-        return myRaisedButton(Text("+记录"), () {});
+      case EventStatus.plain:
+        return myRaisedButton(Text("+记录"), () {
+          addPlainRecord(context);
+        });
         break;
       case EventStatus.notActive:
+        //TODO 长按停止可以手动输入开始时间
         return myRaisedButton(Text("开始"), () {
-          startRecord(context);
+          startTimingRecord(context);
         });
       case EventStatus.active:
+        //TODO 长按停止可以手动输入停止时间（校验是否早于开始时间？）
         return myRaisedButton(Text("停止"), () {
-          stopRecord(context);
+          stopTimingRecord(context);
         });
       default:
         return myRaisedButton(Text("???"), () {});
@@ -106,28 +96,26 @@ class EventTileBuildingBlock extends AnimatedWidget {
   Widget build(BuildContext context) {
     final Animation<Color> animation = listenable;
     Color color;
-    bool isActive = EventDataHolder.of(context).event.isActive;
-    bool careTime = EventDataHolder.of(context).event.careTime;
-    EventStatus status = getStatus(careTime, isActive);
-
-    switch (status) {
-      case EventStatus.active:
-        color = animation.value;
-        break;
-      default:
-        color = null;
+    BaseEventDisplayModel event = EventDataHolder.of(context).event;
+    if ((event is TimingEventDisplayModel) && event.isActive) {
+      color = animation.value;
+    } else {
+      color = null;
     }
-    return Container(
+
+    return Card(
         // color: animation.value,
         color: color,
+        elevation: 8,
         child: Row(
           children: [
             Flexible(
                 child: ListTile(
-                    title: Text(EventDataHolder.of(context).event.name),
+                    title: Text(event.name),
+                    subtitle: Text(getSubtitleText(event)),
                     onTap: () {
-                      Navigator.of(context).pushNamed("EventDetails",
-                          arguments: EventDataHolder.of(context).event.id);
+                      Navigator.of(context)
+                          .pushNamed("EventDetails", arguments: event.id);
                     })),
             EventTileButton()
           ],
@@ -136,13 +124,13 @@ class EventTileBuildingBlock extends AnimatedWidget {
 }
 
 class EventDataHolder extends InheritedWidget {
-  final EventModelDisplay event;
+  final BaseEventDisplayModel event;
 
   EventDataHolder({this.event, Widget child}) : super(child: child);
 
   @override
   bool updateShouldNotify(EventDataHolder oldWidget) {
-    return event.isActive != oldWidget.event.isActive;
+    return event.id != oldWidget.event.id;
   }
 
   static EventDataHolder of(BuildContext context) {
@@ -162,14 +150,14 @@ class _EventTileState extends State<EventTile>
   int time; //渐变时长
   initState() {
     super.initState();
-    time = 1;
+    time = 5;
     controller = new AnimationController(
         duration: Duration(seconds: time),
         reverseDuration: Duration(seconds: time),
         vsync: this);
 
     animation =
-        ColorTween(begin: Colors.white, end: Colors.orange).animate(controller);
+        ColorTween(begin: Color(0x6200EE), end: Colors.cyan).animate(controller);
     animation.addStatusListener((status) {
       if (status == AnimationStatus.completed) {
         controller.reverse();

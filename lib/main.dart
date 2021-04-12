@@ -1,17 +1,21 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_event_tracker/settingPage.dart';
 import 'heatMapPage.dart';
-import 'eventsList.dart';
+import 'EventsList/eventsList.dart';
 import 'eventEditor.dart';
-import 'DAO/RecordsProvider.dart';
-import 'DAO/UnitsProvider.dart';
-import 'DAO/EventsProvider.dart';
 import 'EventDetails.dart';
 import 'common/util.dart';
 import 'common/const.dart';
 import 'package:flutter/widgets.dart';
 import 'unitsManagerPage.dart';
+import 'DAO/base.dart';
+import 'package:share/share.dart';
+import 'package:path/path.dart';
+import 'package:sqflite/sqflite.dart';
+import 'package:path_provider/path_provider.dart';
 
+//TODO 增加桩程序，获取faked传感器数据
+//TODO heatMap可交互
 void main() {
   runApp(EventTracker());
 }
@@ -60,7 +64,20 @@ class _MainPagesState extends State<MainPages> {
       appBar: AppBar(
         title: Text("Event Tracker"),
         actions: <Widget>[
-          IconButton(icon: Icon(Icons.share), onPressed: () {}),
+          IconButton(
+              onPressed: () {
+                DBHandle().db.deleteEverything();
+                setState(() {
+                  _children.removeAt(0);
+                  _children.insert(0, EventList(key: GlobalKey()));
+                });
+              },
+              icon: Icon(Icons.delete)),
+          IconButton(
+              icon: Icon(Icons.share),
+              onPressed: () {
+                Share.share('Developed By Yuer Guo');
+              }),
         ],
       ),
       body: NotificationListener<ReloadEventsNotification>(
@@ -94,7 +111,7 @@ class _MainPagesState extends State<MainPages> {
               onPressed: () {
                 eventData = Navigator.of(context).pushNamed("eventEditor");
                 eventData.then((value) {
-                  writeEvent(value);
+                  DBHandle().db.addEventInDB(value);
                   setState(() {
                     _children.removeAt(0);
                     _children.insert(0, EventList(key: GlobalKey()));

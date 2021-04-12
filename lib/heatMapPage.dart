@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:moor_db_viewer/moor_db_viewer.dart';
 import 'heatMap/heatmap_calendar.dart';
 import 'heatMap/time_utils.dart';
+import 'DAO/base.dart';
 
 var heatmap = HeatMapCalendar(
   input: {
@@ -39,13 +41,6 @@ var heatmap = HeatMapCalendar(
 class HeatMap extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    return Scrollbar(
-      child: SingleChildScrollView(
-        scrollDirection: Axis.horizontal,
-        child: Center(
-          child: heatmap,
-        ),
-      ),
-    );
+    return heatmap;
   }
 }

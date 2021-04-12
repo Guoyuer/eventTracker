@@ -1,9 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_event_tracker/common/const.dart';
 import 'package:flutter_event_tracker/common/customWidget.dart';
-import 'DAO/model/Unit.dart';
-import 'DAO/UnitsProvider.dart';
-import 'DAO/EventsProvider.dart';
+import 'common/util.dart';
+import 'DAO/base.dart';
 
 class EventEditor extends StatefulWidget {
   EventEditor();
@@ -13,12 +12,12 @@ class EventEditor extends StatefulWidget {
 }
 
 class _EventEditorState extends State<EventEditor> {
-  UnitsDbProvider dbUnit = UnitsDbProvider();
-  EventsDbProvider dbEvent = EventsDbProvider();
+  // UnitsDbProvider dbUnit = UnitsDbProvider();
+  // EventsDbProvider dbEvent = EventsDbProvider();
 
   // TextEditingController _eventNameController = new TextEditingController();
   // TextEditingController _eventDiscController = new TextEditingController();
-  Future<List<String>> _units;
+  Future<List<Unit>> _units;
   String selectedUnit;
   bool careTime = true;
   final _formKey = new GlobalKey<FormState>();
@@ -27,7 +26,7 @@ class _EventEditorState extends State<EventEditor> {
   @override
   void initState() {
     super.initState();
-    _units = dbUnit.getAllUnits();
+    _units = DBHandle().db.getAllUnits();
   }
 
   @override
@@ -81,10 +80,10 @@ class _EventEditorState extends State<EventEditor> {
                       // indent: 20,
                       // endIndent: 20,
                     ),
-                    FutureBuilder<List<String>>(
+                    FutureBuilder<List<Unit>>(
                         future: _units,
                         builder: (ctx, snapshot) {
-                          List<String> units = snapshot.data;
+                          List<Unit> units = snapshot.data;
                           switch (snapshot.connectionState) {
                             case ConnectionState.done:
                               return ListView.builder(
@@ -93,10 +92,10 @@ class _EventEditorState extends State<EventEditor> {
                                   itemCount: units.length,
                                   itemBuilder: (ctx, idx) {
                                     return RadioListTile(
-                                        title: Text(units[idx]),
+                                        title: Text(units[idx].name),
                                         groupValue: selectedUnit,
                                         toggleable: true,
-                                        value: units[idx],
+                                        value: units[idx].name,
                                         onChanged: (String val) {
                                           setState(() {
                                             selectedUnit = val;

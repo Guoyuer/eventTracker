@@ -1,17 +1,13 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_event_tracker/DAO/model/Record.dart';
 import 'package:flutter_event_tracker/common/customWidget.dart';
 import 'package:flutter_event_tracker/settingPage.dart';
 import 'heatMapPage.dart';
-import 'eventsList.dart';
+import 'EventsList/eventsList.dart';
 import 'eventEditor.dart';
-import 'DAO/RecordsProvider.dart';
-import 'DAO/UnitsProvider.dart';
-import 'DAO/EventsProvider.dart';
 import 'common/util.dart';
 import 'common/const.dart';
 import 'package:flutter/widgets.dart';
-import 'unitsManagerPage.dart';
+import 'DAO/base.dart';
 
 class EventDetails extends StatefulWidget {
   EventDetails({Key key}) : super(key: key);
@@ -21,7 +17,7 @@ class EventDetails extends StatefulWidget {
 }
 
 class _EventDetailsState extends State<EventDetails> {
-  Future<List<RecordModel>> _records;
+  Future<List<Record>> _records;
 
   @override
   void initState() {
@@ -31,11 +27,11 @@ class _EventDetailsState extends State<EventDetails> {
   @override
   Widget build(BuildContext context) {
     int eventId = ModalRoute.of(context).settings.arguments;
-    _records = RecordsUtils.getAllRecords(eventId);
-    return FutureBuilder<List<RecordModel>>(
+    _records = DBHandle().db.getAllRecords(eventId);
+    return FutureBuilder<List<Record>>(
         future: _records,
         builder: (ctx, snapshot) {
-          List<RecordModel> records = snapshot.data;
+          List<Record> records = snapshot.data;
           switch (snapshot.connectionState) {
             case ConnectionState.done:
               return Scaffold(
@@ -45,7 +41,7 @@ class _EventDetailsState extends State<EventDetails> {
                         return ListTile(
                             title: Text(records[idx].id.toString() +
                                 "   " +
-                                records[idx].startTime));
+                                records[idx].startTime.toString()));
                       }));
               break;
             default:

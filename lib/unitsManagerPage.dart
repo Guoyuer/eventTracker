@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_event_tracker/DAO/model/Unit.dart';
 import 'package:sqflite/sqflite.dart';
-import 'DAO/UnitsProvider.dart';
+import 'package:provider/provider.dart';
+import 'DAO/base.dart';
+import 'package:moor_flutter/moor_flutter.dart';
 import 'common/customWidget.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+import 'dart:core';
+import 'common/util.dart';
 
 // ignore: must_be_immutable
 class UnitsManager extends StatefulWidget {
@@ -14,30 +17,26 @@ class UnitsManager extends StatefulWidget {
 }
 
 class _UnitsManagerState extends State<UnitsManager> {
-  UnitsDbProvider db = UnitsDbProvider();
-  Future<List<String>> _units;
+  Future<List<Unit>> _units;
   TextEditingController controller = TextEditingController();
 
   @override
   void initState() {
     super.initState();
-    _units = db.getAllUnits();
+    _units = DBHandle().db.getAllUnits();
   }
 
   @override
   Widget build(BuildContext context) {
-    return FutureBuilder<List<String>>(
+    return FutureBuilder<List<Unit>>(
         future: _units,
         builder: (ctx, snapshot) {
           Widget _body;
-          List<String> units = snapshot.data;
-          switch (snapshot.connectionState) {
-            case ConnectionState.done:
-              _body = _buildListView(units);
-              break;
-            default:
-              _body = loadingScreen();
-              break;
+          List<Unit> units = snapshot.data;
+          if (snapshot.hasData) {
+            _body = _buildListView(units);
+          } else {
+            _body = loadingScreen();
           }
 
           return Scaffold(
@@ -61,7 +60,7 @@ class _UnitsManagerState extends State<UnitsManager> {
     );
   }
 
-  Widget _buildListView(List<String> units) {
+  Widget _buildListView(List<Unit> units) {
     return ListView.builder(
       scrollDirection: Axis.vertical,
       // shrinkWrap: true,
@@ -70,7 +69,8 @@ class _UnitsManagerState extends State<UnitsManager> {
           return Container(
               padding: EdgeInsets.symmetric(horizontal: 80),
               child: myRaisedButton(Text("添加新单位"), () {
-                _displayTextInputDialog(context);
+                displayTextInputDialog(
+                    context, "请输入单位", addUnitButton, controller);
               }));
         } else {
           return Dismissible(
@@ -78,10 +78,12 @@ class _UnitsManagerState extends State<UnitsManager> {
             key: ObjectKey(units[idx]),
             child: ListTile(
                 contentPadding: EdgeInsets.symmetric(horizontal: 20),
-                title: Text(units[idx])),
+                title: Text(units[idx].name)),
             confirmDismiss: confirmDismissFunc,
             onDismissed: (direction) {
-              db.delete(UnitModel(units[idx]));
+              DBHandle()
+                  .db
+                  .deleteUnit(UnitsCompanion(name: Value(units[idx].name)));
               setState(() {
                 units.removeAt(idx);
               });
@@ -111,53 +113,56 @@ class _UnitsManagerState extends State<UnitsManager> {
         });
   }
 
-  Future<void> _displayTextInputDialog(BuildContext context) async {
-    return showDialog(
-        context: context,
-        builder: (context) {
-          return StatefulBuilder(builder: (context, setState) {
-            return AlertDialog(
-              title: Text('请输入单位'),
-              content: TextField(
-                onChanged: (value) {
-                  setState(() {
-                    // print(OKButton().enabled);
-                  });
-                },
-                controller: controller,
-              ),
-              // decoration: InputDecoration(hintText: "如：米"),
-
-              actions: <Widget>[
-                FlatButton(
-                  color: Colors.red,
-                  textColor: Colors.white,
-                  child: Text('取消'),
-                  onPressed: () {
-                    setState(() {
-                      // listNeedUpdate = false;
-                      Navigator.pop(context); //false表示不需要刷新
-                    });
-                  },
-                ),
-                addUnitButton(),
-              ],
-            );
-          });
-        });
-  }
+  // Future<void> _displayTextInputDialog(BuildContext context) async {
+  //   return showDialog(
+  //       context: context,
+  //       builder: (context) {
+  //         return StatefulBuilder(builder: (context, setState) {
+  //           return AlertDialog(
+  //             title: Text('请输入单位'),
+  //             content: TextField(
+  //               onChanged: (value) {
+  //                 setState(() {
+  //                   // print(OKButton().enabled);
+  //                 });
+  //               },
+  //               controller: controller,
+  //             ),
+  //             // decoration: InputDecoration(hintText: "如：米"),
+  //
+  //             actions: <Widget>[
+  //               FlatButton(
+  //                 // color: Colors.red,
+  //                 // textColor: Colors.white,
+  //                 child: Text('取消'),
+  //                 onPressed: () {
+  //                   setState(() {
+  //                     // listNeedUpdate = false;
+  //                     Navigator.pop(context); //false表示不需要刷新
+  //                   });
+  //                 },
+  //               ),
+  //               addUnitButton(),
+  //             ],
+  //           );
+  //         });
+  //       });
+  // }
 
   FlatButton addUnitButton() {
     return FlatButton(
-      color: Colors.green,
-      textColor: Colors.white,
+      // color: Colors.green,
+      // textColor: Colors.white,
       child: Text('添加'),
       onPressed: controller.text.isEmpty
           ? null
           : () {
-              db.insert(UnitModel(controller.text)).then((value) {
+              DBHandle()
+                  .db
+                  .addUnit(UnitsCompanion(name: Value(controller.text)))
+                  .then((value) {
                 setState(() {
-                  _units = db.getAllUnits();
+                  _units = DBHandle().db.getAllUnits();
                 });
                 controller.clear();
                 Navigator.pop(context); // 这句肯定要在最后
