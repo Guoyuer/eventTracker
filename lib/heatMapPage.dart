@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:moor_db_viewer/moor_db_viewer.dart';
-import 'heatMap/heatmap_calendar.dart';
-import 'heatMap/time_utils.dart';
+import 'flutter_heatmap_calendar/lib/heatmap_calendar.dart';
+import 'flutter_heatmap_calendar/lib/time_utils.dart';
 import 'DAO/base.dart';
 
 var heatmap = HeatMapCalendar(

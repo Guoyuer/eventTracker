@@ -1,0 +1,3 @@
+[submodule "flutter_heatmap_calendar"]
+	path = lib/flutter_heatmap_calendar
+	url = https://github.com/Guoyuer/flutter_heatmap_calendar

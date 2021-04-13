@@ -24,6 +24,12 @@
       <excludeFolder url="file://$MODULE_DIR$/windows/flutter/ephemeral/.plugin_symlinks/path_provider_windows/.dart_tool" />
       <excludeFolder url="file://$MODULE_DIR$/windows/flutter/ephemeral/.plugin_symlinks/path_provider_windows/build" />
       <excludeFolder url="file://$MODULE_DIR$/windows/flutter/ephemeral/.plugin_symlinks/path_provider_windows/.pub" />
+      <excludeFolder url="file://$MODULE_DIR$/lib/flutter_heatmap_calendar/example/build" />
+      <excludeFolder url="file://$MODULE_DIR$/lib/flutter_heatmap_calendar/example/.pub" />
+      <excludeFolder url="file://$MODULE_DIR$/lib/flutter_heatmap_calendar/example/.dart_tool" />
+      <excludeFolder url="file://$MODULE_DIR$/lib/flutter_heatmap_calendar/.pub" />
+      <excludeFolder url="file://$MODULE_DIR$/lib/flutter_heatmap_calendar/build" />
+      <excludeFolder url="file://$MODULE_DIR$/lib/flutter_heatmap_calendar/.dart_tool" />
     </content>
     <orderEntry type="jdk" jdkName="Android API 30 Platform" jdkType="Android SDK" />
     <orderEntry type="sourceFolder" forTests="false" />
