@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:duration/locale.dart';
 import 'package:flutter/material.dart';
 import 'package:moor_flutter/moor_flutter.dart';
@@ -57,7 +59,6 @@ class _EventListState extends State<EventList> {
   }
 }
 
-
 class EventTileButton extends StatelessWidget {
   // final int eventId; //按钮要记住，因为操作数据库的时候要用。
 
@@ -67,61 +68,26 @@ class EventTileButton extends StatelessWidget {
     EventStatus status = getEventStatus(event);
     switch (status) {
       case EventStatus.plain:
-        return myRaisedButton(Text("+记录"), () {
+        return eventListButton(Text("新记录"), () {
           addPlainRecord(context);
         });
         break;
       case EventStatus.notActive:
         //TODO 长按停止可以手动输入开始时间
-        return myRaisedButton(Text("开始"), () {
+        return eventListButton(Text("开始"), () {
           startTimingRecord(context);
         });
       case EventStatus.active:
         //TODO 长按停止可以手动输入停止时间（校验是否早于开始时间？）
-        return myRaisedButton(Text("停止"), () {
+        return eventListButton(Text("停止"), () {
           stopTimingRecord(context);
         });
       default:
-        return myRaisedButton(Text("???"), () {});
+        return eventListButton(Text("???"), () {});
     }
   }
 }
 
-// status: 0(careTime = false) 1(careTime && !isActive) 2(careTime && isActive);
-class EventTileBuildingBlock extends AnimatedWidget {
-  EventTileBuildingBlock({
-    Animation<Color> animation,
-  }) : super(listenable: animation);
-
-  Widget build(BuildContext context) {
-    final Animation<Color> animation = listenable;
-    Color color;
-    BaseEventDisplayModel event = EventDataHolder.of(context).event;
-    if ((event is TimingEventDisplayModel) && event.isActive) {
-      color = animation.value;
-    } else {
-      color = null;
-    }
-
-    return Card(
-        // color: animation.value,
-        color: color,
-        elevation: 8,
-        child: Row(
-          children: [
-            Flexible(
-                child: ListTile(
-                    title: Text(event.name),
-                    subtitle: Text(getSubtitleText(event)),
-                    onTap: () {
-                      Navigator.of(context)
-                          .pushNamed("EventDetails", arguments: event.id);
-                    })),
-            EventTileButton()
-          ],
-        ));
-  }
-}
 
 class EventDataHolder extends InheritedWidget {
   final BaseEventDisplayModel event;
@@ -145,37 +111,130 @@ class EventTile extends StatefulWidget {
 
 class _EventTileState extends State<EventTile>
     with SingleTickerProviderStateMixin {
-  Animation<Color> animation;
-  AnimationController controller;
+  Animation<double> animation;
+  AnimationController _controller;
   int time; //渐变时长
   initState() {
     super.initState();
-    time = 5;
-    controller = new AnimationController(
+    time = 1;
+    _controller = new AnimationController(
         duration: Duration(seconds: time),
         reverseDuration: Duration(seconds: time),
-        vsync: this);
+        vsync: this)
+      ..repeat(reverse: true);
 
-    animation =
-        ColorTween(begin: Color(0x6200EE), end: Colors.cyan).animate(controller);
-    animation.addStatusListener((status) {
-      if (status == AnimationStatus.completed) {
-        controller.reverse();
-      } else if (status == AnimationStatus.dismissed) {
-        controller.forward();
-      }
-    });
-    controller.forward();
+    animation = CurvedAnimation(parent: _controller, curve: Curves.easeIn);
   }
 
   @override
   Widget build(BuildContext context) {
-    return EventTileBuildingBlock(animation: animation);
+    BaseEventDisplayModel event = EventDataHolder.of(context).event;
+    Widget subTitle;
+    if (event is TimingEventDisplayModel) {
+      String text;
+      //TimingEvent
+      var data = event;
+      if (!data.isActive) {
+        //关闭动画
+        _controller.reset();
+        //inactive，显示累计时间和值(if有单位)
+        String sumTimeStr =
+            prettyDuration(data.sumTime, locale: ChineseDurationLocale());
+        text = "共进行 $sumTimeStr";
+
+        String unit = data.unit;
+        if (data.unit != null && data.sumVal != 0) {
+          int val = data.sumVal.toInt();
+          text += " | 累计：$val $unit";
+        }
+
+        subTitle = Text(text);
+      } else {
+        subTitle = LapsedTimeStr(startTime: data.startTime);
+      }
+    } else {
+      _controller.reset();
+      //PlainEvent
+      var data = (event as PlainEventDisplayModel);
+      int time = data.time;
+      String text = "已进行 $time 次";
+      String unit = data.unit;
+      if (data.unit != null && data.sumVal != 0) {
+        int val = data.sumVal.toInt();
+        text += " | 累计：$val $unit";
+      }
+      subTitle = Text(text);
+    }
+    return Card(
+        // color: animation.value,
+        elevation: 8,
+        child: Stack(
+          children: [
+            Positioned.fill(
+                child: FadeTransition(
+                    opacity: animation,
+                    child: Container(color: const Color(0xaabeddf5)))),
+            ListTile(
+                title: Text(event.name),
+                subtitle: subTitle,
+                onTap: () {
+                  Navigator.of(context)
+                      .pushNamed("EventDetails", arguments: event.id);
+                }),
+            Positioned.fill(
+                child: Container(
+                    alignment: Alignment.centerRight,
+                    child: EventTileButton())),
+          ],
+        ));
   }
 
   dispose() {
     //路由销毁时需要释放动画资源
-    controller.dispose();
+    _controller.dispose();
     super.dispose();
+  }
+}
+
+///显示流逝事件的。别的事件状态就显示静态的Text()就好了。
+class LapsedTimeStr extends StatefulWidget {
+  final DateTime startTime;
+
+  LapsedTimeStr({Key key, this.startTime}) : super(key: key);
+
+  @override
+  _LapsedTimeStrState createState() => _LapsedTimeStrState();
+}
+
+class _LapsedTimeStrState extends State<LapsedTimeStr> {
+  String str;
+  Timer timer;
+
+  @override
+  void initState() {
+    _updateStr();
+    timer = Timer.periodic(Duration(seconds: 1), (t) {
+      _updateStr();
+    });
+    super.initState();
+  }
+
+  @override
+  void dispose() {
+    timer.cancel();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext ctx) {
+    return Text(str);
+  }
+
+  void _updateStr() {
+    Duration timePassed = DateTime.now().difference(widget.startTime);
+    setState(() {
+      str =
+          "已进行 " + prettyDuration(timePassed, locale: ChineseDurationLocale());
+    });
   }
 }

@@ -18,6 +18,23 @@ RaisedButton myRaisedButton(Widget child, Function onPressCallBack,
       onLongPress: onLongPressCallBack);
 }
 
+Widget eventListButton(Widget child, Function onPressCallBack,
+    [Function onLongPressCallBack]) {
+  return Container(
+      margin: EdgeInsets.only(right: 7),
+      child: RaisedButton(
+          color: Colors.blue,
+          highlightColor: Colors.blue[700],
+          colorBrightness: Brightness.dark,
+          splashColor: Colors.grey,
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(20.0)),
+          // padding: EdgeInsets.symmetric(horizontal: 50),
+          child: child,
+          onPressed: onPressCallBack,
+          onLongPress: onLongPressCallBack));
+}
+
 Widget loadingScreen() {
   return Center(
     child: Container(
@@ -85,23 +102,20 @@ class EventTile1State extends State<EventTile1> {
   @override
   Widget build(BuildContext context) {
     return Card(
-      // color: animation.value,
+        // color: animation.value,
         elevation: 8,
         child: AnimatedOpacity(
             opacity: 1,
             duration: Duration(seconds: 2),
-            child:
-            Container(
+            child: Container(
                 color: Colors.cyan,
                 child: Row(
                   children: [
                     Flexible(
-                        child:
-                        ListTile(
+                        child: ListTile(
                             title: Text("title"), subtitle: Text("subtitle"))),
                     TextButton(onPressed: () {}, child: Text("button"))
                   ],
-                ))
-        ));
+                ))));
   }
 }
