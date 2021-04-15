@@ -28,7 +28,7 @@ class EventTracker extends StatelessWidget {
       routes: {
         "eventEditor": (context) => new EventEditor(),
         "unitsManager": (context) => new UnitsManager(),
-        "EventDetails": (context) => new EventDetails(),
+        "EventDetails": (context) => new EventDetailsWrapper(),
       },
       title: 'Event Tracker',
       theme: ThemeData(
