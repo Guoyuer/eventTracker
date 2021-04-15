@@ -3,7 +3,7 @@ import 'package:flutter_event_tracker/settingPage.dart';
 import 'heatMapPage.dart';
 import 'EventsList/eventsList.dart';
 import 'eventEditor.dart';
-import 'EventDetails.dart';
+import 'EventsDetails/eventDetails.dart';
 import 'common/util.dart';
 import 'common/const.dart';
 import 'package:flutter/widgets.dart';
@@ -13,6 +13,7 @@ import 'package:share/share.dart';
 import 'package:path/path.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:path_provider/path_provider.dart';
+import 'addFakeData.dart';
 
 //TODO 增加桩程序，获取faked传感器数据
 //TODO heatMap可交互
@@ -66,6 +67,16 @@ class _MainPagesState extends State<MainPages> {
         actions: <Widget>[
           IconButton(
               onPressed: () {
+                addData().then((value) {
+                  setState(() {
+                    _children.removeAt(0);
+                    _children.insert(0, EventList(key: GlobalKey()));
+                  });
+                });
+              },
+              icon: Icon(Icons.add)),
+          IconButton(
+              onPressed: () {
                 DBHandle().db.deleteEverything();
                 setState(() {
                   _children.removeAt(0);
@@ -110,12 +121,14 @@ class _MainPagesState extends State<MainPages> {
               child: Icon(Icons.note_add_rounded),
               onPressed: () {
                 eventData = Navigator.of(context).pushNamed("eventEditor");
-                eventData.then((value) {
-                  DBHandle().db.addEventInDB(value);
-                  setState(() {
-                    _children.removeAt(0);
-                    _children.insert(0, EventList(key: GlobalKey()));
-                  });
+                eventData.then((event) {
+                  if (event != null) {
+                    DBHandle().db.addEventInDB(event);
+                    setState(() {
+                      _children.removeAt(0);
+                      _children.insert(0, EventList(key: GlobalKey()));
+                    });
+                  }
                 });
               })),
     );

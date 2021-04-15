@@ -11,3 +11,7 @@ import '../DAO/base.dart';
 //   else
 //     return EventStatus.notActive;
 // }
+///去掉时分秒
+DateTime getDate(DateTime dateTime) {
+  return DateTime(dateTime.year, dateTime.month, dateTime.day);
+}

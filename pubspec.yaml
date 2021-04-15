@@ -27,6 +27,8 @@ dependencies:
   fluttertoast: ^7.1.6
   duration:
   share:
+  date_util:
+  sprintf:
   #  数据库相关↓
   provider:
   sqflite:

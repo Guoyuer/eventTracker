@@ -179,7 +179,7 @@ class _EventTileState extends State<EventTile>
                 subtitle: subTitle,
                 onTap: () {
                   Navigator.of(context)
-                      .pushNamed("EventDetails", arguments: event.id);
+                      .pushNamed("EventDetails", arguments: event);
                 }),
             Positioned.fill(
                 child: Container(

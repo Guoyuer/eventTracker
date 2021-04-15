@@ -171,25 +171,26 @@ class AppDatabase extends _$AppDatabase {
     }
   }
 
-  Future startTimingRecordInDB(RecordsCompanion record) async {
+  Future<int> startTimingRecordInDB(RecordsCompanion record) async {
     assert(record.startTime != Value.absent());
     assert(record.eventId != Value.absent());
     int recordId = await into(records).insert(record);
     int eventId = record.eventId.value;
-    return customUpdate(
+    customUpdate(
         "update events set last_record_id = $recordId where id = $eventId");
+    return recordId;
   }
 
   Future stopTimingRecordInDB(
       Duration thisDuration, RecordsCompanion record) async {
     assert(record.id != Value.absent());
     assert(record.eventId != Value.absent());
+    assert(record.endTime != Value.absent());
     int eventId = record.eventId.value;
     int recordId = record.id.value;
     update(records)
       ..where((record) => record.id.equals(recordId))
-      ..write(RecordsCompanion(
-          endTime: Value(DateTime.now()), value: record.value));
+      ..write(RecordsCompanion(endTime: record.endTime, value: record.value));
 
     Duration sumTime = await getEventSumTime(eventId);
     sumTime += thisDuration;
@@ -235,6 +236,11 @@ class AppDatabase extends _$AppDatabase {
   ///////////////////////////////////////event相关///////////////////////////////////
   ///////////////////event.get类
 
+  Future<Event> getEventById(int eventId) async {
+    return await (select(events)..where((tbl) => tbl.id.equals(eventId)))
+        .getSingle();
+  }
+
   Future<Duration> getEventSumTime(int eventId) async {
     Event event = await (select(events)..where((tbl) => tbl.id.equals(eventId)))
         .getSingle();
@@ -256,23 +262,14 @@ class AppDatabase extends _$AppDatabase {
   }
 
   ///返回成功或失败
-  bool addEventInDB(Map<String, dynamic> res) {
-    if (res == null || res.isEmpty) return false; //直接返回相当于pop时没带数据，就不写
-    var event = EventsCompanion(
-        name: Value(res['eventName']),
-        description: Value(res['eventDesc']),
-        careTime: Value(res['careTime']),
-        unit: Value(res['unit']));
-    into(events).insert(event).then((value) {
-      print(res);
-      print("插入Event成功");
-      return true;
-    }).catchError((err) {
+  Future<int> addEventInDB(EventsCompanion event) async {
+    try {
+      return into(events).insert(event);
+    } catch (err) {
       print(err);
       showToast("创建项目失败，可能是因为重名");
-      return false;
-    });
-    return false;
+      return -1;
+    }
   }
 
   Future<List<Event>> getRawEvents() {

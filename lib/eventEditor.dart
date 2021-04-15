@@ -3,6 +3,7 @@ import 'package:flutter_event_tracker/common/const.dart';
 import 'package:flutter_event_tracker/common/customWidget.dart';
 import 'common/util.dart';
 import 'DAO/base.dart';
+import 'package:moor_flutter/moor_flutter.dart';
 
 class EventEditor extends StatefulWidget {
   EventEditor();
@@ -21,7 +22,10 @@ class _EventEditorState extends State<EventEditor> {
   String selectedUnit;
   bool careTime = true;
   final _formKey = new GlobalKey<FormState>();
-  Map<String, dynamic> data = Map();
+
+  // Map<String, dynamic> data = Map();
+
+  String name, desc, unit;
 
   @override
   void initState() {
@@ -49,7 +53,7 @@ class _EventEditorState extends State<EventEditor> {
                         return null;
                       },
                       onSaved: (String value) {
-                        data["eventName"] = value;
+                        name = value;
                       },
                       // controller: _eventNameController,
                       autofocus: true,
@@ -59,7 +63,7 @@ class _EventEditorState extends State<EventEditor> {
                     ),
                     TextFormField(
                       onSaved: (String value) {
-                        data["eventDesc"] = value;
+                        desc = value;
                       },
                       // controller: _eventDiscController,
                       decoration: InputDecoration(
@@ -110,9 +114,12 @@ class _EventEditorState extends State<EventEditor> {
                     myRaisedButton(Text("保存"), () {
                       if (_formKey.currentState.validate()) {
                         _formKey.currentState.save();
-                        data["careTime"] = careTime;
-                        data['unit'] = selectedUnit;
-                        Navigator.pop(context, data);
+                        EventsCompanion event = EventsCompanion(
+                            name: Value(name),
+                            unit: Value(selectedUnit),
+                            description: Value(desc),
+                            careTime: Value(careTime));
+                        Navigator.pop(context, event);
                       }
                     })
                   ],

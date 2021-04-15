@@ -125,6 +125,7 @@ Future stopTimingRecord(BuildContext context) async {
             RecordsCompanion(
                 id: Value(recordId),
                 eventId: Value(eventId),
+                endTime: Value(DateTime.now()),
                 value: Value(val)))
         .then((_) => ReloadEventsNotification().dispatch(context));
   }
