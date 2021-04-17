@@ -131,42 +131,42 @@ Future stopTimingRecord(BuildContext context) async {
   }
 }
 
-String getSubtitleText(BaseEventDisplayModel event) {
-  String text;
-  if (event is TimingEventDisplayModel) {
-    //TimingEvent
-    var data = event;
-    if (!data.isActive) {
-      //inactive，显示累计时间和值(if有单位)
-      String sumTimeStr =
-          prettyDuration(data.sumTime, locale: ChineseDurationLocale());
-      text = "共进行 $sumTimeStr";
-
-      String unit = data.unit;
-      if (data.unit != null && data.sumVal != 0) {
-        int val = data.sumVal.toInt();
-        text += " | 累计：$val $unit";
-      }
-    } else {
-      //active，显示进行了的时间
-      Duration timePassed = DateTime.now().difference(data.startTime);
-      text =
-          "已进行 " + prettyDuration(timePassed, locale: ChineseDurationLocale());
-    }
-  } else {
-    //PlainEvent
-    var data = (event as PlainEventDisplayModel);
-    int time = data.time;
-    text = "已进行 $time 次";
-    String unit = data.unit;
-    if (data.unit != null && data.sumVal != 0) {
-      int val = data.sumVal.toInt();
-      text += " | 累计：$val $unit";
-    }
-  }
-
-  return text;
-}
+// String getSubtitleText(BaseEventDisplayModel event) {
+//   String text;
+//   if (event is TimingEventDisplayModel) {
+//     //TimingEvent
+//     var data = event;
+//     if (!data.isActive) {
+//       //inactive，显示累计时间和值(if有单位)
+//       String sumTimeStr =
+//           prettyDuration(data.sumTime, locale: ChineseDurationLocale());
+//       text = "共进行 $sumTimeStr";
+//
+//       String unit = data.unit;
+//       if (data.unit != null && data.sumVal != 0) {
+//         int val = data.sumVal.toInt();
+//         text += " | 累计：$val $unit";
+//       }
+//     } else {
+//       //active，显示进行了的时间
+//       Duration timePassed = DateTime.now().difference(data.startTime);
+//       text =
+//           "已进行 " + prettyDuration(timePassed, locale: ChineseDurationLocale());
+//     }
+//   } else {
+//     //PlainEvent
+//     var data = (event as PlainEventDisplayModel);
+//     int time = data.time;
+//     text = "已进行 $time 次";
+//     String unit = data.unit;
+//     if (data.unit != null && data.sumVal != 0) {
+//       int val = data.sumVal.toInt();
+//       text += " | 累计：$val $unit";
+//     }
+//   }
+//
+//   return text;
+// }
 
 EventStatus getEventStatus(BaseEventDisplayModel event) {
   if (event is TimingEventDisplayModel) {

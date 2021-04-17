@@ -13,6 +13,12 @@ class ReloadEventsNotification extends Notification {
   ReloadEventsNotification();
 }
 
+class DisplayMonthRecordNotification extends Notification {
+  final DateTime month;
+
+  DisplayMonthRecordNotification({this.month});
+}
+
 const Map<int, Color> heatmapColorMap = {
   -1: Color.fromARGB(0, 255, 255, 255), //透明，用于占位
   0: Color.fromARGB(255, 235, 237, 240),

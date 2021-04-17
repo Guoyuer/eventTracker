@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_event_tracker/common/const.dart';
 import 'heatMap.dart';
 import 'util.dart';
 import 'package:date_util/date_util.dart';
+import 'package:intl/intl.dart';
 
 //最上层组件，只需给日期区间即可
 class HeatMapDisplay extends StatelessWidget {
@@ -74,20 +76,24 @@ class MonthTile extends StatelessWidget {
     if (end.weekday == DateTime.saturday && end.compareTo(lastDay) == 0) {
       weeks.add(WeekTile(DateTimeRange(start: nilTime, end: nilTime)));
     }
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Container(
-            //同个Month的Tile
-            width:
-                weeks.length * (setting.dayTileSize + setting.dayTileMargin) +
+    return InkWell(
+        onTap: () {
+          DisplayMonthRecordNotification(month: lastDay).dispatch(context);
+        },
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+                //同个Month的Tile
+                width: weeks.length *
+                        (setting.dayTileSize + setting.dayTileMargin) +
                     (weeks.length - 1) * setting.monthTileMargin,
-            child: Row(
-              children: weeks,
-            )),
-        Text("$month 月"),
-      ],
-    );
+                child: Row(
+                  children: weeks,
+                )),
+            Text("$month 月"),
+          ],
+        ));
   }
 }
 
@@ -110,10 +116,9 @@ class WeekTile extends StatelessWidget {
 
     for (int i = 0; i < 7; i++) {
       if (start <= i && i <= end) {
-        days.add(
-            DayTile(level: date2level[dateRange.start.add(Duration(days: i))]));
+        days.add(DayTile(date: dateRange.start.add(Duration(days: i))));
       } else {
-        days.add(DayTile(level: -1));
+        days.add(DayTile(date: nilTime));
       }
     }
     return Container(
@@ -159,22 +164,48 @@ Widget emptyDayTile(BuildContext context, double size) {
   );
 }
 
-//父组件只需要给它颜色level
+//父组件只需要给它日期
 class DayTile extends StatelessWidget {
-  final int level;
+  final DateTime date;
 
-  DayTile({Key key, this.level}) : super(key: key);
+  DayTile({Key key, this.date}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     HeatMapSetting setting = HeatMapDataHolder.of(context).setting;
-    return Container(
-      alignment: Alignment.center,
-      height: setting.dayTileSize,
-      width: setting.dayTileSize,
-      margin: EdgeInsets.all(setting.dayTileMargin / 2),
-      decoration: dayDecoration(setting.dayTileSize, setting.colorMap[level]),
-    );
+    var date2level = HeatMapDataHolder.of(context).date2level;
+    var data = HeatMapDataHolder.of(context).data;
+    String unit = HeatMapDataHolder.of(context).unit;
+    if (unit == null) unit = "";
+    int level = date2level[date];
+    String timeStr = DateFormat('yyyy-MM-dd kk:mm').format(date);
+    if (date == nilTime) {
+      //占位格子
+      return Container(
+        alignment: Alignment.center,
+        height: setting.dayTileSize,
+        width: setting.dayTileSize,
+        margin: EdgeInsets.all(setting.dayTileMargin / 2),
+        decoration: dayDecoration(setting.dayTileSize, setting.colorMap[level]),
+      );
+    } else {
+      String valStr;
+      if (data.containsKey(date)) {
+        valStr = data[date].toInt().toString();
+      } else {
+        valStr = "0";
+      }
+      return Tooltip(
+          child: Container(
+            alignment: Alignment.center,
+            height: setting.dayTileSize,
+            width: setting.dayTileSize,
+            margin: EdgeInsets.all(setting.dayTileMargin / 2),
+            decoration:
+                dayDecoration(setting.dayTileSize, setting.colorMap[level]),
+          ),
+          message: "时间：$timeStr  值: $valStr $unit");
+    }
   }
 }
 

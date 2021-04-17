@@ -1,8 +1,9 @@
 import 'dart:async';
 
 import 'package:duration/locale.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:moor_flutter/moor_flutter.dart';
+import 'package:moor_flutter/moor_flutter.dart' hide Column;
 import '../common/const.dart';
 import '../common/util.dart';
 import 'package:fluttertoast/fluttertoast.dart';
@@ -88,7 +89,6 @@ class EventTileButton extends StatelessWidget {
   }
 }
 
-
 class EventDataHolder extends InheritedWidget {
   final BaseEventDisplayModel event;
 
@@ -129,9 +129,10 @@ class _EventTileState extends State<EventTile>
   @override
   Widget build(BuildContext context) {
     BaseEventDisplayModel event = EventDataHolder.of(context).event;
-    Widget subTitle;
+    Widget eventInfo;
     if (event is TimingEventDisplayModel) {
-      String text;
+      String sumTimeStr;
+      String sumValStr;
       //TimingEvent
       var data = event;
       if (!data.isActive) {
@@ -140,30 +141,59 @@ class _EventTileState extends State<EventTile>
         //inactive，显示累计时间和值(if有单位)
         String sumTimeStr =
             prettyDuration(data.sumTime, locale: ChineseDurationLocale());
-        text = "共进行 $sumTimeStr";
+        sumTimeStr = "共进行 $sumTimeStr";
 
         String unit = data.unit;
         if (data.unit != null && data.sumVal != 0) {
           int val = data.sumVal.toInt();
-          text += " | 累计：$val $unit";
+          sumValStr = "累计：$val $unit";
+          eventInfo = Column(children: [
+            Align(
+                alignment: Alignment.centerLeft,
+                child: Text(sumTimeStr,
+                    style: TextStyle(color: Colors.grey[600]))),
+            Align(
+                alignment: Alignment.centerLeft,
+                child:
+                    Text(sumValStr, style: TextStyle(color: Colors.grey[600]))),
+          ]);
+        } else {
+          eventInfo = Align(
+              alignment: Alignment.centerLeft,
+              child: Text(
+                sumTimeStr,
+                style: TextStyle(color: Colors.grey[600]),
+              ));
         }
-
-        subTitle = Text(text);
       } else {
-        subTitle = LapsedTimeStr(startTime: data.startTime);
+        eventInfo = LapsedTimeStr(startTime: data.startTime);
       }
     } else {
       _controller.reset();
       //PlainEvent
       var data = (event as PlainEventDisplayModel);
       int time = data.time;
-      String text = "已进行 $time 次";
+      String sumTimeStr = "已进行 $time 次";
+      String sumValStr = "已进行 $time 次";
       String unit = data.unit;
       if (data.unit != null && data.sumVal != 0) {
         int val = data.sumVal.toInt();
-        text += " | 累计：$val $unit";
+        sumValStr = "累计：$val $unit";
+        eventInfo = Column(children: [
+          Align(
+              alignment: Alignment.centerLeft,
+              child:
+                  Text(sumTimeStr, style: TextStyle(color: Colors.grey[600]))),
+          Align(
+              alignment: Alignment.centerLeft,
+              child:
+                  Text(sumValStr, style: TextStyle(color: Colors.grey[600]))),
+        ]);
+      } else {
+        eventInfo = Align(
+            alignment: Alignment.centerLeft,
+            child: Text(sumTimeStr, style: TextStyle(color: Colors.grey[600])));
       }
-      subTitle = Text(text);
     }
     return Card(
         // color: animation.value,
@@ -174,13 +204,32 @@ class _EventTileState extends State<EventTile>
                 child: FadeTransition(
                     opacity: animation,
                     child: Container(color: const Color(0xaabeddf5)))),
-            ListTile(
-                title: Text(event.name),
-                subtitle: subTitle,
-                onTap: () {
-                  Navigator.of(context)
-                      .pushNamed("EventDetails", arguments: event);
-                }),
+            InkWell(
+              onTap: () {
+                Navigator.of(context)
+                    .pushNamed("EventDetails", arguments: event);
+              },
+              child: Container(
+                  margin: EdgeInsets.only(left: 10, top: 10),
+                  height: 68,
+                  child: Column(
+                    // crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      Align(
+                        alignment: Alignment.topLeft,
+                        child: Text(
+                          event.name,
+                          style: TextStyle(fontSize: 20),
+                        ),
+                      ),
+                      Expanded(
+                          child: Container(
+                        margin: EdgeInsets.only(left: 5),
+                        child: eventInfo,
+                      ))
+                    ],
+                  )),
+            ),
             Positioned.fill(
                 child: Container(
                     alignment: Alignment.centerRight,
@@ -227,7 +276,12 @@ class _LapsedTimeStrState extends State<LapsedTimeStr> {
 
   @override
   Widget build(BuildContext ctx) {
-    return Text(str);
+    return Align(
+        alignment: Alignment.centerLeft,
+        child: Text(
+          str,
+          style: TextStyle(color: Colors.grey),
+        ));
   }
 
   void _updateStr() {

@@ -1,6 +1,7 @@
 import 'package:flutter_event_tracker/common/const.dart';
 import 'package:flutter_event_tracker/common/customWidget.dart';
 import 'package:moor_flutter/moor_flutter.dart';
+import 'package:date_util/date_util.dart';
 
 part 'model/displayModel.dart';
 
@@ -132,6 +133,18 @@ class AppDatabase extends _$AppDatabase {
     return record;
   }
 
+  Future<List<Record>> getRecordInMonth(DateTime time) {
+    DateUtil dateUtil = DateUtil();
+    int month = time.month;
+    int year = time.year;
+    DateTime firstDay = DateTime(year, month);
+    DateTime lastDay =
+        DateTime(year, month, dateUtil.daysInMonth(month, year) - 1);
+    return (select(records)
+          ..where((tbl) => tbl.startTime.isBetweenValues(firstDay, lastDay)))
+        .get();
+  }
+
   ///得到recordId对应记录的开始时间
   Future<DateTime> getStartTime(int recordId) async {
     final query = selectOnly(records)
@@ -247,11 +260,11 @@ class AppDatabase extends _$AppDatabase {
     return event.sumTime;
   }
 
-  Future<double> getEventSumVal(int eventId) {
-    final query = (selectOnly(events)..addColumns([events.sumVal]))
-      ..where(events.id.equals(eventId));
-    return query.map((row) => row.read(events.sumVal)).getSingle();
-  }
+  // Future<double> getEventSumVal(int eventId) {
+  //   final query = (selectOnly(events)..addColumns([events.sumVal]))
+  //     ..where(events.id.equals(eventId));
+  //   return query.map((row) => row.read(events.sumVal)).getSingle();
+  // }
 
   Future<String> getEventUnit(int eventId) async {
     final query = selectOnly(events)
@@ -259,6 +272,10 @@ class AppDatabase extends _$AppDatabase {
       ..where(events.id.equals(eventId));
 
     return query.map((row) => row.read(events.unit)).getSingle();
+  }
+
+  Future<List<Event>> getRawEvents() {
+    return select(events).get();
   }
 
   ///返回成功或失败
@@ -272,8 +289,13 @@ class AppDatabase extends _$AppDatabase {
     }
   }
 
-  Future<List<Event>> getRawEvents() {
-    return select(events).get();
+  Future deleteEvent(int eventId) async {
+    delete(events)
+      ..where((tbl) => tbl.id.equals(eventId))
+      ..go();
+    return delete(records)
+      ..where((tbl) => tbl.eventId.equals(eventId))
+      ..go();
   }
 
   Future _eventProcessor(Event rawEvent) async {

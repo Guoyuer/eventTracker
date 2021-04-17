@@ -275,6 +275,13 @@
             </list>
           </value>
         </entry>
+        <entry key="intl">
+          <value>
+            <list>
+              <option value="C:/flutter/.pub-cache/hosted/pub.flutter-io.cn/intl-0.17.0/lib" />
+            </list>
+          </value>
+        </entry>
         <entry key="io">
           <value>
             <list>
@@ -699,6 +706,7 @@
       <root url="file://C:/flutter/.pub-cache/hosted/pub.flutter-io.cn/graphs-1.0.0/lib" />
       <root url="file://C:/flutter/.pub-cache/hosted/pub.flutter-io.cn/http_multi_server-3.0.0/lib" />
       <root url="file://C:/flutter/.pub-cache/hosted/pub.flutter-io.cn/http_parser-4.0.0/lib" />
+      <root url="file://C:/flutter/.pub-cache/hosted/pub.flutter-io.cn/intl-0.17.0/lib" />
       <root url="file://C:/flutter/.pub-cache/hosted/pub.flutter-io.cn/io-1.0.0/lib" />
       <root url="file://C:/flutter/.pub-cache/hosted/pub.flutter-io.cn/js-0.6.3/lib" />
       <root url="file://C:/flutter/.pub-cache/hosted/pub.flutter-io.cn/json_annotation-4.0.1/lib" />

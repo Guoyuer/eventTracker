@@ -12,21 +12,26 @@ class HeatMapSetting {
   final double weekTileMargin;
   final double monthTileMargin;
 
-  const HeatMapSetting(
-      {this.colorMap = heatmapColorMap,
-      this.dayTileSize = 15,
-      this.dayTileMargin = 5,
-      this.weekTileMargin = 6,
-      this.monthTileMargin = 2});
+  const HeatMapSetting({this.colorMap = heatmapColorMap,
+    this.dayTileSize = 15,
+    this.dayTileMargin = 5,
+    this.weekTileMargin = 6,
+    this.monthTileMargin = 2});
 }
 
 class HeatMapDataHolder extends InheritedWidget {
   final HeatMapSetting setting;
   final Map<DateTime, int> date2level;
+  final Map<DateTime, double> data; // 用于toolTip
   final DateTimeRange dateRange; //因为map无序
+  final String unit;
 
-  HeatMapDataHolder(
-      {this.setting, this.date2level, this.dateRange, Widget child})
+  HeatMapDataHolder({this.setting,
+    this.data,
+    this.date2level,
+    this.dateRange,
+    this.unit,
+    Widget child})
       : super(child: child);
 
   @override
@@ -44,12 +49,13 @@ class HeatMapCalendar extends StatefulWidget {
   final HeatMapSetting setting;
   Map<DateTime, double> data = {};
   final DateTimeRange dateRange;
+  final String unit; //Tooltip显示的单位
 
-  HeatMapCalendar(
-      {Key key,
-      this.setting = const HeatMapSetting(),
-      @required Map<DateTime, double> input,
-      @required this.dateRange})
+  HeatMapCalendar({Key key,
+    this.setting = const HeatMapSetting(),
+    @required Map<DateTime, double> input,
+    @required this.dateRange,
+    this.unit})
       : super(key: key) {
     input.forEach((key, value) {
       this.data[getDate(key)] = value;
@@ -81,8 +87,8 @@ class HeatMapCalendarState extends State<HeatMapCalendar> {
     date2level[nilTime] = -1; //用于留白
     //可能并不是所有日期都有数据，要允许这样的留白;
     for (DateTime i = widget.dateRange.start;
-        i.compareTo(widget.dateRange.end) < 0;
-        i = i.add(Duration(days: 1))) {
+    i.compareTo(widget.dateRange.end) < 0;
+    i = i.add(Duration(days: 1))) {
       if (widget.data.containsKey(i)) {
         int level = 0;
         for (int j = 0; j < threshold.length; j++) {
@@ -97,9 +103,11 @@ class HeatMapCalendarState extends State<HeatMapCalendar> {
     return HeatMapDataHolder(
         setting: widget.setting,
         date2level: date2level,
+        data: widget.data,
         dateRange: widget.dateRange,
+        unit: widget.unit,
         child: Container(
-          child: HeatMapDisplay(),
-        ));
+        child: HeatMapDisplay(),)
+    );
   }
 }

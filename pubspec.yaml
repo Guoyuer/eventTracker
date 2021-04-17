@@ -29,6 +29,7 @@ dependencies:
   share:
   date_util:
   sprintf:
+  intl:
   #  数据库相关↓
   provider:
   sqflite:
