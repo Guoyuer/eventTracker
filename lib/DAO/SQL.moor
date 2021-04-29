@@ -1,1 +1,9 @@
-updateEvent: update events set sumTime
+import 'tables.dart';
+CREATE INDEX step_time ON steps(time);
+
+CREATE INDEX records_end_time ON records(end_time);
+
+CREATE INDEX records_start_time ON records(start_time);
+
+CREATE INDEX records_event_id ON records(event_id);
+

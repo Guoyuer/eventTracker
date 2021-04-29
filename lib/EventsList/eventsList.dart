@@ -139,9 +139,8 @@ class _EventTileState extends State<EventTile>
         //关闭动画
         _controller.reset();
         //inactive，显示累计时间和值(if有单位)
-        String sumTimeStr =
-            prettyDuration(data.sumTime, locale: ChineseDurationLocale());
-        sumTimeStr = "共进行 $sumTimeStr";
+        String sumTimeStr = formatDuration(data.sumTime);
+        sumTimeStr = "已进行$sumTimeStr";
 
         String unit = data.unit;
         if (data.unit != null && data.sumVal != 0) {
@@ -219,7 +218,7 @@ class _EventTileState extends State<EventTile>
                         alignment: Alignment.topLeft,
                         child: Text(
                           event.name,
-                          style: TextStyle(fontSize: 20),
+                          style: TextStyle(fontSize: 17),
                         ),
                       ),
                       Expanded(
@@ -287,8 +286,7 @@ class _LapsedTimeStrState extends State<LapsedTimeStr> {
   void _updateStr() {
     Duration timePassed = DateTime.now().difference(widget.startTime);
     setState(() {
-      str =
-          "已进行 " + prettyDuration(timePassed, locale: ChineseDurationLocale());
+      str = "已进行" + formatDuration(timePassed);
     });
   }
 }

@@ -16,7 +16,6 @@ List<DateTimeRange> split2year(DateTimeRange rawRange) {
   int daysInYear = getYearLength(i.year); //第一年
   DateTime lastDay = DateTime(i.year).add(Duration(days: daysInYear - 1));
   while (i.compareTo(end) < 0) {
-    // print(lastDay);
     if (i == lastDay) {
       break;
     }

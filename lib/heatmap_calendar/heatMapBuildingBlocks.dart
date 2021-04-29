@@ -78,7 +78,7 @@ class MonthTile extends StatelessWidget {
     }
     return InkWell(
         onTap: () {
-          DisplayMonthRecordNotification(month: lastDay).dispatch(context);
+          MonthTouchedNotification(month: lastDay).dispatch(context);
         },
         child: Column(
           mainAxisSize: MainAxisSize.min,
@@ -178,7 +178,7 @@ class DayTile extends StatelessWidget {
     String unit = HeatMapDataHolder.of(context).unit;
     if (unit == null) unit = "";
     int level = date2level[date];
-    String timeStr = DateFormat('yyyy-MM-dd kk:mm').format(date);
+    String timeStr = DateFormat('yyyy-MM-dd').format(date);
     if (date == nilTime) {
       //占位格子
       return Container(
@@ -204,7 +204,7 @@ class DayTile extends StatelessWidget {
             decoration:
                 dayDecoration(setting.dayTileSize, setting.colorMap[level]),
           ),
-          message: "时间：$timeStr  值: $valStr $unit");
+          message: "日期：$timeStr  值: $valStr $unit");
     }
   }
 }

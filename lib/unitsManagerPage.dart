@@ -100,7 +100,7 @@ class _UnitsManagerState extends State<UnitsManager> {
         context: context,
         builder: (BuildContext context) {
           return AlertDialog(
-            title: Text("是否删除？"),
+            title: Text("是否删除该单位？"),
             actions: [
               TextButton(
                   onPressed: () => Navigator.of(context).pop(false),

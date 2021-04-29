@@ -86,7 +86,7 @@ Future stopTimingRecord(BuildContext context) async {
         context: context,
         builder: (context) {
           return AlertDialog(
-            title: Text("时间不足5s，删除还是继续"),
+            title: Text("时间不足5s，删除该记录还是继续？"),
             actions: [
               TextButton(
                   onPressed: () => Navigator.of(context).pop(true),
@@ -97,8 +97,6 @@ Future stopTimingRecord(BuildContext context) async {
             ],
           );
         });
-    print("是否删除");
-    print(delete);
     if (delete) {
       db.deleteActiveTimingRecordInDB(recordId, eventId).then((_) {
         ReloadEventsNotification().dispatch(context);
@@ -110,7 +108,6 @@ Future stopTimingRecord(BuildContext context) async {
     }
   } else {
     //该任务距开始超过5s，进行正常停止操作
-    print(thisDuration.toString());
     String unit = await DBHandle().db.getEventUnit(eventId);
     double val = 0;
     if (unit != null) {
@@ -131,43 +128,6 @@ Future stopTimingRecord(BuildContext context) async {
   }
 }
 
-// String getSubtitleText(BaseEventDisplayModel event) {
-//   String text;
-//   if (event is TimingEventDisplayModel) {
-//     //TimingEvent
-//     var data = event;
-//     if (!data.isActive) {
-//       //inactive，显示累计时间和值(if有单位)
-//       String sumTimeStr =
-//           prettyDuration(data.sumTime, locale: ChineseDurationLocale());
-//       text = "共进行 $sumTimeStr";
-//
-//       String unit = data.unit;
-//       if (data.unit != null && data.sumVal != 0) {
-//         int val = data.sumVal.toInt();
-//         text += " | 累计：$val $unit";
-//       }
-//     } else {
-//       //active，显示进行了的时间
-//       Duration timePassed = DateTime.now().difference(data.startTime);
-//       text =
-//           "已进行 " + prettyDuration(timePassed, locale: ChineseDurationLocale());
-//     }
-//   } else {
-//     //PlainEvent
-//     var data = (event as PlainEventDisplayModel);
-//     int time = data.time;
-//     text = "已进行 $time 次";
-//     String unit = data.unit;
-//     if (data.unit != null && data.sumVal != 0) {
-//       int val = data.sumVal.toInt();
-//       text += " | 累计：$val $unit";
-//     }
-//   }
-//
-//   return text;
-// }
-
 EventStatus getEventStatus(BaseEventDisplayModel event) {
   if (event is TimingEventDisplayModel) {
     return event.status;
@@ -175,4 +135,25 @@ EventStatus getEventStatus(BaseEventDisplayModel event) {
     if (event is PlainEventDisplayModel) return event.status;
   }
   return EventStatus.plain;
+}
+
+String formatDuration(Duration duration) {
+  String str = "";
+  int hours = 0;
+  if (duration.inHours > 0) {
+    hours = duration.inHours;
+    duration -= Duration(hours: hours);
+    str += " $hours小时";
+  }
+  if (duration.inMinutes > 0) {
+    int minutes = duration.inMinutes;
+    duration -= Duration(minutes: minutes);
+    str += " $minutes分钟";
+  }
+  if (duration.inSeconds > 0) {
+    int seconds = duration.inSeconds;
+    duration -= Duration(seconds: seconds);
+    str += " $seconds秒";
+  }
+  return str;
 }

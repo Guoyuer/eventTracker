@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_event_tracker/settingPage.dart';
-import 'heatMapPage.dart';
+import 'StepCount/PedometerPage.dart';
 import 'EventsList/eventsList.dart';
 import 'eventEditor.dart';
 import 'EventsDetails/eventDetails.dart';
@@ -14,6 +14,9 @@ import 'package:path/path.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:path_provider/path_provider.dart';
 import 'addFakeData.dart';
+
+// import 'package:workmanager/workmanager.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 //TODO 增加桩程序，获取faked传感器数据
 //TODO heatMap可交互
@@ -52,7 +55,7 @@ class _MainPagesState extends State<MainPages> {
   int _selectedIndex = 0;
 
   bool floatingButtonVisible = true;
-  List<Widget> _children = [EventList(), HeatMap(), SettingPage()];
+  List<Widget> _children = [EventList(), PedometerPage(), SettingPage()];
   dynamic eventData; //添加event用，接收返回值
 
   @override
@@ -64,7 +67,7 @@ class _MainPagesState extends State<MainPages> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text("Event Tracker"),
+        title: Text("活动记录本"),
         actions: <Widget>[
           IconButton(
               onPressed: () {
@@ -72,6 +75,8 @@ class _MainPagesState extends State<MainPages> {
                   setState(() {
                     _children.removeAt(0);
                     _children.insert(0, EventList(key: GlobalKey()));
+                    _children.removeAt(1);
+                    _children.insert(1, PedometerPage(key: GlobalKey()));
                   });
                 });
               },
@@ -82,13 +87,15 @@ class _MainPagesState extends State<MainPages> {
                 setState(() {
                   _children.removeAt(0);
                   _children.insert(0, EventList(key: GlobalKey()));
+                  _children.removeAt(1);
+                  _children.insert(1, PedometerPage(key: GlobalKey()));
                 });
               },
               icon: Icon(Icons.delete)),
           IconButton(
               icon: Icon(Icons.share),
               onPressed: () {
-                Share.share('Developed By Yuer Guo');
+                Share.share('该应用由四川大学吴玉章学院17级本科生郭遇尔开发');
               }),
         ],
       ),
@@ -108,7 +115,7 @@ class _MainPagesState extends State<MainPages> {
           BottomNavigationBarItem(
               icon: Icon(Icons.event_note_rounded), label: '事项'),
           BottomNavigationBarItem(
-              icon: Icon(Icons.pie_chart_outline_rounded), label: '统计'),
+              icon: Icon(Icons.directions_walk_rounded), label: '行走'),
           BottomNavigationBarItem(icon: Icon(Icons.settings), label: '选项'),
         ],
         currentIndex: _selectedIndex,

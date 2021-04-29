@@ -16,13 +16,11 @@ import 'dart:collection';
 //OK TODO 点击热力图某月自动显示月份记录
 //OK TODO 将FutureBuilder最小化: HeatMap、Button、Text共用一个；recordInMonth共用一个避免不必要的重加载
 
+//TODO 修复没有数据和少量数据时的Heatmap显示BUG
 class EventDetailsWrapper extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    BaseEventDisplayModel event = ModalRoute
-        .of(context)
-        .settings
-        .arguments;
+    BaseEventDisplayModel event = ModalRoute.of(context).settings.arguments;
     return EventDetails(event: event);
   }
 }
@@ -47,7 +45,7 @@ class _EventDetailsState extends State<EventDetails> {
   @override
   void initState() {
     super.initState();
-    _records = db.getAllRecords(widget.event.id);
+    _records = db.getRecordsByEventId(widget.event.id);
     if (widget.event is TimingEventDisplayModel) {
       toggleTexts.add("时长");
     } else {
@@ -79,7 +77,7 @@ class _EventDetailsState extends State<EventDetails> {
                       context: context,
                       builder: (context) {
                         return AlertDialog(
-                          title: Text("是否删除"),
+                          title: Text("是否删除该项目及所有记录？"),
                           actions: [
                             TextButton(
                                 onPressed: () =>
@@ -104,20 +102,18 @@ class _EventDetailsState extends State<EventDetails> {
           title: Text(sprintf("%s - 项目详情", [widget.event.name])),
         ),
         body: NotificationListener(
-          //在更高处监听，避免setState影响heatMap
-            onNotification: (DisplayMonthRecordNotification notification) {
+            //在更高处监听，避免setState影响heatMap
+            onNotification: (MonthTouchedNotification notification) {
               setState(() {
                 monthOfRecords = notification.month;
               });
               return true;
             },
             child: ListView(children: [
-
               ///前三项紧密关联，所以共用一个FutureBuilder
               FutureBuilder<List<Record>>(
                   future: _records,
                   builder: (ctx, snapshot) {
-                    print("Future Builder");
                     List<Record> records = snapshot.data;
                     switch (snapshot.connectionState) {
                       case ConnectionState.done:
@@ -165,7 +161,7 @@ class _EventDetailsState extends State<EventDetails> {
                             //得到次数统计信息
                             records.forEach((record) {
                               var date =
-                              getDate(record.endTime); //因为没有startTime
+                                  getDate(record.endTime); //因为没有startTime
                               if (data.containsKey(date)) {
                                 data[date] += 1;
                               } else {
@@ -177,7 +173,7 @@ class _EventDetailsState extends State<EventDetails> {
                             toolTipUnit = widget.event.unit;
                             records.forEach((record) {
                               var date =
-                              getDate(record.endTime); //因为没有startTime
+                                  getDate(record.endTime); //因为没有startTime
                               if (data.containsKey(date)) {
                                 data[date] += record.value;
                               } else {
@@ -196,18 +192,20 @@ class _EventDetailsState extends State<EventDetails> {
                           children: [
                             Center(
                                 child: Text(
-                                  "统计数据 - " + toggleTexts[getSelected(
-                                      isSelected)],
-                                  style: TextStyle(
-                                      fontWeight: FontWeight.bold,
-                                      fontSize: 20),
-                                )),
-                            SingleChildScrollView(
-                              scrollDirection: Axis.horizontal,
-                              child: HeatMapCalendar(
-                                dateRange: range,
-                                input: data,
-                                unit: toolTipUnit,
+                              "统计数据 - " + toggleTexts[getSelected(isSelected)],
+                              style: TextStyle(
+                                  fontWeight: FontWeight.bold, fontSize: 20),
+                            )),
+                            Container(
+                              margin: EdgeInsets.symmetric(horizontal: 5),
+                              width: double.infinity,
+                              child: SingleChildScrollView(
+                                scrollDirection: Axis.horizontal,
+                                child: HeatMapCalendar(
+                                  dateRange: range,
+                                  input: data,
+                                  unit: toolTipUnit,
+                                ),
                               ),
                             ),
                             Align(
@@ -221,8 +219,8 @@ class _EventDetailsState extends State<EventDetails> {
                                           if (index !=
                                               getSelected(isSelected)) {
                                             for (int i = 0;
-                                            i < isSelected.length;
-                                            i++) {
+                                                i < isSelected.length;
+                                                i++) {
                                               setState(() {
                                                 if (i == index) {
                                                   isSelected[i] = true;
@@ -257,8 +255,8 @@ class _EventDetailsState extends State<EventDetails> {
   }
 }
 
-Widget getMonthRecordsWidgets(List<Record> records, DateTime month,
-    BaseEventDisplayModel event) {
+Widget getMonthRecordsWidgets(
+    List<Record> records, DateTime month, BaseEventDisplayModel event) {
   List<Widget> tiles = [];
   if (month != nilTime) {
     String yearStr = month.year.toString();
@@ -267,18 +265,17 @@ Widget getMonthRecordsWidgets(List<Record> records, DateTime month,
   }
   records = records
       .where((element) =>
-  element.endTime.month == month.month &&
-      element.endTime.year == month.year)
+          element.endTime.month == month.month &&
+          element.endTime.year == month.year)
       .toList(); //只保留本月的记录，
 
-  records.sort((a, b) =>
-      a.endTime.millisecondsSinceEpoch
-          .compareTo(b.endTime.millisecondsSinceEpoch));
+  // records.sort((a, b) => a.endTime.millisecondsSinceEpoch
+  //     .compareTo(b.endTime.millisecondsSinceEpoch));
   // 一般是按照时间顺序写入数据库的，读取时也是。但以防万一还是再次排序
 
   //按照日来分
   LinkedHashMap<DateTime, List<Record>> recordsOfDays =
-  new LinkedHashMap<DateTime, List<Record>>();
+      new LinkedHashMap<DateTime, List<Record>>();
   records.forEach((record) {
     DateTime date = getDate(record.endTime);
     if (!recordsOfDays.containsKey(date)) {

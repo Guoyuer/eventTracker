@@ -7,6 +7,560 @@ part of 'base.dart';
 // **************************************************************************
 
 // ignore_for_file: unnecessary_brace_in_string_interps, unnecessary_this
+class Step extends DataClass implements Insertable<Step> {
+  final int id;
+  final int step;
+  final DateTime time;
+  Step({@required this.id, @required this.step, @required this.time});
+  factory Step.fromData(Map<String, dynamic> data, GeneratedDatabase db,
+      {String prefix}) {
+    final effectivePrefix = prefix ?? '';
+    final intType = db.typeSystem.forDartType<int>();
+    final dateTimeType = db.typeSystem.forDartType<DateTime>();
+    return Step(
+      id: intType.mapFromDatabaseResponse(data['${effectivePrefix}id']),
+      step: intType.mapFromDatabaseResponse(data['${effectivePrefix}step']),
+      time:
+          dateTimeType.mapFromDatabaseResponse(data['${effectivePrefix}time']),
+    );
+  }
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (!nullToAbsent || id != null) {
+      map['id'] = Variable<int>(id);
+    }
+    if (!nullToAbsent || step != null) {
+      map['step'] = Variable<int>(step);
+    }
+    if (!nullToAbsent || time != null) {
+      map['time'] = Variable<DateTime>(time);
+    }
+    return map;
+  }
+
+  StepsCompanion toCompanion(bool nullToAbsent) {
+    return StepsCompanion(
+      id: id == null && nullToAbsent ? const Value.absent() : Value(id),
+      step: step == null && nullToAbsent ? const Value.absent() : Value(step),
+      time: time == null && nullToAbsent ? const Value.absent() : Value(time),
+    );
+  }
+
+  factory Step.fromJson(Map<String, dynamic> json,
+      {ValueSerializer serializer}) {
+    serializer ??= moorRuntimeOptions.defaultSerializer;
+    return Step(
+      id: serializer.fromJson<int>(json['id']),
+      step: serializer.fromJson<int>(json['step']),
+      time: serializer.fromJson<DateTime>(json['time']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer serializer}) {
+    serializer ??= moorRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<int>(id),
+      'step': serializer.toJson<int>(step),
+      'time': serializer.toJson<DateTime>(time),
+    };
+  }
+
+  Step copyWith({int id, int step, DateTime time}) => Step(
+        id: id ?? this.id,
+        step: step ?? this.step,
+        time: time ?? this.time,
+      );
+  @override
+  String toString() {
+    return (StringBuffer('Step(')
+          ..write('id: $id, ')
+          ..write('step: $step, ')
+          ..write('time: $time')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode =>
+      $mrjf($mrjc(id.hashCode, $mrjc(step.hashCode, time.hashCode)));
+  @override
+  bool operator ==(dynamic other) =>
+      identical(this, other) ||
+      (other is Step &&
+          other.id == this.id &&
+          other.step == this.step &&
+          other.time == this.time);
+}
+
+class StepsCompanion extends UpdateCompanion<Step> {
+  final Value<int> id;
+  final Value<int> step;
+  final Value<DateTime> time;
+  const StepsCompanion({
+    this.id = const Value.absent(),
+    this.step = const Value.absent(),
+    this.time = const Value.absent(),
+  });
+  StepsCompanion.insert({
+    this.id = const Value.absent(),
+    this.step = const Value.absent(),
+    @required DateTime time,
+  }) : time = Value(time);
+  static Insertable<Step> custom({
+    Expression<int> id,
+    Expression<int> step,
+    Expression<DateTime> time,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (step != null) 'step': step,
+      if (time != null) 'time': time,
+    });
+  }
+
+  StepsCompanion copyWith(
+      {Value<int> id, Value<int> step, Value<DateTime> time}) {
+    return StepsCompanion(
+      id: id ?? this.id,
+      step: step ?? this.step,
+      time: time ?? this.time,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<int>(id.value);
+    }
+    if (step.present) {
+      map['step'] = Variable<int>(step.value);
+    }
+    if (time.present) {
+      map['time'] = Variable<DateTime>(time.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('StepsCompanion(')
+          ..write('id: $id, ')
+          ..write('step: $step, ')
+          ..write('time: $time')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class $StepsTable extends Steps with TableInfo<$StepsTable, Step> {
+  final GeneratedDatabase _db;
+  final String _alias;
+  $StepsTable(this._db, [this._alias]);
+  final VerificationMeta _idMeta = const VerificationMeta('id');
+  GeneratedIntColumn _id;
+  @override
+  GeneratedIntColumn get id => _id ??= _constructId();
+  GeneratedIntColumn _constructId() {
+    return GeneratedIntColumn('id', $tableName, false,
+        hasAutoIncrement: true, declaredAsPrimaryKey: true);
+  }
+
+  final VerificationMeta _stepMeta = const VerificationMeta('step');
+  GeneratedIntColumn _step;
+  @override
+  GeneratedIntColumn get step => _step ??= _constructStep();
+  GeneratedIntColumn _constructStep() {
+    return GeneratedIntColumn('step', $tableName, false,
+        defaultValue: Constant(0));
+  }
+
+  final VerificationMeta _timeMeta = const VerificationMeta('time');
+  GeneratedDateTimeColumn _time;
+  @override
+  GeneratedDateTimeColumn get time => _time ??= _constructTime();
+  GeneratedDateTimeColumn _constructTime() {
+    return GeneratedDateTimeColumn(
+      'time',
+      $tableName,
+      false,
+    );
+  }
+
+  @override
+  List<GeneratedColumn> get $columns => [id, step, time];
+  @override
+  $StepsTable get asDslTable => this;
+  @override
+  String get $tableName => _alias ?? 'steps';
+  @override
+  final String actualTableName = 'steps';
+  @override
+  VerificationContext validateIntegrity(Insertable<Step> instance,
+      {bool isInserting = false}) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id'], _idMeta));
+    }
+    if (data.containsKey('step')) {
+      context.handle(
+          _stepMeta, step.isAcceptableOrUnknown(data['step'], _stepMeta));
+    }
+    if (data.containsKey('time')) {
+      context.handle(
+          _timeMeta, time.isAcceptableOrUnknown(data['time'], _timeMeta));
+    } else if (isInserting) {
+      context.missing(_timeMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  Step map(Map<String, dynamic> data, {String tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : null;
+    return Step.fromData(data, _db, prefix: effectivePrefix);
+  }
+
+  @override
+  $StepsTable createAlias(String alias) {
+    return $StepsTable(_db, alias);
+  }
+}
+
+class Record extends DataClass implements Insertable<Record> {
+  final int id;
+  final int eventId;
+  final DateTime startTime;
+  final DateTime endTime;
+  final double value;
+  Record(
+      {@required this.id,
+      @required this.eventId,
+      this.startTime,
+      this.endTime,
+      this.value});
+  factory Record.fromData(Map<String, dynamic> data, GeneratedDatabase db,
+      {String prefix}) {
+    final effectivePrefix = prefix ?? '';
+    final intType = db.typeSystem.forDartType<int>();
+    final dateTimeType = db.typeSystem.forDartType<DateTime>();
+    final doubleType = db.typeSystem.forDartType<double>();
+    return Record(
+      id: intType.mapFromDatabaseResponse(data['${effectivePrefix}id']),
+      eventId:
+          intType.mapFromDatabaseResponse(data['${effectivePrefix}event_id']),
+      startTime: dateTimeType
+          .mapFromDatabaseResponse(data['${effectivePrefix}start_time']),
+      endTime: dateTimeType
+          .mapFromDatabaseResponse(data['${effectivePrefix}end_time']),
+      value:
+          doubleType.mapFromDatabaseResponse(data['${effectivePrefix}value']),
+    );
+  }
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (!nullToAbsent || id != null) {
+      map['id'] = Variable<int>(id);
+    }
+    if (!nullToAbsent || eventId != null) {
+      map['event_id'] = Variable<int>(eventId);
+    }
+    if (!nullToAbsent || startTime != null) {
+      map['start_time'] = Variable<DateTime>(startTime);
+    }
+    if (!nullToAbsent || endTime != null) {
+      map['end_time'] = Variable<DateTime>(endTime);
+    }
+    if (!nullToAbsent || value != null) {
+      map['value'] = Variable<double>(value);
+    }
+    return map;
+  }
+
+  RecordsCompanion toCompanion(bool nullToAbsent) {
+    return RecordsCompanion(
+      id: id == null && nullToAbsent ? const Value.absent() : Value(id),
+      eventId: eventId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(eventId),
+      startTime: startTime == null && nullToAbsent
+          ? const Value.absent()
+          : Value(startTime),
+      endTime: endTime == null && nullToAbsent
+          ? const Value.absent()
+          : Value(endTime),
+      value:
+          value == null && nullToAbsent ? const Value.absent() : Value(value),
+    );
+  }
+
+  factory Record.fromJson(Map<String, dynamic> json,
+      {ValueSerializer serializer}) {
+    serializer ??= moorRuntimeOptions.defaultSerializer;
+    return Record(
+      id: serializer.fromJson<int>(json['id']),
+      eventId: serializer.fromJson<int>(json['eventId']),
+      startTime: serializer.fromJson<DateTime>(json['startTime']),
+      endTime: serializer.fromJson<DateTime>(json['endTime']),
+      value: serializer.fromJson<double>(json['value']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer serializer}) {
+    serializer ??= moorRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<int>(id),
+      'eventId': serializer.toJson<int>(eventId),
+      'startTime': serializer.toJson<DateTime>(startTime),
+      'endTime': serializer.toJson<DateTime>(endTime),
+      'value': serializer.toJson<double>(value),
+    };
+  }
+
+  Record copyWith(
+          {int id,
+          int eventId,
+          DateTime startTime,
+          DateTime endTime,
+          double value}) =>
+      Record(
+        id: id ?? this.id,
+        eventId: eventId ?? this.eventId,
+        startTime: startTime ?? this.startTime,
+        endTime: endTime ?? this.endTime,
+        value: value ?? this.value,
+      );
+  @override
+  String toString() {
+    return (StringBuffer('Record(')
+          ..write('id: $id, ')
+          ..write('eventId: $eventId, ')
+          ..write('startTime: $startTime, ')
+          ..write('endTime: $endTime, ')
+          ..write('value: $value')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => $mrjf($mrjc(
+      id.hashCode,
+      $mrjc(eventId.hashCode,
+          $mrjc(startTime.hashCode, $mrjc(endTime.hashCode, value.hashCode)))));
+  @override
+  bool operator ==(dynamic other) =>
+      identical(this, other) ||
+      (other is Record &&
+          other.id == this.id &&
+          other.eventId == this.eventId &&
+          other.startTime == this.startTime &&
+          other.endTime == this.endTime &&
+          other.value == this.value);
+}
+
+class RecordsCompanion extends UpdateCompanion<Record> {
+  final Value<int> id;
+  final Value<int> eventId;
+  final Value<DateTime> startTime;
+  final Value<DateTime> endTime;
+  final Value<double> value;
+  const RecordsCompanion({
+    this.id = const Value.absent(),
+    this.eventId = const Value.absent(),
+    this.startTime = const Value.absent(),
+    this.endTime = const Value.absent(),
+    this.value = const Value.absent(),
+  });
+  RecordsCompanion.insert({
+    this.id = const Value.absent(),
+    @required int eventId,
+    this.startTime = const Value.absent(),
+    this.endTime = const Value.absent(),
+    this.value = const Value.absent(),
+  }) : eventId = Value(eventId);
+  static Insertable<Record> custom({
+    Expression<int> id,
+    Expression<int> eventId,
+    Expression<DateTime> startTime,
+    Expression<DateTime> endTime,
+    Expression<double> value,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (eventId != null) 'event_id': eventId,
+      if (startTime != null) 'start_time': startTime,
+      if (endTime != null) 'end_time': endTime,
+      if (value != null) 'value': value,
+    });
+  }
+
+  RecordsCompanion copyWith(
+      {Value<int> id,
+      Value<int> eventId,
+      Value<DateTime> startTime,
+      Value<DateTime> endTime,
+      Value<double> value}) {
+    return RecordsCompanion(
+      id: id ?? this.id,
+      eventId: eventId ?? this.eventId,
+      startTime: startTime ?? this.startTime,
+      endTime: endTime ?? this.endTime,
+      value: value ?? this.value,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<int>(id.value);
+    }
+    if (eventId.present) {
+      map['event_id'] = Variable<int>(eventId.value);
+    }
+    if (startTime.present) {
+      map['start_time'] = Variable<DateTime>(startTime.value);
+    }
+    if (endTime.present) {
+      map['end_time'] = Variable<DateTime>(endTime.value);
+    }
+    if (value.present) {
+      map['value'] = Variable<double>(value.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('RecordsCompanion(')
+          ..write('id: $id, ')
+          ..write('eventId: $eventId, ')
+          ..write('startTime: $startTime, ')
+          ..write('endTime: $endTime, ')
+          ..write('value: $value')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class $RecordsTable extends Records with TableInfo<$RecordsTable, Record> {
+  final GeneratedDatabase _db;
+  final String _alias;
+  $RecordsTable(this._db, [this._alias]);
+  final VerificationMeta _idMeta = const VerificationMeta('id');
+  GeneratedIntColumn _id;
+  @override
+  GeneratedIntColumn get id => _id ??= _constructId();
+  GeneratedIntColumn _constructId() {
+    return GeneratedIntColumn('id', $tableName, false,
+        hasAutoIncrement: true, declaredAsPrimaryKey: true);
+  }
+
+  final VerificationMeta _eventIdMeta = const VerificationMeta('eventId');
+  GeneratedIntColumn _eventId;
+  @override
+  GeneratedIntColumn get eventId => _eventId ??= _constructEventId();
+  GeneratedIntColumn _constructEventId() {
+    return GeneratedIntColumn(
+      'event_id',
+      $tableName,
+      false,
+    );
+  }
+
+  final VerificationMeta _startTimeMeta = const VerificationMeta('startTime');
+  GeneratedDateTimeColumn _startTime;
+  @override
+  GeneratedDateTimeColumn get startTime => _startTime ??= _constructStartTime();
+  GeneratedDateTimeColumn _constructStartTime() {
+    return GeneratedDateTimeColumn(
+      'start_time',
+      $tableName,
+      true,
+    );
+  }
+
+  final VerificationMeta _endTimeMeta = const VerificationMeta('endTime');
+  GeneratedDateTimeColumn _endTime;
+  @override
+  GeneratedDateTimeColumn get endTime => _endTime ??= _constructEndTime();
+  GeneratedDateTimeColumn _constructEndTime() {
+    return GeneratedDateTimeColumn(
+      'end_time',
+      $tableName,
+      true,
+    );
+  }
+
+  final VerificationMeta _valueMeta = const VerificationMeta('value');
+  GeneratedRealColumn _value;
+  @override
+  GeneratedRealColumn get value => _value ??= _constructValue();
+  GeneratedRealColumn _constructValue() {
+    return GeneratedRealColumn(
+      'value',
+      $tableName,
+      true,
+    );
+  }
+
+  @override
+  List<GeneratedColumn> get $columns =>
+      [id, eventId, startTime, endTime, value];
+  @override
+  $RecordsTable get asDslTable => this;
+  @override
+  String get $tableName => _alias ?? 'records';
+  @override
+  final String actualTableName = 'records';
+  @override
+  VerificationContext validateIntegrity(Insertable<Record> instance,
+      {bool isInserting = false}) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id'], _idMeta));
+    }
+    if (data.containsKey('event_id')) {
+      context.handle(_eventIdMeta,
+          eventId.isAcceptableOrUnknown(data['event_id'], _eventIdMeta));
+    } else if (isInserting) {
+      context.missing(_eventIdMeta);
+    }
+    if (data.containsKey('start_time')) {
+      context.handle(_startTimeMeta,
+          startTime.isAcceptableOrUnknown(data['start_time'], _startTimeMeta));
+    }
+    if (data.containsKey('end_time')) {
+      context.handle(_endTimeMeta,
+          endTime.isAcceptableOrUnknown(data['end_time'], _endTimeMeta));
+    }
+    if (data.containsKey('value')) {
+      context.handle(
+          _valueMeta, value.isAcceptableOrUnknown(data['value'], _valueMeta));
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  Record map(Map<String, dynamic> data, {String tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : null;
+    return Record.fromData(data, _db, prefix: effectivePrefix);
+  }
+
+  @override
+  $RecordsTable createAlias(String alias) {
+    return $RecordsTable(_db, alias);
+  }
+}
+
 class Event extends DataClass implements Insertable<Event> {
   final int id;
   final String name;
@@ -473,336 +1027,6 @@ class $EventsTable extends Events with TableInfo<$EventsTable, Event> {
       const DurationConverter();
 }
 
-class Record extends DataClass implements Insertable<Record> {
-  final int id;
-  final int eventId;
-  final DateTime startTime;
-  final DateTime endTime;
-  final double value;
-  Record(
-      {@required this.id,
-      @required this.eventId,
-      this.startTime,
-      this.endTime,
-      this.value});
-  factory Record.fromData(Map<String, dynamic> data, GeneratedDatabase db,
-      {String prefix}) {
-    final effectivePrefix = prefix ?? '';
-    final intType = db.typeSystem.forDartType<int>();
-    final dateTimeType = db.typeSystem.forDartType<DateTime>();
-    final doubleType = db.typeSystem.forDartType<double>();
-    return Record(
-      id: intType.mapFromDatabaseResponse(data['${effectivePrefix}id']),
-      eventId:
-          intType.mapFromDatabaseResponse(data['${effectivePrefix}event_id']),
-      startTime: dateTimeType
-          .mapFromDatabaseResponse(data['${effectivePrefix}start_time']),
-      endTime: dateTimeType
-          .mapFromDatabaseResponse(data['${effectivePrefix}end_time']),
-      value:
-          doubleType.mapFromDatabaseResponse(data['${effectivePrefix}value']),
-    );
-  }
-  @override
-  Map<String, Expression> toColumns(bool nullToAbsent) {
-    final map = <String, Expression>{};
-    if (!nullToAbsent || id != null) {
-      map['id'] = Variable<int>(id);
-    }
-    if (!nullToAbsent || eventId != null) {
-      map['event_id'] = Variable<int>(eventId);
-    }
-    if (!nullToAbsent || startTime != null) {
-      map['start_time'] = Variable<DateTime>(startTime);
-    }
-    if (!nullToAbsent || endTime != null) {
-      map['end_time'] = Variable<DateTime>(endTime);
-    }
-    if (!nullToAbsent || value != null) {
-      map['value'] = Variable<double>(value);
-    }
-    return map;
-  }
-
-  RecordsCompanion toCompanion(bool nullToAbsent) {
-    return RecordsCompanion(
-      id: id == null && nullToAbsent ? const Value.absent() : Value(id),
-      eventId: eventId == null && nullToAbsent
-          ? const Value.absent()
-          : Value(eventId),
-      startTime: startTime == null && nullToAbsent
-          ? const Value.absent()
-          : Value(startTime),
-      endTime: endTime == null && nullToAbsent
-          ? const Value.absent()
-          : Value(endTime),
-      value:
-          value == null && nullToAbsent ? const Value.absent() : Value(value),
-    );
-  }
-
-  factory Record.fromJson(Map<String, dynamic> json,
-      {ValueSerializer serializer}) {
-    serializer ??= moorRuntimeOptions.defaultSerializer;
-    return Record(
-      id: serializer.fromJson<int>(json['id']),
-      eventId: serializer.fromJson<int>(json['eventId']),
-      startTime: serializer.fromJson<DateTime>(json['startTime']),
-      endTime: serializer.fromJson<DateTime>(json['endTime']),
-      value: serializer.fromJson<double>(json['value']),
-    );
-  }
-  @override
-  Map<String, dynamic> toJson({ValueSerializer serializer}) {
-    serializer ??= moorRuntimeOptions.defaultSerializer;
-    return <String, dynamic>{
-      'id': serializer.toJson<int>(id),
-      'eventId': serializer.toJson<int>(eventId),
-      'startTime': serializer.toJson<DateTime>(startTime),
-      'endTime': serializer.toJson<DateTime>(endTime),
-      'value': serializer.toJson<double>(value),
-    };
-  }
-
-  Record copyWith(
-          {int id,
-          int eventId,
-          DateTime startTime,
-          DateTime endTime,
-          double value}) =>
-      Record(
-        id: id ?? this.id,
-        eventId: eventId ?? this.eventId,
-        startTime: startTime ?? this.startTime,
-        endTime: endTime ?? this.endTime,
-        value: value ?? this.value,
-      );
-  @override
-  String toString() {
-    return (StringBuffer('Record(')
-          ..write('id: $id, ')
-          ..write('eventId: $eventId, ')
-          ..write('startTime: $startTime, ')
-          ..write('endTime: $endTime, ')
-          ..write('value: $value')
-          ..write(')'))
-        .toString();
-  }
-
-  @override
-  int get hashCode => $mrjf($mrjc(
-      id.hashCode,
-      $mrjc(eventId.hashCode,
-          $mrjc(startTime.hashCode, $mrjc(endTime.hashCode, value.hashCode)))));
-  @override
-  bool operator ==(dynamic other) =>
-      identical(this, other) ||
-      (other is Record &&
-          other.id == this.id &&
-          other.eventId == this.eventId &&
-          other.startTime == this.startTime &&
-          other.endTime == this.endTime &&
-          other.value == this.value);
-}
-
-class RecordsCompanion extends UpdateCompanion<Record> {
-  final Value<int> id;
-  final Value<int> eventId;
-  final Value<DateTime> startTime;
-  final Value<DateTime> endTime;
-  final Value<double> value;
-  const RecordsCompanion({
-    this.id = const Value.absent(),
-    this.eventId = const Value.absent(),
-    this.startTime = const Value.absent(),
-    this.endTime = const Value.absent(),
-    this.value = const Value.absent(),
-  });
-  RecordsCompanion.insert({
-    this.id = const Value.absent(),
-    @required int eventId,
-    this.startTime = const Value.absent(),
-    this.endTime = const Value.absent(),
-    this.value = const Value.absent(),
-  }) : eventId = Value(eventId);
-  static Insertable<Record> custom({
-    Expression<int> id,
-    Expression<int> eventId,
-    Expression<DateTime> startTime,
-    Expression<DateTime> endTime,
-    Expression<double> value,
-  }) {
-    return RawValuesInsertable({
-      if (id != null) 'id': id,
-      if (eventId != null) 'event_id': eventId,
-      if (startTime != null) 'start_time': startTime,
-      if (endTime != null) 'end_time': endTime,
-      if (value != null) 'value': value,
-    });
-  }
-
-  RecordsCompanion copyWith(
-      {Value<int> id,
-      Value<int> eventId,
-      Value<DateTime> startTime,
-      Value<DateTime> endTime,
-      Value<double> value}) {
-    return RecordsCompanion(
-      id: id ?? this.id,
-      eventId: eventId ?? this.eventId,
-      startTime: startTime ?? this.startTime,
-      endTime: endTime ?? this.endTime,
-      value: value ?? this.value,
-    );
-  }
-
-  @override
-  Map<String, Expression> toColumns(bool nullToAbsent) {
-    final map = <String, Expression>{};
-    if (id.present) {
-      map['id'] = Variable<int>(id.value);
-    }
-    if (eventId.present) {
-      map['event_id'] = Variable<int>(eventId.value);
-    }
-    if (startTime.present) {
-      map['start_time'] = Variable<DateTime>(startTime.value);
-    }
-    if (endTime.present) {
-      map['end_time'] = Variable<DateTime>(endTime.value);
-    }
-    if (value.present) {
-      map['value'] = Variable<double>(value.value);
-    }
-    return map;
-  }
-
-  @override
-  String toString() {
-    return (StringBuffer('RecordsCompanion(')
-          ..write('id: $id, ')
-          ..write('eventId: $eventId, ')
-          ..write('startTime: $startTime, ')
-          ..write('endTime: $endTime, ')
-          ..write('value: $value')
-          ..write(')'))
-        .toString();
-  }
-}
-
-class $RecordsTable extends Records with TableInfo<$RecordsTable, Record> {
-  final GeneratedDatabase _db;
-  final String _alias;
-  $RecordsTable(this._db, [this._alias]);
-  final VerificationMeta _idMeta = const VerificationMeta('id');
-  GeneratedIntColumn _id;
-  @override
-  GeneratedIntColumn get id => _id ??= _constructId();
-  GeneratedIntColumn _constructId() {
-    return GeneratedIntColumn('id', $tableName, false,
-        hasAutoIncrement: true, declaredAsPrimaryKey: true);
-  }
-
-  final VerificationMeta _eventIdMeta = const VerificationMeta('eventId');
-  GeneratedIntColumn _eventId;
-  @override
-  GeneratedIntColumn get eventId => _eventId ??= _constructEventId();
-  GeneratedIntColumn _constructEventId() {
-    return GeneratedIntColumn(
-      'event_id',
-      $tableName,
-      false,
-    );
-  }
-
-  final VerificationMeta _startTimeMeta = const VerificationMeta('startTime');
-  GeneratedDateTimeColumn _startTime;
-  @override
-  GeneratedDateTimeColumn get startTime => _startTime ??= _constructStartTime();
-  GeneratedDateTimeColumn _constructStartTime() {
-    return GeneratedDateTimeColumn(
-      'start_time',
-      $tableName,
-      true,
-    );
-  }
-
-  final VerificationMeta _endTimeMeta = const VerificationMeta('endTime');
-  GeneratedDateTimeColumn _endTime;
-  @override
-  GeneratedDateTimeColumn get endTime => _endTime ??= _constructEndTime();
-  GeneratedDateTimeColumn _constructEndTime() {
-    return GeneratedDateTimeColumn(
-      'end_time',
-      $tableName,
-      true,
-    );
-  }
-
-  final VerificationMeta _valueMeta = const VerificationMeta('value');
-  GeneratedRealColumn _value;
-  @override
-  GeneratedRealColumn get value => _value ??= _constructValue();
-  GeneratedRealColumn _constructValue() {
-    return GeneratedRealColumn(
-      'value',
-      $tableName,
-      true,
-    );
-  }
-
-  @override
-  List<GeneratedColumn> get $columns =>
-      [id, eventId, startTime, endTime, value];
-  @override
-  $RecordsTable get asDslTable => this;
-  @override
-  String get $tableName => _alias ?? 'records';
-  @override
-  final String actualTableName = 'records';
-  @override
-  VerificationContext validateIntegrity(Insertable<Record> instance,
-      {bool isInserting = false}) {
-    final context = VerificationContext();
-    final data = instance.toColumns(true);
-    if (data.containsKey('id')) {
-      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id'], _idMeta));
-    }
-    if (data.containsKey('event_id')) {
-      context.handle(_eventIdMeta,
-          eventId.isAcceptableOrUnknown(data['event_id'], _eventIdMeta));
-    } else if (isInserting) {
-      context.missing(_eventIdMeta);
-    }
-    if (data.containsKey('start_time')) {
-      context.handle(_startTimeMeta,
-          startTime.isAcceptableOrUnknown(data['start_time'], _startTimeMeta));
-    }
-    if (data.containsKey('end_time')) {
-      context.handle(_endTimeMeta,
-          endTime.isAcceptableOrUnknown(data['end_time'], _endTimeMeta));
-    }
-    if (data.containsKey('value')) {
-      context.handle(
-          _valueMeta, value.isAcceptableOrUnknown(data['value'], _valueMeta));
-    }
-    return context;
-  }
-
-  @override
-  Set<GeneratedColumn> get $primaryKey => {id};
-  @override
-  Record map(Map<String, dynamic> data, {String tablePrefix}) {
-    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : null;
-    return Record.fromData(data, _db, prefix: effectivePrefix);
-  }
-
-  @override
-  $RecordsTable createAlias(String alias) {
-    return $RecordsTable(_db, alias);
-  }
-}
-
 class Unit extends DataClass implements Insertable<Unit> {
   final int id;
   final String name;
@@ -988,16 +1212,275 @@ class $UnitsTable extends Units with TableInfo<$UnitsTable, Unit> {
   }
 }
 
+class StepOffsetData extends DataClass implements Insertable<StepOffsetData> {
+  final int id;
+  final int step;
+  final DateTime time;
+  StepOffsetData({@required this.id, @required this.step, @required this.time});
+  factory StepOffsetData.fromData(
+      Map<String, dynamic> data, GeneratedDatabase db,
+      {String prefix}) {
+    final effectivePrefix = prefix ?? '';
+    final intType = db.typeSystem.forDartType<int>();
+    final dateTimeType = db.typeSystem.forDartType<DateTime>();
+    return StepOffsetData(
+      id: intType.mapFromDatabaseResponse(data['${effectivePrefix}id']),
+      step: intType.mapFromDatabaseResponse(data['${effectivePrefix}step']),
+      time:
+          dateTimeType.mapFromDatabaseResponse(data['${effectivePrefix}time']),
+    );
+  }
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (!nullToAbsent || id != null) {
+      map['id'] = Variable<int>(id);
+    }
+    if (!nullToAbsent || step != null) {
+      map['step'] = Variable<int>(step);
+    }
+    if (!nullToAbsent || time != null) {
+      map['time'] = Variable<DateTime>(time);
+    }
+    return map;
+  }
+
+  StepOffsetCompanion toCompanion(bool nullToAbsent) {
+    return StepOffsetCompanion(
+      id: id == null && nullToAbsent ? const Value.absent() : Value(id),
+      step: step == null && nullToAbsent ? const Value.absent() : Value(step),
+      time: time == null && nullToAbsent ? const Value.absent() : Value(time),
+    );
+  }
+
+  factory StepOffsetData.fromJson(Map<String, dynamic> json,
+      {ValueSerializer serializer}) {
+    serializer ??= moorRuntimeOptions.defaultSerializer;
+    return StepOffsetData(
+      id: serializer.fromJson<int>(json['id']),
+      step: serializer.fromJson<int>(json['step']),
+      time: serializer.fromJson<DateTime>(json['time']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer serializer}) {
+    serializer ??= moorRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<int>(id),
+      'step': serializer.toJson<int>(step),
+      'time': serializer.toJson<DateTime>(time),
+    };
+  }
+
+  StepOffsetData copyWith({int id, int step, DateTime time}) => StepOffsetData(
+        id: id ?? this.id,
+        step: step ?? this.step,
+        time: time ?? this.time,
+      );
+  @override
+  String toString() {
+    return (StringBuffer('StepOffsetData(')
+          ..write('id: $id, ')
+          ..write('step: $step, ')
+          ..write('time: $time')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode =>
+      $mrjf($mrjc(id.hashCode, $mrjc(step.hashCode, time.hashCode)));
+  @override
+  bool operator ==(dynamic other) =>
+      identical(this, other) ||
+      (other is StepOffsetData &&
+          other.id == this.id &&
+          other.step == this.step &&
+          other.time == this.time);
+}
+
+class StepOffsetCompanion extends UpdateCompanion<StepOffsetData> {
+  final Value<int> id;
+  final Value<int> step;
+  final Value<DateTime> time;
+  const StepOffsetCompanion({
+    this.id = const Value.absent(),
+    this.step = const Value.absent(),
+    this.time = const Value.absent(),
+  });
+  StepOffsetCompanion.insert({
+    @required int id,
+    this.step = const Value.absent(),
+    @required DateTime time,
+  })  : id = Value(id),
+        time = Value(time);
+  static Insertable<StepOffsetData> custom({
+    Expression<int> id,
+    Expression<int> step,
+    Expression<DateTime> time,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (step != null) 'step': step,
+      if (time != null) 'time': time,
+    });
+  }
+
+  StepOffsetCompanion copyWith(
+      {Value<int> id, Value<int> step, Value<DateTime> time}) {
+    return StepOffsetCompanion(
+      id: id ?? this.id,
+      step: step ?? this.step,
+      time: time ?? this.time,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<int>(id.value);
+    }
+    if (step.present) {
+      map['step'] = Variable<int>(step.value);
+    }
+    if (time.present) {
+      map['time'] = Variable<DateTime>(time.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('StepOffsetCompanion(')
+          ..write('id: $id, ')
+          ..write('step: $step, ')
+          ..write('time: $time')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class $StepOffsetTable extends StepOffset
+    with TableInfo<$StepOffsetTable, StepOffsetData> {
+  final GeneratedDatabase _db;
+  final String _alias;
+  $StepOffsetTable(this._db, [this._alias]);
+  final VerificationMeta _idMeta = const VerificationMeta('id');
+  GeneratedIntColumn _id;
+  @override
+  GeneratedIntColumn get id => _id ??= _constructId();
+  GeneratedIntColumn _constructId() {
+    return GeneratedIntColumn(
+      'id',
+      $tableName,
+      false,
+    );
+  }
+
+  final VerificationMeta _stepMeta = const VerificationMeta('step');
+  GeneratedIntColumn _step;
+  @override
+  GeneratedIntColumn get step => _step ??= _constructStep();
+  GeneratedIntColumn _constructStep() {
+    return GeneratedIntColumn('step', $tableName, false,
+        defaultValue: Constant(0));
+  }
+
+  final VerificationMeta _timeMeta = const VerificationMeta('time');
+  GeneratedDateTimeColumn _time;
+  @override
+  GeneratedDateTimeColumn get time => _time ??= _constructTime();
+  GeneratedDateTimeColumn _constructTime() {
+    return GeneratedDateTimeColumn(
+      'time',
+      $tableName,
+      false,
+    );
+  }
+
+  @override
+  List<GeneratedColumn> get $columns => [id, step, time];
+  @override
+  $StepOffsetTable get asDslTable => this;
+  @override
+  String get $tableName => _alias ?? 'step_offset';
+  @override
+  final String actualTableName = 'step_offset';
+  @override
+  VerificationContext validateIntegrity(Insertable<StepOffsetData> instance,
+      {bool isInserting = false}) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id'], _idMeta));
+    } else if (isInserting) {
+      context.missing(_idMeta);
+    }
+    if (data.containsKey('step')) {
+      context.handle(
+          _stepMeta, step.isAcceptableOrUnknown(data['step'], _stepMeta));
+    }
+    if (data.containsKey('time')) {
+      context.handle(
+          _timeMeta, time.isAcceptableOrUnknown(data['time'], _timeMeta));
+    } else if (isInserting) {
+      context.missing(_timeMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => <GeneratedColumn>{};
+  @override
+  StepOffsetData map(Map<String, dynamic> data, {String tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : null;
+    return StepOffsetData.fromData(data, _db, prefix: effectivePrefix);
+  }
+
+  @override
+  $StepOffsetTable createAlias(String alias) {
+    return $StepOffsetTable(_db, alias);
+  }
+}
+
 abstract class _$AppDatabase extends GeneratedDatabase {
   _$AppDatabase(QueryExecutor e) : super(SqlTypeSystem.defaultInstance, e);
-  $EventsTable _events;
-  $EventsTable get events => _events ??= $EventsTable(this);
+  $StepsTable _steps;
+  $StepsTable get steps => _steps ??= $StepsTable(this);
+  Index _stepTime;
+  Index get stepTime => _stepTime ??=
+      Index('step_time', 'CREATE INDEX step_time ON steps(time);');
   $RecordsTable _records;
   $RecordsTable get records => _records ??= $RecordsTable(this);
+  Index _recordsEndTime;
+  Index get recordsEndTime => _recordsEndTime ??= Index('records_end_time',
+      'CREATE INDEX records_end_time ON records(end_time);');
+  Index _recordsStartTime;
+  Index get recordsStartTime => _recordsStartTime ??= Index(
+      'records_start_time',
+      'CREATE INDEX records_start_time ON records(start_time);');
+  Index _recordsEventId;
+  Index get recordsEventId => _recordsEventId ??= Index('records_event_id',
+      'CREATE INDEX records_event_id ON records(event_id);');
+  $EventsTable _events;
+  $EventsTable get events => _events ??= $EventsTable(this);
   $UnitsTable _units;
   $UnitsTable get units => _units ??= $UnitsTable(this);
+  $StepOffsetTable _stepOffset;
+  $StepOffsetTable get stepOffset => _stepOffset ??= $StepOffsetTable(this);
   @override
   Iterable<TableInfo> get allTables => allSchemaEntities.whereType<TableInfo>();
   @override
-  List<DatabaseSchemaEntity> get allSchemaEntities => [events, records, units];
+  List<DatabaseSchemaEntity> get allSchemaEntities => [
+        steps,
+        stepTime,
+        records,
+        recordsEndTime,
+        recordsStartTime,
+        recordsEventId,
+        events,
+        units,
+        stepOffset
+      ];
 }
