@@ -106,18 +106,19 @@ class WeekTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     // Map<int, Color> colorMap = HeatMapDataHolder.of(context).setting.colorMap;
-    Map<DateTime, int> date2level = HeatMapDataHolder.of(context).date2level;
     var setting = HeatMapDataHolder.of(context).setting;
     // double tileSize = HeatMapDataHolder.of(context).setting.dayTileSize;
 
     List<Widget> days = []; //要给DayTile的颜色
     int start = dateRange.start.weekday % 7;
     int end = dateRange.end.weekday % 7;
-
+    int skipped = 0;
     for (int i = 0; i < 7; i++) {
       if (start <= i && i <= end) {
-        days.add(DayTile(date: dateRange.start.add(Duration(days: i))));
+        days.add(
+            DayTile(date: dateRange.start.add(Duration(days: i - skipped))));
       } else {
+        skipped++;
         days.add(DayTile(date: nilTime));
       }
     }

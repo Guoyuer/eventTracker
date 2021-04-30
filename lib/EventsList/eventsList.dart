@@ -131,7 +131,6 @@ class _EventTileState extends State<EventTile>
     BaseEventDisplayModel event = EventDataHolder.of(context).event;
     Widget eventInfo;
     if (event is TimingEventDisplayModel) {
-      String sumTimeStr;
       String sumValStr;
       //TimingEvent
       var data = event;
@@ -139,8 +138,11 @@ class _EventTileState extends State<EventTile>
         //关闭动画
         _controller.reset();
         //inactive，显示累计时间和值(if有单位)
-        String sumTimeStr = formatDuration(data.sumTime);
-        sumTimeStr = "已进行$sumTimeStr";
+        String sumTimeStr = "关心时长";
+        if (data.sumTime.inMicroseconds != 0) {
+          sumTimeStr = formatDuration(data.sumTime);
+          sumTimeStr = "已进行$sumTimeStr";
+        }
 
         String unit = data.unit;
         if (data.unit != null && data.sumVal != 0) {

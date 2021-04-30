@@ -100,7 +100,8 @@ class _MainPagesState extends State<MainPages> {
         ],
       ),
       body: NotificationListener<ReloadEventsNotification>(
-        child: IndexedStack(children: _children, index: _selectedIndex),
+        // child: IndexedStack(children: _children, index: _selectedIndex),
+        child: _children[_selectedIndex],
         onNotification: (notification) {
           setState(() {
             _children.removeAt(0);

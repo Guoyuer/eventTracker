@@ -23,6 +23,7 @@ Future<String> inputValDialog(
                   child: TextField(
                 controller: _c,
                 decoration: InputDecoration(hintText: "?"),
+                textAlign: TextAlign.center,
               )),
               Text(unit),
             ],

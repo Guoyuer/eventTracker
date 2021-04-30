@@ -32,7 +32,7 @@ class Events extends Table {
   //冗余信息，加速列表显示
   RealColumn get sumVal => real().withDefault(Constant(0))();
 
-  RealColumn get sumTime => real()
+  RealColumn get sumTime => real().nullable()
       .withDefault(Constant(0)) // 对于TimingEvent以秒的形式记录总时间，对于PlainEvent则记录次数
       .map(const DurationConverter())();
 }

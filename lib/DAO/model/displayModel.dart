@@ -1,10 +1,14 @@
-
 part of '../base.dart';
+
 class BaseEventDisplayModel {
   int id; // 事件id
   String name; // 事件名称
   String unit; // 事件单位（optional） 若有单位，则val有值，需要显示总量
-  BaseEventDisplayModel(this.id, this.name, [this.unit]);
+  String description;
+  int lastRecordId;
+
+  BaseEventDisplayModel(this.id, this.name,
+      [this.unit, this.description, this.lastRecordId]);
 }
 
 class PlainEventDisplayModel extends BaseEventDisplayModel {
@@ -14,8 +18,8 @@ class PlainEventDisplayModel extends BaseEventDisplayModel {
   EventStatus get status => EventStatus.plain;
 
   PlainEventDisplayModel(int id, String name, String unit, this.time,
-      [this.sumVal])
-      : super(id, name, unit);
+      [this.sumVal, String description, int lastRecordId])
+      : super(id, name, unit, description, lastRecordId);
 }
 
 class TimingEventDisplayModel extends BaseEventDisplayModel {
@@ -33,6 +37,6 @@ class TimingEventDisplayModel extends BaseEventDisplayModel {
   //Active时就没必要获取总时间了
   TimingEventDisplayModel(
       int id, String name, String unit, this.isActive, this.sumTime,
-      [this.startTime, this.sumVal])
-      : super(id, name, unit);
+      [this.startTime, this.sumVal, String description, int lastRecordId])
+      : super(id, name, unit, description, lastRecordId);
 }

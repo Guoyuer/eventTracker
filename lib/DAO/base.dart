@@ -269,15 +269,22 @@ class AppDatabase extends _$AppDatabase {
               record.startTime,
               rawEvent.sumVal);
         } else {
-          return TimingEventDisplayModel(rawEvent.id, rawEvent.name,
-              rawEvent.unit, false, rawEvent.sumTime, null, rawEvent.sumVal);
+          return TimingEventDisplayModel(
+              rawEvent.id,
+              rawEvent.name,
+              rawEvent.unit,
+              false,
+              rawEvent.sumTime,
+              null,
+              rawEvent.sumVal,
+              rawEvent.description);
         }
       }
     }
 
     Future<PlainEventDisplayModel> plainEventProcessor(Event rawEvent) async {
       return PlainEventDisplayModel(rawEvent.id, rawEvent.name, rawEvent.unit,
-          rawEvent.sumTime.inSeconds, rawEvent.sumVal);
+          rawEvent.sumTime.inSeconds, rawEvent.sumVal, rawEvent.description);
     }
 
     if (rawEvent.careTime)

@@ -68,6 +68,157 @@ class _EventDetailsState extends State<EventDetails> {
   @override
   Widget build(BuildContext context) {
     Map<DateTime, double> data = {};
+    List<Widget> listChildren = [];
+
+    if (widget.event.description == null) {
+      listChildren.add(ListTile(title: Text("无项目描述")));
+    } else {
+      listChildren.add(ListTile(title: Text(widget.event.description)));
+    }
+
+    ///前三项紧密关联，共用一个FutureBuilder
+    if (widget.event.lastRecordId != null) {
+      listChildren.add(FutureBuilder<List<Record>>(
+          future: _records,
+          builder: (ctx, snapshot) {
+            List<Record> records = snapshot.data;
+            switch (snapshot.connectionState) {
+              case ConnectionState.done:
+                if (records.isEmpty) {
+                } else {}
+                DateTimeRange range;
+                if (widget.event is TimingEventDisplayModel) {
+                  range = DateTimeRange(
+                      start: getDate(records[0].startTime),
+                      end: getDate(records.last.startTime));
+                  if (getSelected(isSelected) == 0) {
+                    //得到时长统计信息
+                    toolTipUnit = "分钟";
+                    Map<DateTime, Duration> tmp = {};
+                    records.forEach((record) {
+                      var date = getDate(record.startTime);
+                      if (tmp.containsKey(date)) {
+                        tmp[date] +=
+                            record.endTime.difference(record.startTime);
+                      } else {
+                        tmp[date] = record.endTime.difference(record.startTime);
+                      }
+                    });
+                    tmp.forEach((key, value) {
+                      data[key] = value.inMinutes.toDouble();
+                    }); //转换为数值
+                  } else {
+                    //得到物理量统计信息
+                    toolTipUnit = widget.event.unit;
+                    records.forEach((record) {
+                      var date = getDate(record.startTime);
+                      if (data.containsKey(date)) {
+                        data[date] += record.value;
+                      } else {
+                        data[date] = record.value;
+                      }
+                    });
+                  }
+                } else {
+                  //plain
+                  range = DateTimeRange(
+                      start: getDate(records[0].endTime),
+                      end: getDate(records.last.endTime));
+                  if (getSelected(isSelected) == 0) {
+                    toolTipUnit = "次数";
+                    //得到次数统计信息
+                    records.forEach((record) {
+                      var date = getDate(record.endTime); //因为没有startTime
+                      if (data.containsKey(date)) {
+                        data[date] += 1;
+                      } else {
+                        data[date] = 1;
+                      } //转换为数值
+                    });
+                  } else {
+                    //得到数值统计信息
+                    toolTipUnit = widget.event.unit;
+                    records.forEach((record) {
+                      var date = getDate(record.endTime); //因为没有startTime
+                      if (data.containsKey(date)) {
+                        data[date] += record.value;
+                      } else {
+                        data[date] = record.value;
+                      } //转换为数值
+                    });
+                  }
+                }
+                List<Widget> toggleChildren = [];
+                toggleTexts.forEach((element) {
+                  toggleChildren.add(Text(element));
+                });
+                return Column(
+                  // shrinkWrap: true,
+                  // scrollDirection: Axis.vertical,
+                  children: [
+                    Center(
+                        child: Text(
+                      "统计数据 - " + toggleTexts[getSelected(isSelected)],
+                      style:
+                          TextStyle(fontWeight: FontWeight.bold, fontSize: 20),
+                    )),
+                    Container(
+                      margin: EdgeInsets.symmetric(horizontal: 5),
+                      width: double.infinity,
+                      child: SingleChildScrollView(
+                        scrollDirection: Axis.horizontal,
+                        child: HeatMapCalendar(
+                          dateRange: range,
+                          input: data,
+                          unit: toolTipUnit,
+                        ),
+                      ),
+                    ),
+                    Align(
+                        alignment: Alignment.centerRight,
+                        child: Container(
+                            margin: EdgeInsets.only(right: 10),
+                            child: ToggleButtons(
+                                children: toggleChildren,
+                                isSelected: isSelected,
+                                onPressed: (int index) {
+                                  if (index != getSelected(isSelected)) {
+                                    for (int i = 0;
+                                        i < isSelected.length;
+                                        i++) {
+                                      setState(() {
+                                        if (i == index) {
+                                          isSelected[i] = true;
+                                        } else {
+                                          isSelected[i] = false;
+                                        }
+                                      });
+                                    }
+                                  }
+                                }))),
+                  ],
+                );
+                break;
+              default:
+                return loadingScreen();
+            }
+          }));
+      //显示月份records则再用一个FutureBuilder
+      listChildren.add(FutureBuilder<List<Record>>(
+          future: _records,
+          builder: (ctx, snapshot) {
+            List<Record> records = snapshot.data;
+            switch (snapshot.connectionState) {
+              case ConnectionState.done:
+                return getMonthRecordsWidgets(
+                    records, monthOfRecords, widget.event);
+              default:
+                return loadingScreen();
+            }
+          }));
+    } else {
+      listChildren.add(Text("暂无记录"));
+    }
     return Scaffold(
         appBar: AppBar(
           actions: [
@@ -109,149 +260,7 @@ class _EventDetailsState extends State<EventDetails> {
               });
               return true;
             },
-            child: ListView(children: [
-              ///前三项紧密关联，所以共用一个FutureBuilder
-              FutureBuilder<List<Record>>(
-                  future: _records,
-                  builder: (ctx, snapshot) {
-                    List<Record> records = snapshot.data;
-                    switch (snapshot.connectionState) {
-                      case ConnectionState.done:
-                        DateTimeRange range;
-                        if (widget.event is TimingEventDisplayModel) {
-                          range = DateTimeRange(
-                              start: getDate(records[0].startTime),
-                              end: getDate(records.last.startTime));
-                          if (getSelected(isSelected) == 0) {
-                            //得到时长统计信息
-                            toolTipUnit = "分钟";
-                            Map<DateTime, Duration> tmp = {};
-                            records.forEach((record) {
-                              var date = getDate(record.startTime);
-                              if (tmp.containsKey(date)) {
-                                tmp[date] +=
-                                    record.endTime.difference(record.startTime);
-                              } else {
-                                tmp[date] =
-                                    record.endTime.difference(record.startTime);
-                              }
-                            });
-                            tmp.forEach((key, value) {
-                              data[key] = value.inMinutes.toDouble();
-                            }); //转换为数值
-                          } else {
-                            //得到物理量统计信息
-                            toolTipUnit = widget.event.unit;
-                            records.forEach((record) {
-                              var date = getDate(record.startTime);
-                              if (data.containsKey(date)) {
-                                data[date] += record.value;
-                              } else {
-                                data[date] = record.value;
-                              }
-                            });
-                          }
-                        } else {
-                          //plain
-                          range = DateTimeRange(
-                              start: getDate(records[0].endTime),
-                              end: getDate(records.last.endTime));
-                          if (getSelected(isSelected) == 0) {
-                            toolTipUnit = "次数";
-                            //得到次数统计信息
-                            records.forEach((record) {
-                              var date =
-                                  getDate(record.endTime); //因为没有startTime
-                              if (data.containsKey(date)) {
-                                data[date] += 1;
-                              } else {
-                                data[date] = 1;
-                              } //转换为数值
-                            });
-                          } else {
-                            //得到数值统计信息
-                            toolTipUnit = widget.event.unit;
-                            records.forEach((record) {
-                              var date =
-                                  getDate(record.endTime); //因为没有startTime
-                              if (data.containsKey(date)) {
-                                data[date] += record.value;
-                              } else {
-                                data[date] = record.value;
-                              } //转换为数值
-                            });
-                          }
-                        }
-                        List<Widget> toggleChildren = [];
-                        toggleTexts.forEach((element) {
-                          toggleChildren.add(Text(element));
-                        });
-                        return Column(
-                          // shrinkWrap: true,
-                          // scrollDirection: Axis.vertical,
-                          children: [
-                            Center(
-                                child: Text(
-                              "统计数据 - " + toggleTexts[getSelected(isSelected)],
-                              style: TextStyle(
-                                  fontWeight: FontWeight.bold, fontSize: 20),
-                            )),
-                            Container(
-                              margin: EdgeInsets.symmetric(horizontal: 5),
-                              width: double.infinity,
-                              child: SingleChildScrollView(
-                                scrollDirection: Axis.horizontal,
-                                child: HeatMapCalendar(
-                                  dateRange: range,
-                                  input: data,
-                                  unit: toolTipUnit,
-                                ),
-                              ),
-                            ),
-                            Align(
-                                alignment: Alignment.centerRight,
-                                child: Container(
-                                    margin: EdgeInsets.only(right: 10),
-                                    child: ToggleButtons(
-                                        children: toggleChildren,
-                                        isSelected: isSelected,
-                                        onPressed: (int index) {
-                                          if (index !=
-                                              getSelected(isSelected)) {
-                                            for (int i = 0;
-                                                i < isSelected.length;
-                                                i++) {
-                                              setState(() {
-                                                if (i == index) {
-                                                  isSelected[i] = true;
-                                                } else {
-                                                  isSelected[i] = false;
-                                                }
-                                              });
-                                            }
-                                          }
-                                        }))),
-                          ],
-                        );
-                        break;
-                      default:
-                        return loadingScreen();
-                    }
-                  }),
-              //显示月份records则再用一个FutureBuilder
-              FutureBuilder<List<Record>>(
-                  future: _records,
-                  builder: (ctx, snapshot) {
-                    List<Record> records = snapshot.data;
-                    switch (snapshot.connectionState) {
-                      case ConnectionState.done:
-                        return getMonthRecordsWidgets(
-                            records, monthOfRecords, widget.event);
-                      default:
-                        return loadingScreen();
-                    }
-                  }),
-            ])));
+            child: ListView(children: listChildren)));
   }
 }
 
