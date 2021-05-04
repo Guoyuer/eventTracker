@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_event_tracker/settingPage.dart';
 import 'StepCount/PedometerPage.dart';
 import 'EventsList/eventsList.dart';
+import 'common/customWidget.dart';
 import 'eventEditor.dart';
 import 'EventsDetails/eventDetails.dart';
 import 'common/util.dart';
@@ -14,6 +15,7 @@ import 'package:path/path.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:path_provider/path_provider.dart';
 import 'addFakeData.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 
 // import 'package:workmanager/workmanager.dart';
 import 'package:shared_preferences/shared_preferences.dart';

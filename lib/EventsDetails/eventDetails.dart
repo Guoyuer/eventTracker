@@ -209,9 +209,9 @@ class _EventDetailsState extends State<EventDetails> {
       listChildren.add(FutureBuilder<List<Record>>(
           future: _records,
           builder: (ctx, snapshot) {
-            List<Record> records = snapshot.data!;
             switch (snapshot.connectionState) {
               case ConnectionState.done:
+                List<Record> records = snapshot.data!;
                 return getMonthRecordsWidgets(
                     records, monthOfRecords, widget.event);
               default:

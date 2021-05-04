@@ -230,14 +230,13 @@ class AppDatabase extends _$AppDatabase {
   }
 
   ///返回成功或失败
-  Future<int> addEventInDB(EventsCompanion event) async {
-    try {
-      return into(events).insert(event);
-    } catch (err) {
-      print(err);
+  Future addEventInDB(EventsCompanion event) async {
+
+    await into(events).insert(event)
+        .then((value) {
+    }).catchError((err) {
       showToast("创建项目失败，可能是因为重名");
-      return -1;
-    }
+    });
   }
 
   Future deleteEvent(int eventId) async {
@@ -252,39 +251,49 @@ class AppDatabase extends _$AppDatabase {
   Future _eventProcessor(Event rawEvent) async {
     // print(rawEvent);
     Future<TimingEventDisplayModel> timingEventProcessor(Event rawEvent) async {
+      bool isActive;
+      Duration? sumTime;
+      DateTime? startTime;
+      double? sumVal;
       if (rawEvent.lastRecordId == null) {
         // 当前还无记录（新创建且未开始的的event）
-        return TimingEventDisplayModel(rawEvent.id, rawEvent.name,
-            rawEvent.unit, false, Duration(seconds: 0), null, 0);
+        isActive = false;
+        sumTime = Duration(seconds: 0);
+        startTime = null;
+        sumVal = 0;
       } else {
         //当前已有记录
         var record = await getRecordById(rawEvent.lastRecordId!);
+        startTime = record.startTime;
+        sumVal = rawEvent.sumVal;
+        sumTime = rawEvent.sumTime;
         if (record.endTime == null) {
-          return TimingEventDisplayModel(
-              rawEvent.id,
-              rawEvent.name,
-              rawEvent.unit,
-              true,
-              rawEvent.sumTime,
-              record.startTime,
-              rawEvent.sumVal);
+          isActive = true;
         } else {
-          return TimingEventDisplayModel(
-              rawEvent.id,
-              rawEvent.name,
-              rawEvent.unit,
-              false,
-              rawEvent.sumTime,
-              null,
-              rawEvent.sumVal,
-              rawEvent.description);
+          isActive = false;
         }
       }
+      return TimingEventDisplayModel(
+          rawEvent.id,
+          rawEvent.name,
+          rawEvent.unit,
+          isActive,
+          sumTime,
+          startTime,
+          sumVal,
+          rawEvent.description,
+          rawEvent.lastRecordId);
     }
 
     Future<PlainEventDisplayModel> plainEventProcessor(Event rawEvent) async {
-      return PlainEventDisplayModel(rawEvent.id, rawEvent.name, rawEvent.unit,
-          rawEvent.sumTime.inSeconds, rawEvent.sumVal, rawEvent.description);
+      return PlainEventDisplayModel(
+          rawEvent.id,
+          rawEvent.name,
+          rawEvent.unit,
+          rawEvent.sumTime.inSeconds,
+          rawEvent.sumVal,
+          rawEvent.description,
+          rawEvent.lastRecordId);
     }
 
     if (rawEvent.careTime)
@@ -333,7 +342,7 @@ class AppDatabase extends _$AppDatabase {
       int id = tmp.data['id'];
       return (select(steps)..where((tbl) => tbl.id.equals(id)))
           .getSingleOrNull();
-    }else{
+    } else {
       return null;
     }
   }
