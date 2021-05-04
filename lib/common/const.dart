@@ -16,7 +16,7 @@ class ReloadEventsNotification extends Notification {
 class MonthTouchedNotification extends Notification {
   final DateTime month;
 
-  MonthTouchedNotification({this.month});
+  MonthTouchedNotification({required this.month});
 }
 
 const Map<int, Color> heatmapColorMap = {

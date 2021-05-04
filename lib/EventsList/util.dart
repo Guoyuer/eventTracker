@@ -9,7 +9,7 @@ void startTimingRecord(BuildContext context) {
       .then((_) => ReloadEventsNotification().dispatch(context));
 }
 
-Future<String> inputValDialog(
+Future<String?> inputValDialog(
     BuildContext ctx, TextEditingController _c, String unit) {
   return showDialog<String>(
       context: ctx,
@@ -50,12 +50,12 @@ Future addPlainRecord(BuildContext context) async {
   //判断是否有unit
   TextEditingController _c = TextEditingController();
 
-  String unit = await DBHandle().db.getEventUnit(eventId);
+  String? unit = await DBHandle().db.getEventUnit(eventId);
 
   double val = 0;
   if (unit != null) {
     //有单位
-    String valStr = await inputValDialog(context, _c, unit);
+    String? valStr = await inputValDialog(context, _c, unit);
     if (valStr == null) return; // 对话框点了取消，不记录
     if (valStr.isNotEmpty) {
       val = double.parse(valStr);
@@ -109,10 +109,10 @@ Future stopTimingRecord(BuildContext context) async {
     }
   } else {
     //该任务距开始超过5s，进行正常停止操作
-    String unit = await DBHandle().db.getEventUnit(eventId);
+    String? unit = await DBHandle().db.getEventUnit(eventId);
     double val = 0;
     if (unit != null) {
-      String valStr = await inputValDialog(context, _c, unit);
+      String? valStr = await inputValDialog(context, _c, unit);
       if (valStr == null) return;
       if (valStr.isNotEmpty) val = double.parse(valStr);
     }

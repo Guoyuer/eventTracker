@@ -19,7 +19,7 @@ import 'package:duration/duration.dart';
 part 'util.dart';
 
 class EventList extends StatefulWidget {
-  EventList({Key key}) : super(key: key);
+  EventList({Key? key}) : super(key: key);
 
   @override
   _EventListState createState() => _EventListState();
@@ -27,8 +27,7 @@ class EventList extends StatefulWidget {
 
 class _EventListState extends State<EventList> {
   // EventsDbProvider db = EventsDbProvider();
-  Future<List<BaseEventDisplayModel>> _events;
-  String a;
+  late Future<List<BaseEventDisplayModel>> _events;
 
   @override
   void initState() {
@@ -41,9 +40,9 @@ class _EventListState extends State<EventList> {
     return FutureBuilder<List<BaseEventDisplayModel>>(
         future: _events,
         builder: (ctx, snapshot) {
-          List<BaseEventDisplayModel> events = snapshot.data;
           switch (snapshot.connectionState) {
             case ConnectionState.done:
+              List<BaseEventDisplayModel> events = snapshot.data!;
               return ListView.builder(
                   shrinkWrap: true,
                   itemCount: events.length,
@@ -92,7 +91,8 @@ class EventTileButton extends StatelessWidget {
 class EventDataHolder extends InheritedWidget {
   final BaseEventDisplayModel event;
 
-  EventDataHolder({this.event, Widget child}) : super(child: child);
+  EventDataHolder({required this.event, required Widget child})
+      : super(child: child);
 
   @override
   bool updateShouldNotify(EventDataHolder oldWidget) {
@@ -100,7 +100,7 @@ class EventDataHolder extends InheritedWidget {
   }
 
   static EventDataHolder of(BuildContext context) {
-    return context.dependOnInheritedWidgetOfExactType<EventDataHolder>();
+    return context.dependOnInheritedWidgetOfExactType<EventDataHolder>()!;
   }
 }
 
@@ -111,9 +111,9 @@ class EventTile extends StatefulWidget {
 
 class _EventTileState extends State<EventTile>
     with SingleTickerProviderStateMixin {
-  Animation<double> animation;
-  AnimationController _controller;
-  int time; //渐变时长
+  late final Animation<double> animation;
+  late final AnimationController _controller;
+  late final int time; //渐变时长
   initState() {
     super.initState();
     time = 1;
@@ -138,15 +138,15 @@ class _EventTileState extends State<EventTile>
         //关闭动画
         _controller.reset();
         //inactive，显示累计时间和值(if有单位)
-        String sumTimeStr = "关心时长";
+        String sumTimeStr = "尚未开始";
         if (data.sumTime.inMicroseconds != 0) {
           sumTimeStr = formatDuration(data.sumTime);
-          sumTimeStr = "已进行$sumTimeStr";
+          sumTimeStr = "共进行$sumTimeStr";
         }
 
-        String unit = data.unit;
+        String? unit = data.unit;
         if (data.unit != null && data.sumVal != 0) {
-          int val = data.sumVal.toInt();
+          int val = data.sumVal!.toInt();
           sumValStr = "累计：$val $unit";
           eventInfo = Column(children: [
             Align(
@@ -167,19 +167,24 @@ class _EventTileState extends State<EventTile>
               ));
         }
       } else {
-        eventInfo = LapsedTimeStr(startTime: data.startTime);
+        eventInfo = LapsedTimeStr(startTime: data.startTime!);
       }
     } else {
       _controller.reset();
       //PlainEvent
       var data = (event as PlainEventDisplayModel);
       int time = data.time;
-      String sumTimeStr = "已进行 $time 次";
-      String sumValStr = "已进行 $time 次";
-      String unit = data.unit;
+
+      String sumTimeStr;
+      if (time == 0) {
+        sumTimeStr = "尚未开始";
+      } else {
+        sumTimeStr = "已进行 $time 次";
+      }
+      String? unit = data.unit;
       if (data.unit != null && data.sumVal != 0) {
-        int val = data.sumVal.toInt();
-        sumValStr = "累计：$val $unit";
+        int val = data.sumVal!.toInt();
+        String sumValStr = "累计：$val $unit";
         eventInfo = Column(children: [
           Align(
               alignment: Alignment.centerLeft,
@@ -250,15 +255,15 @@ class _EventTileState extends State<EventTile>
 class LapsedTimeStr extends StatefulWidget {
   final DateTime startTime;
 
-  LapsedTimeStr({Key key, this.startTime}) : super(key: key);
+  LapsedTimeStr({Key? key, required this.startTime}) : super(key: key);
 
   @override
   _LapsedTimeStrState createState() => _LapsedTimeStrState();
 }
 
 class _LapsedTimeStrState extends State<LapsedTimeStr> {
-  String str;
-  Timer timer;
+  late String str;
+  late final Timer timer;
 
   @override
   void initState() {

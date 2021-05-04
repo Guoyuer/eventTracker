@@ -17,7 +17,7 @@ class UnitsManager extends StatefulWidget {
 }
 
 class _UnitsManagerState extends State<UnitsManager> {
-  Future<List<Unit>> _units;
+  late Future<List<Unit>> _units;
   TextEditingController controller = TextEditingController();
 
   @override
@@ -32,11 +32,13 @@ class _UnitsManagerState extends State<UnitsManager> {
         future: _units,
         builder: (ctx, snapshot) {
           Widget _body;
-          List<Unit> units = snapshot.data;
-          if (snapshot.hasData) {
-            _body = _buildListView(units);
-          } else {
-            _body = loadingScreen();
+          switch (snapshot.connectionState) {
+            case ConnectionState.done:
+              List<Unit> units = snapshot.data!;
+              _body = _buildListView(units);
+              break;
+            default:
+              _body = loadingScreen();
           }
 
           return Scaffold(

@@ -20,13 +20,14 @@ import 'dart:collection';
 class EventDetailsWrapper extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    BaseEventDisplayModel event = ModalRoute.of(context).settings.arguments;
+    BaseEventDisplayModel event =
+        ModalRoute.of(context)!.settings.arguments as BaseEventDisplayModel;
     return EventDetails(event: event);
   }
 }
 
 class EventDetails extends StatefulWidget {
-  EventDetails({Key key, this.event}) : super(key: key);
+  EventDetails({Key? key, required this.event}) : super(key: key);
   final BaseEventDisplayModel event;
 
   @override
@@ -34,11 +35,11 @@ class EventDetails extends StatefulWidget {
 }
 
 class _EventDetailsState extends State<EventDetails> {
-  Future<List<Record>> _records;
+  Future<List<Record>>? _records;
   AppDatabase db = DBHandle().db;
   List<String> toggleTexts = [];
   List<bool> isSelected = [true];
-  String toolTipUnit;
+  late String toolTipUnit;
 
   DateTime monthOfRecords = nilTime;
 
@@ -52,7 +53,7 @@ class _EventDetailsState extends State<EventDetails> {
       toggleTexts.add("次数");
     }
     if (widget.event.unit != null) {
-      toggleTexts.add(widget.event.unit);
+      toggleTexts.add(widget.event.unit!);
       isSelected.add(false);
     }
   }
@@ -69,11 +70,11 @@ class _EventDetailsState extends State<EventDetails> {
   Widget build(BuildContext context) {
     Map<DateTime, double> data = {};
     List<Widget> listChildren = [];
-
+    listChildren.add(DividerWithText("项目描述"));
     if (widget.event.description == null) {
       listChildren.add(ListTile(title: Text("无项目描述")));
     } else {
-      listChildren.add(ListTile(title: Text(widget.event.description)));
+      listChildren.add(ListTile(title: Text(widget.event.description!)));
     }
 
     ///前三项紧密关联，共用一个FutureBuilder
@@ -81,27 +82,28 @@ class _EventDetailsState extends State<EventDetails> {
       listChildren.add(FutureBuilder<List<Record>>(
           future: _records,
           builder: (ctx, snapshot) {
-            List<Record> records = snapshot.data;
             switch (snapshot.connectionState) {
               case ConnectionState.done:
+                List<Record> records = snapshot.data!;
                 if (records.isEmpty) {
                 } else {}
                 DateTimeRange range;
                 if (widget.event is TimingEventDisplayModel) {
                   range = DateTimeRange(
-                      start: getDate(records[0].startTime),
-                      end: getDate(records.last.startTime));
+                      start: getDate(records[0].startTime!),
+                      end: getDate(records.last.startTime!));
                   if (getSelected(isSelected) == 0) {
                     //得到时长统计信息
                     toolTipUnit = "分钟";
                     Map<DateTime, Duration> tmp = {};
                     records.forEach((record) {
-                      var date = getDate(record.startTime);
-                      if (tmp.containsKey(date)) {
-                        tmp[date] +=
-                            record.endTime.difference(record.startTime);
+                      var date = getDate(record.startTime!);
+                      if (tmp.containsKey(date) && record.endTime != null) {
+                        tmp[date] = tmp[date]! +
+                            record.endTime!.difference(record.startTime!);
                       } else {
-                        tmp[date] = record.endTime.difference(record.startTime);
+                        tmp[date] =
+                            record.endTime!.difference(record.startTime!);
                       }
                     });
                     tmp.forEach((key, value) {
@@ -109,41 +111,41 @@ class _EventDetailsState extends State<EventDetails> {
                     }); //转换为数值
                   } else {
                     //得到物理量统计信息
-                    toolTipUnit = widget.event.unit;
+                    toolTipUnit = widget.event.unit!;
                     records.forEach((record) {
-                      var date = getDate(record.startTime);
+                      var date = getDate(record.startTime!);
                       if (data.containsKey(date)) {
-                        data[date] += record.value;
+                        data[date] = data[date]! + record.value!;
                       } else {
-                        data[date] = record.value;
+                        data[date] = record.value!;
                       }
                     });
                   }
                 } else {
                   //plain
                   range = DateTimeRange(
-                      start: getDate(records[0].endTime),
-                      end: getDate(records.last.endTime));
+                      start: getDate(records[0].endTime!),
+                      end: getDate(records.last.endTime!));
                   if (getSelected(isSelected) == 0) {
                     toolTipUnit = "次数";
                     //得到次数统计信息
                     records.forEach((record) {
-                      var date = getDate(record.endTime); //因为没有startTime
+                      var date = getDate(record.endTime!); //因为没有startTime
                       if (data.containsKey(date)) {
-                        data[date] += 1;
+                        data[date] = data[date]! + 1;
                       } else {
                         data[date] = 1;
                       } //转换为数值
                     });
                   } else {
                     //得到数值统计信息
-                    toolTipUnit = widget.event.unit;
+                    toolTipUnit = widget.event.unit!;
                     records.forEach((record) {
-                      var date = getDate(record.endTime); //因为没有startTime
+                      var date = getDate(record.endTime!); //因为没有startTime
                       if (data.containsKey(date)) {
-                        data[date] += record.value;
+                        data[date] = data[date]! + record.value!;
                       } else {
-                        data[date] = record.value;
+                        data[date] = record.value!;
                       } //转换为数值
                     });
                   }
@@ -207,7 +209,7 @@ class _EventDetailsState extends State<EventDetails> {
       listChildren.add(FutureBuilder<List<Record>>(
           future: _records,
           builder: (ctx, snapshot) {
-            List<Record> records = snapshot.data;
+            List<Record> records = snapshot.data!;
             switch (snapshot.connectionState) {
               case ConnectionState.done:
                 return getMonthRecordsWidgets(
@@ -274,8 +276,8 @@ Widget getMonthRecordsWidgets(
   }
   records = records
       .where((element) =>
-          element.endTime.month == month.month &&
-          element.endTime.year == month.year)
+          element.endTime!.month == month.month &&
+          element.endTime!.year == month.year)
       .toList(); //只保留本月的记录，
 
   // records.sort((a, b) => a.endTime.millisecondsSinceEpoch
@@ -286,13 +288,13 @@ Widget getMonthRecordsWidgets(
   LinkedHashMap<DateTime, List<Record>> recordsOfDays =
       new LinkedHashMap<DateTime, List<Record>>();
   records.forEach((record) {
-    DateTime date = getDate(record.endTime);
+    DateTime date = getDate(record.endTime!);
     if (!recordsOfDays.containsKey(date)) {
       List<Record> tmp = [];
       tmp.add(record);
       recordsOfDays[date] = tmp;
     } else {
-      recordsOfDays[date].add(record);
+      recordsOfDays[date]!.add(record);
     }
   });
   // records = null; //使其被垃圾回收
@@ -302,20 +304,20 @@ Widget getMonthRecordsWidgets(
     List<Widget> eachRecords = [];
     recordsInDay.forEach((element) {
       if (event is TimingEventDisplayModel) {
-        String startTimeStr = DateFormat('kk:mm').format(element.startTime);
-        String endTimeStr = DateFormat('kk:mm').format(element.endTime);
+        String startTimeStr = DateFormat('kk:mm').format(element.startTime!);
+        String endTimeStr = DateFormat('kk:mm').format(element.endTime!);
         if (event.unit != null) {
-          int value = element.value.toInt();
-          String unit = event.unit;
+          int value = element.value!.toInt();
+          String unit = event.unit!;
           eachRecords.add(Text("$startTimeStr ~ $endTimeStr, $value$unit  "));
         } else {
           eachRecords.add(Text("$startTimeStr ~ $endTimeStr  "));
         }
       } else {
-        String endTimeStr = DateFormat('kk:mm').format(element.endTime);
+        String endTimeStr = DateFormat('kk:mm').format(element.endTime!);
         if (event.unit != null) {
-          int value = element.value.toInt();
-          String unit = event.unit;
+          int value = element.value!.toInt();
+          String unit = event.unit!;
           eachRecords.add(Text("$endTimeStr, $value$unit  "));
         } else {
           eachRecords.add(Text("$endTimeStr  "));

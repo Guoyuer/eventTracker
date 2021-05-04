@@ -18,14 +18,14 @@ class _EventEditorState extends State<EventEditor> {
 
   // TextEditingController _eventNameController = new TextEditingController();
   // TextEditingController _eventDiscController = new TextEditingController();
-  Future<List<Unit>> _units;
-  String selectedUnit;
+  late final Future<List<Unit>> _units;
+  String? selectedUnit;
   bool careTime = true;
   final _formKey = new GlobalKey<FormState>();
 
   // Map<String, dynamic> data = Map();
-
-  String name, desc, unit;
+  late String name;
+  String? desc, unit;
 
   @override
   void initState() {
@@ -52,8 +52,8 @@ class _EventEditorState extends State<EventEditor> {
                         }
                         return null;
                       },
-                      onSaved: (String value) {
-                        name = value;
+                      onSaved: (String? value) {
+                        name = value!;
                       },
                       // controller: _eventNameController,
                       autofocus: true,
@@ -62,7 +62,7 @@ class _EventEditorState extends State<EventEditor> {
                           prefixIcon: Icon(Icons.sticky_note_2_rounded)),
                     ),
                     TextFormField(
-                      onSaved: (String value) {
+                      onSaved: (String? value) {
                         desc = value;
                       },
                       // controller: _eventDiscController,
@@ -87,9 +87,9 @@ class _EventEditorState extends State<EventEditor> {
                     FutureBuilder<List<Unit>>(
                         future: _units,
                         builder: (ctx, snapshot) {
-                          List<Unit> units = snapshot.data;
                           switch (snapshot.connectionState) {
                             case ConnectionState.done:
+                              List<Unit> units = snapshot.data!;
                               return ListView.builder(
                                   physics: const NeverScrollableScrollPhysics(),
                                   shrinkWrap: true,
@@ -100,7 +100,7 @@ class _EventEditorState extends State<EventEditor> {
                                         groupValue: selectedUnit,
                                         toggleable: true,
                                         value: units[idx].name,
-                                        onChanged: (String val) {
+                                        onChanged: (String? val) {
                                           setState(() {
                                             selectedUnit = val;
                                           });
@@ -112,8 +112,8 @@ class _EventEditorState extends State<EventEditor> {
                           }
                         }),
                     myRaisedButton(Text("保存"), () {
-                      if (_formKey.currentState.validate()) {
-                        _formKey.currentState.save();
+                      if (_formKey.currentState!.validate()) {
+                        _formKey.currentState!.save();
                         EventsCompanion event = EventsCompanion(
                             name: Value(name),
                             unit: Value(selectedUnit),

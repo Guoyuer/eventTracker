@@ -100,7 +100,7 @@ class AppDatabase extends _$AppDatabase {
     final query = selectOnly(records)
       ..addColumns([records.startTime])
       ..where(records.id.equals(recordId));
-    return query.map((row) => row.read(records.startTime)).getSingle();
+    return query.map((row) => row.read(records.startTime)!).getSingle();
   }
 
   ///得到eventId对应事件的LastRecordId
@@ -108,7 +108,7 @@ class AppDatabase extends _$AppDatabase {
     Event event = await (select(events)
           ..where((event) => event.id.equals(eventId)))
         .getSingle();
-    return event.lastRecordId;
+    return event.lastRecordId!;
   }
 
   ///得到所有的记录
@@ -129,7 +129,7 @@ class AppDatabase extends _$AppDatabase {
       await customUpdate(
           "update events set sum_time = sum_time + 1, last_record_id = $recordId where id = $eventId"); //step 1 更新Events的lastRecordId和sumTime
       if (record.value != Value.absent() && record.value.value != 0) {
-        double val = record.value.value;
+        double val = record.value.value!;
         await customUpdate(
             "update events set sum_val = sum_val + $val where id = $eventId"); //step 2 有值才更新Events的sumVal
       }
@@ -164,7 +164,7 @@ class AppDatabase extends _$AppDatabase {
           .write(EventsCompanion(sumTime: Value(sumTime)));
 
       if (record.value != Value.absent() && record.value.value != 0) {
-        double val = record.value.value;
+        double val = record.value.value!;
         await customUpdate(
             "update events set sum_val = sum_val + $val where id = $eventId");
       }
@@ -175,7 +175,7 @@ class AppDatabase extends _$AppDatabase {
     (delete(records)..where((tbl) => tbl.id.equals(recordId)))
         .go(); //step1 删除recordId对应记录
 
-    Record formerRecord =
+    Record? formerRecord =
         await (select(records) //step2: 在records表里找到对应Event的当前最新记录（即之前的次新记录）
               ..where((tbl) => tbl.eventId.equals(eventId))
               ..orderBy([
@@ -217,12 +217,12 @@ class AppDatabase extends _$AppDatabase {
   //   return query.map((row) => row.read(events.sumVal)).getSingle();
   // }
 
-  Future<String> getEventUnit(int eventId) async {
+  Future<String?> getEventUnit(int eventId) async {
     final query = selectOnly(events)
       ..addColumns([events.unit])
       ..where(events.id.equals(eventId));
 
-    return query.map((row) => row.read(events.unit)).getSingle();
+    return query.map((row) => row.read(events.unit)).getSingleOrNull();
   }
 
   Future<List<Event>> getRawEvents() {
@@ -258,7 +258,7 @@ class AppDatabase extends _$AppDatabase {
             rawEvent.unit, false, Duration(seconds: 0), null, 0);
       } else {
         //当前已有记录
-        var record = await getRecordById(rawEvent.lastRecordId);
+        var record = await getRecordById(rawEvent.lastRecordId!);
         if (record.endTime == null) {
           return TimingEventDisplayModel(
               rawEvent.id,
@@ -305,7 +305,7 @@ class AppDatabase extends _$AppDatabase {
 
 ///////////////////////////////////////steps相关///////////////////////////////////
 ///////////////////offset相关
-  Future<StepOffsetData> getStepOffset() {
+  Future<StepOffsetData?> getStepOffset() {
     return (select(stepOffset)..where((tbl) => tbl.id.equals(1)))
         .getSingleOrNull();
   }
@@ -326,11 +326,16 @@ class AppDatabase extends _$AppDatabase {
         .insert(StepsCompanion(step: Value(step), time: Value(time)));
   }
 
-  Future<Step> getLatestStep() async {
+  Future<Step?> getLatestStep() async {
     var tmp =
         await customSelect("select max(id) as id from steps").getSingleOrNull();
-    int id = tmp.data['id'];
-    return (select(steps)..where((tbl) => tbl.id.equals(id))).getSingleOrNull();
+    if (tmp != null) {
+      int id = tmp.data['id'];
+      return (select(steps)..where((tbl) => tbl.id.equals(id)))
+          .getSingleOrNull();
+    }else{
+      return null;
+    }
   }
 
 ///////////////////step相关

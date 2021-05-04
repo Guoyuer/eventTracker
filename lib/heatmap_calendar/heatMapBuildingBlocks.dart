@@ -169,16 +169,16 @@ Widget emptyDayTile(BuildContext context, double size) {
 class DayTile extends StatelessWidget {
   final DateTime date;
 
-  DayTile({Key key, this.date}) : super(key: key);
+  DayTile({Key? key, required this.date}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     HeatMapSetting setting = HeatMapDataHolder.of(context).setting;
     var date2level = HeatMapDataHolder.of(context).date2level;
     var data = HeatMapDataHolder.of(context).data;
-    String unit = HeatMapDataHolder.of(context).unit;
+    String? unit = HeatMapDataHolder.of(context).unit;
     if (unit == null) unit = "";
-    int level = date2level[date];
+    int level = date2level[date]!;
     String timeStr = DateFormat('yyyy-MM-dd').format(date);
     if (date == nilTime) {
       //占位格子
@@ -187,12 +187,12 @@ class DayTile extends StatelessWidget {
         height: setting.dayTileSize,
         width: setting.dayTileSize,
         margin: EdgeInsets.all(setting.dayTileMargin / 2),
-        decoration: dayDecoration(setting.dayTileSize, setting.colorMap[level]),
+        decoration: dayDecoration(setting.dayTileSize, setting.colorMap[level]!),
       );
     } else {
       String valStr;
       if (data.containsKey(date)) {
-        valStr = data[date].toInt().toString();
+        valStr = data[date]!.toInt().toString();
       } else {
         valStr = "0";
       }
@@ -203,7 +203,7 @@ class DayTile extends StatelessWidget {
             width: setting.dayTileSize,
             margin: EdgeInsets.all(setting.dayTileMargin / 2),
             decoration:
-                dayDecoration(setting.dayTileSize, setting.colorMap[level]),
+                dayDecoration(setting.dayTileSize, setting.colorMap[level]!),
           ),
           message: "日期：$timeStr  值: $valStr $unit");
     }

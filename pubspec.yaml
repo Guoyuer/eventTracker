@@ -18,7 +18,7 @@ publish_to: 'none' # Remove this line if you wish to publish to pub.dev
 version: 1.0.0+1
 
 environment:
-  sdk: ">=2.7.0 <3.0.0"
+  sdk: ">=2.12.0 <3.0.0"
 
 dependencies:
   flutter:
@@ -31,8 +31,10 @@ dependencies:
   intl:
   pedometer:
   #  workmanager:
+  #UI:
   fl_chart:
-  background_fetch:
+  hooks_riverpod:
+  flutter_hooks:
   #  数据库相关↓
   shared_preferences:
   provider:

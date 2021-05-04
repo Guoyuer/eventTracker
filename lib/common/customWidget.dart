@@ -2,10 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_event_tracker/common/const.dart';
 import 'package:flutter_event_tracker/common/util.dart';
 import 'package:sqflite/sqflite.dart';
+import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 
-RaisedButton myRaisedButton(Widget child, Function onPressCallBack,
-    [Function onLongPressCallBack]) {
+RaisedButton myRaisedButton(Widget child, void Function() onPressCallBack,
+    [void Function()? onLongPressCallBack]) {
   return RaisedButton(
       color: Colors.blue,
       highlightColor: Colors.blue[700],
@@ -18,8 +19,8 @@ RaisedButton myRaisedButton(Widget child, Function onPressCallBack,
       onLongPress: onLongPressCallBack);
 }
 
-Widget eventListButton(Widget child, Function onPressCallBack,
-    [Function onLongPressCallBack]) {
+Widget eventListButton(Widget child, void Function() onPressCallBack,
+    [void Function()? onLongPressCallBack]) {
   return Container(
       margin: EdgeInsets.only(right: 7),
       child: RaisedButton(
@@ -117,5 +118,32 @@ class EventTile1State extends State<EventTile1> {
                     TextButton(onPressed: () {}, child: Text("button"))
                   ],
                 ))));
+  }
+}
+
+class DividerWithText extends StatelessWidget {
+  final String txt;
+
+  DividerWithText(this.txt);
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      margin: EdgeInsets.only(top: 5),
+      child: Row(children: [
+        Expanded(
+            child: Divider(
+          thickness: 5,
+        )),
+        Text(
+          txt,
+          style: TextStyle(fontSize: 20),
+        ),
+        Expanded(
+            child: Divider(
+          thickness: 5,
+        ))
+      ]),
+    );
   }
 }

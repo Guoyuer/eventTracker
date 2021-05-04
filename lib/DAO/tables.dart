@@ -7,13 +7,13 @@ class DurationConverter extends TypeConverter<Duration, double> {
   const DurationConverter();
 
   @override
-  Duration mapToDart(double fromDb) {
-    return Duration(seconds: fromDb.toInt());
+  Duration? mapToDart(double? fromDb) {
+    return Duration(seconds: fromDb!.toInt());
   }
 
   @override
-  double mapToSql(Duration value) {
-    return value.inSeconds.toDouble();
+  double? mapToSql(Duration? value) {
+    return value!.inSeconds.toDouble();
   }
 }
 
@@ -32,9 +32,9 @@ class Events extends Table {
   //冗余信息，加速列表显示
   RealColumn get sumVal => real().withDefault(Constant(0))();
 
-  RealColumn get sumTime => real().nullable()
+  RealColumn get sumTime => real()
       .withDefault(Constant(0)) // 对于TimingEvent以秒的形式记录总时间，对于PlainEvent则记录次数
-      .map(const DurationConverter())();
+      .map(const DurationConverter())();//with default了就不会nullable了
 }
 
 class Records extends Table {

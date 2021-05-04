@@ -11,44 +11,38 @@ class Step extends DataClass implements Insertable<Step> {
   final int id;
   final int step;
   final DateTime time;
-  Step({@required this.id, @required this.step, @required this.time});
+  Step({required this.id, required this.step, required this.time});
   factory Step.fromData(Map<String, dynamic> data, GeneratedDatabase db,
-      {String prefix}) {
+      {String? prefix}) {
     final effectivePrefix = prefix ?? '';
     final intType = db.typeSystem.forDartType<int>();
     final dateTimeType = db.typeSystem.forDartType<DateTime>();
     return Step(
-      id: intType.mapFromDatabaseResponse(data['${effectivePrefix}id']),
-      step: intType.mapFromDatabaseResponse(data['${effectivePrefix}step']),
+      id: intType.mapFromDatabaseResponse(data['${effectivePrefix}id'])!,
+      step: intType.mapFromDatabaseResponse(data['${effectivePrefix}step'])!,
       time:
-          dateTimeType.mapFromDatabaseResponse(data['${effectivePrefix}time']),
+          dateTimeType.mapFromDatabaseResponse(data['${effectivePrefix}time'])!,
     );
   }
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
-    if (!nullToAbsent || id != null) {
-      map['id'] = Variable<int>(id);
-    }
-    if (!nullToAbsent || step != null) {
-      map['step'] = Variable<int>(step);
-    }
-    if (!nullToAbsent || time != null) {
-      map['time'] = Variable<DateTime>(time);
-    }
+    map['id'] = Variable<int>(id);
+    map['step'] = Variable<int>(step);
+    map['time'] = Variable<DateTime>(time);
     return map;
   }
 
   StepsCompanion toCompanion(bool nullToAbsent) {
     return StepsCompanion(
-      id: id == null && nullToAbsent ? const Value.absent() : Value(id),
-      step: step == null && nullToAbsent ? const Value.absent() : Value(step),
-      time: time == null && nullToAbsent ? const Value.absent() : Value(time),
+      id: Value(id),
+      step: Value(step),
+      time: Value(time),
     );
   }
 
   factory Step.fromJson(Map<String, dynamic> json,
-      {ValueSerializer serializer}) {
+      {ValueSerializer? serializer}) {
     serializer ??= moorRuntimeOptions.defaultSerializer;
     return Step(
       id: serializer.fromJson<int>(json['id']),
@@ -57,7 +51,7 @@ class Step extends DataClass implements Insertable<Step> {
     );
   }
   @override
-  Map<String, dynamic> toJson({ValueSerializer serializer}) {
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
     serializer ??= moorRuntimeOptions.defaultSerializer;
     return <String, dynamic>{
       'id': serializer.toJson<int>(id),
@@ -66,7 +60,7 @@ class Step extends DataClass implements Insertable<Step> {
     };
   }
 
-  Step copyWith({int id, int step, DateTime time}) => Step(
+  Step copyWith({int? id, int? step, DateTime? time}) => Step(
         id: id ?? this.id,
         step: step ?? this.step,
         time: time ?? this.time,
@@ -105,12 +99,12 @@ class StepsCompanion extends UpdateCompanion<Step> {
   StepsCompanion.insert({
     this.id = const Value.absent(),
     this.step = const Value.absent(),
-    @required DateTime time,
+    required DateTime time,
   }) : time = Value(time);
   static Insertable<Step> custom({
-    Expression<int> id,
-    Expression<int> step,
-    Expression<DateTime> time,
+    Expression<int>? id,
+    Expression<int>? step,
+    Expression<DateTime>? time,
   }) {
     return RawValuesInsertable({
       if (id != null) 'id': id,
@@ -120,7 +114,7 @@ class StepsCompanion extends UpdateCompanion<Step> {
   }
 
   StepsCompanion copyWith(
-      {Value<int> id, Value<int> step, Value<DateTime> time}) {
+      {Value<int>? id, Value<int>? step, Value<DateTime>? time}) {
     return StepsCompanion(
       id: id ?? this.id,
       step: step ?? this.step,
@@ -156,30 +150,27 @@ class StepsCompanion extends UpdateCompanion<Step> {
 
 class $StepsTable extends Steps with TableInfo<$StepsTable, Step> {
   final GeneratedDatabase _db;
-  final String _alias;
+  final String? _alias;
   $StepsTable(this._db, [this._alias]);
   final VerificationMeta _idMeta = const VerificationMeta('id');
-  GeneratedIntColumn _id;
   @override
-  GeneratedIntColumn get id => _id ??= _constructId();
+  late final GeneratedIntColumn id = _constructId();
   GeneratedIntColumn _constructId() {
     return GeneratedIntColumn('id', $tableName, false,
         hasAutoIncrement: true, declaredAsPrimaryKey: true);
   }
 
   final VerificationMeta _stepMeta = const VerificationMeta('step');
-  GeneratedIntColumn _step;
   @override
-  GeneratedIntColumn get step => _step ??= _constructStep();
+  late final GeneratedIntColumn step = _constructStep();
   GeneratedIntColumn _constructStep() {
     return GeneratedIntColumn('step', $tableName, false,
         defaultValue: Constant(0));
   }
 
   final VerificationMeta _timeMeta = const VerificationMeta('time');
-  GeneratedDateTimeColumn _time;
   @override
-  GeneratedDateTimeColumn get time => _time ??= _constructTime();
+  late final GeneratedDateTimeColumn time = _constructTime();
   GeneratedDateTimeColumn _constructTime() {
     return GeneratedDateTimeColumn(
       'time',
@@ -202,15 +193,15 @@ class $StepsTable extends Steps with TableInfo<$StepsTable, Step> {
     final context = VerificationContext();
     final data = instance.toColumns(true);
     if (data.containsKey('id')) {
-      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id'], _idMeta));
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
     }
     if (data.containsKey('step')) {
       context.handle(
-          _stepMeta, step.isAcceptableOrUnknown(data['step'], _stepMeta));
+          _stepMeta, step.isAcceptableOrUnknown(data['step']!, _stepMeta));
     }
     if (data.containsKey('time')) {
       context.handle(
-          _timeMeta, time.isAcceptableOrUnknown(data['time'], _timeMeta));
+          _timeMeta, time.isAcceptableOrUnknown(data['time']!, _timeMeta));
     } else if (isInserting) {
       context.missing(_timeMeta);
     }
@@ -220,7 +211,7 @@ class $StepsTable extends Steps with TableInfo<$StepsTable, Step> {
   @override
   Set<GeneratedColumn> get $primaryKey => {id};
   @override
-  Step map(Map<String, dynamic> data, {String tablePrefix}) {
+  Step map(Map<String, dynamic> data, {String? tablePrefix}) {
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : null;
     return Step.fromData(data, _db, prefix: effectivePrefix);
   }
@@ -234,25 +225,25 @@ class $StepsTable extends Steps with TableInfo<$StepsTable, Step> {
 class Record extends DataClass implements Insertable<Record> {
   final int id;
   final int eventId;
-  final DateTime startTime;
-  final DateTime endTime;
-  final double value;
+  final DateTime? startTime;
+  final DateTime? endTime;
+  final double? value;
   Record(
-      {@required this.id,
-      @required this.eventId,
+      {required this.id,
+      required this.eventId,
       this.startTime,
       this.endTime,
       this.value});
   factory Record.fromData(Map<String, dynamic> data, GeneratedDatabase db,
-      {String prefix}) {
+      {String? prefix}) {
     final effectivePrefix = prefix ?? '';
     final intType = db.typeSystem.forDartType<int>();
     final dateTimeType = db.typeSystem.forDartType<DateTime>();
     final doubleType = db.typeSystem.forDartType<double>();
     return Record(
-      id: intType.mapFromDatabaseResponse(data['${effectivePrefix}id']),
+      id: intType.mapFromDatabaseResponse(data['${effectivePrefix}id'])!,
       eventId:
-          intType.mapFromDatabaseResponse(data['${effectivePrefix}event_id']),
+          intType.mapFromDatabaseResponse(data['${effectivePrefix}event_id'])!,
       startTime: dateTimeType
           .mapFromDatabaseResponse(data['${effectivePrefix}start_time']),
       endTime: dateTimeType
@@ -264,30 +255,24 @@ class Record extends DataClass implements Insertable<Record> {
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
-    if (!nullToAbsent || id != null) {
-      map['id'] = Variable<int>(id);
-    }
-    if (!nullToAbsent || eventId != null) {
-      map['event_id'] = Variable<int>(eventId);
-    }
+    map['id'] = Variable<int>(id);
+    map['event_id'] = Variable<int>(eventId);
     if (!nullToAbsent || startTime != null) {
-      map['start_time'] = Variable<DateTime>(startTime);
+      map['start_time'] = Variable<DateTime?>(startTime);
     }
     if (!nullToAbsent || endTime != null) {
-      map['end_time'] = Variable<DateTime>(endTime);
+      map['end_time'] = Variable<DateTime?>(endTime);
     }
     if (!nullToAbsent || value != null) {
-      map['value'] = Variable<double>(value);
+      map['value'] = Variable<double?>(value);
     }
     return map;
   }
 
   RecordsCompanion toCompanion(bool nullToAbsent) {
     return RecordsCompanion(
-      id: id == null && nullToAbsent ? const Value.absent() : Value(id),
-      eventId: eventId == null && nullToAbsent
-          ? const Value.absent()
-          : Value(eventId),
+      id: Value(id),
+      eventId: Value(eventId),
       startTime: startTime == null && nullToAbsent
           ? const Value.absent()
           : Value(startTime),
@@ -300,34 +285,34 @@ class Record extends DataClass implements Insertable<Record> {
   }
 
   factory Record.fromJson(Map<String, dynamic> json,
-      {ValueSerializer serializer}) {
+      {ValueSerializer? serializer}) {
     serializer ??= moorRuntimeOptions.defaultSerializer;
     return Record(
       id: serializer.fromJson<int>(json['id']),
       eventId: serializer.fromJson<int>(json['eventId']),
-      startTime: serializer.fromJson<DateTime>(json['startTime']),
-      endTime: serializer.fromJson<DateTime>(json['endTime']),
-      value: serializer.fromJson<double>(json['value']),
+      startTime: serializer.fromJson<DateTime?>(json['startTime']),
+      endTime: serializer.fromJson<DateTime?>(json['endTime']),
+      value: serializer.fromJson<double?>(json['value']),
     );
   }
   @override
-  Map<String, dynamic> toJson({ValueSerializer serializer}) {
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
     serializer ??= moorRuntimeOptions.defaultSerializer;
     return <String, dynamic>{
       'id': serializer.toJson<int>(id),
       'eventId': serializer.toJson<int>(eventId),
-      'startTime': serializer.toJson<DateTime>(startTime),
-      'endTime': serializer.toJson<DateTime>(endTime),
-      'value': serializer.toJson<double>(value),
+      'startTime': serializer.toJson<DateTime?>(startTime),
+      'endTime': serializer.toJson<DateTime?>(endTime),
+      'value': serializer.toJson<double?>(value),
     };
   }
 
   Record copyWith(
-          {int id,
-          int eventId,
-          DateTime startTime,
-          DateTime endTime,
-          double value}) =>
+          {int? id,
+          int? eventId,
+          DateTime? startTime,
+          DateTime? endTime,
+          double? value}) =>
       Record(
         id: id ?? this.id,
         eventId: eventId ?? this.eventId,
@@ -366,9 +351,9 @@ class Record extends DataClass implements Insertable<Record> {
 class RecordsCompanion extends UpdateCompanion<Record> {
   final Value<int> id;
   final Value<int> eventId;
-  final Value<DateTime> startTime;
-  final Value<DateTime> endTime;
-  final Value<double> value;
+  final Value<DateTime?> startTime;
+  final Value<DateTime?> endTime;
+  final Value<double?> value;
   const RecordsCompanion({
     this.id = const Value.absent(),
     this.eventId = const Value.absent(),
@@ -378,17 +363,17 @@ class RecordsCompanion extends UpdateCompanion<Record> {
   });
   RecordsCompanion.insert({
     this.id = const Value.absent(),
-    @required int eventId,
+    required int eventId,
     this.startTime = const Value.absent(),
     this.endTime = const Value.absent(),
     this.value = const Value.absent(),
   }) : eventId = Value(eventId);
   static Insertable<Record> custom({
-    Expression<int> id,
-    Expression<int> eventId,
-    Expression<DateTime> startTime,
-    Expression<DateTime> endTime,
-    Expression<double> value,
+    Expression<int>? id,
+    Expression<int>? eventId,
+    Expression<DateTime?>? startTime,
+    Expression<DateTime?>? endTime,
+    Expression<double?>? value,
   }) {
     return RawValuesInsertable({
       if (id != null) 'id': id,
@@ -400,11 +385,11 @@ class RecordsCompanion extends UpdateCompanion<Record> {
   }
 
   RecordsCompanion copyWith(
-      {Value<int> id,
-      Value<int> eventId,
-      Value<DateTime> startTime,
-      Value<DateTime> endTime,
-      Value<double> value}) {
+      {Value<int>? id,
+      Value<int>? eventId,
+      Value<DateTime?>? startTime,
+      Value<DateTime?>? endTime,
+      Value<double?>? value}) {
     return RecordsCompanion(
       id: id ?? this.id,
       eventId: eventId ?? this.eventId,
@@ -424,13 +409,13 @@ class RecordsCompanion extends UpdateCompanion<Record> {
       map['event_id'] = Variable<int>(eventId.value);
     }
     if (startTime.present) {
-      map['start_time'] = Variable<DateTime>(startTime.value);
+      map['start_time'] = Variable<DateTime?>(startTime.value);
     }
     if (endTime.present) {
-      map['end_time'] = Variable<DateTime>(endTime.value);
+      map['end_time'] = Variable<DateTime?>(endTime.value);
     }
     if (value.present) {
-      map['value'] = Variable<double>(value.value);
+      map['value'] = Variable<double?>(value.value);
     }
     return map;
   }
@@ -450,21 +435,19 @@ class RecordsCompanion extends UpdateCompanion<Record> {
 
 class $RecordsTable extends Records with TableInfo<$RecordsTable, Record> {
   final GeneratedDatabase _db;
-  final String _alias;
+  final String? _alias;
   $RecordsTable(this._db, [this._alias]);
   final VerificationMeta _idMeta = const VerificationMeta('id');
-  GeneratedIntColumn _id;
   @override
-  GeneratedIntColumn get id => _id ??= _constructId();
+  late final GeneratedIntColumn id = _constructId();
   GeneratedIntColumn _constructId() {
     return GeneratedIntColumn('id', $tableName, false,
         hasAutoIncrement: true, declaredAsPrimaryKey: true);
   }
 
   final VerificationMeta _eventIdMeta = const VerificationMeta('eventId');
-  GeneratedIntColumn _eventId;
   @override
-  GeneratedIntColumn get eventId => _eventId ??= _constructEventId();
+  late final GeneratedIntColumn eventId = _constructEventId();
   GeneratedIntColumn _constructEventId() {
     return GeneratedIntColumn(
       'event_id',
@@ -474,9 +457,8 @@ class $RecordsTable extends Records with TableInfo<$RecordsTable, Record> {
   }
 
   final VerificationMeta _startTimeMeta = const VerificationMeta('startTime');
-  GeneratedDateTimeColumn _startTime;
   @override
-  GeneratedDateTimeColumn get startTime => _startTime ??= _constructStartTime();
+  late final GeneratedDateTimeColumn startTime = _constructStartTime();
   GeneratedDateTimeColumn _constructStartTime() {
     return GeneratedDateTimeColumn(
       'start_time',
@@ -486,9 +468,8 @@ class $RecordsTable extends Records with TableInfo<$RecordsTable, Record> {
   }
 
   final VerificationMeta _endTimeMeta = const VerificationMeta('endTime');
-  GeneratedDateTimeColumn _endTime;
   @override
-  GeneratedDateTimeColumn get endTime => _endTime ??= _constructEndTime();
+  late final GeneratedDateTimeColumn endTime = _constructEndTime();
   GeneratedDateTimeColumn _constructEndTime() {
     return GeneratedDateTimeColumn(
       'end_time',
@@ -498,9 +479,8 @@ class $RecordsTable extends Records with TableInfo<$RecordsTable, Record> {
   }
 
   final VerificationMeta _valueMeta = const VerificationMeta('value');
-  GeneratedRealColumn _value;
   @override
-  GeneratedRealColumn get value => _value ??= _constructValue();
+  late final GeneratedRealColumn value = _constructValue();
   GeneratedRealColumn _constructValue() {
     return GeneratedRealColumn(
       'value',
@@ -524,25 +504,25 @@ class $RecordsTable extends Records with TableInfo<$RecordsTable, Record> {
     final context = VerificationContext();
     final data = instance.toColumns(true);
     if (data.containsKey('id')) {
-      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id'], _idMeta));
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
     }
     if (data.containsKey('event_id')) {
       context.handle(_eventIdMeta,
-          eventId.isAcceptableOrUnknown(data['event_id'], _eventIdMeta));
+          eventId.isAcceptableOrUnknown(data['event_id']!, _eventIdMeta));
     } else if (isInserting) {
       context.missing(_eventIdMeta);
     }
     if (data.containsKey('start_time')) {
       context.handle(_startTimeMeta,
-          startTime.isAcceptableOrUnknown(data['start_time'], _startTimeMeta));
+          startTime.isAcceptableOrUnknown(data['start_time']!, _startTimeMeta));
     }
     if (data.containsKey('end_time')) {
       context.handle(_endTimeMeta,
-          endTime.isAcceptableOrUnknown(data['end_time'], _endTimeMeta));
+          endTime.isAcceptableOrUnknown(data['end_time']!, _endTimeMeta));
     }
     if (data.containsKey('value')) {
       context.handle(
-          _valueMeta, value.isAcceptableOrUnknown(data['value'], _valueMeta));
+          _valueMeta, value.isAcceptableOrUnknown(data['value']!, _valueMeta));
     }
     return context;
   }
@@ -550,7 +530,7 @@ class $RecordsTable extends Records with TableInfo<$RecordsTable, Record> {
   @override
   Set<GeneratedColumn> get $primaryKey => {id};
   @override
-  Record map(Map<String, dynamic> data, {String tablePrefix}) {
+  Record map(Map<String, dynamic> data, {String? tablePrefix}) {
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : null;
     return Record.fromData(data, _db, prefix: effectivePrefix);
   }
@@ -564,135 +544,122 @@ class $RecordsTable extends Records with TableInfo<$RecordsTable, Record> {
 class Event extends DataClass implements Insertable<Event> {
   final int id;
   final String name;
-  final String description;
+  final String? description;
   final bool careTime;
-  final int lastRecordId;
-  final String unit;
+  final int? lastRecordId;
+  final String? unit;
   final double sumVal;
   final Duration sumTime;
   Event(
-      {@required this.id,
-      @required this.name,
+      {required this.id,
+      required this.name,
       this.description,
-      @required this.careTime,
+      required this.careTime,
       this.lastRecordId,
       this.unit,
-      @required this.sumVal,
-      @required this.sumTime});
+      required this.sumVal,
+      required this.sumTime});
   factory Event.fromData(Map<String, dynamic> data, GeneratedDatabase db,
-      {String prefix}) {
+      {String? prefix}) {
     final effectivePrefix = prefix ?? '';
     final intType = db.typeSystem.forDartType<int>();
     final stringType = db.typeSystem.forDartType<String>();
     final boolType = db.typeSystem.forDartType<bool>();
     final doubleType = db.typeSystem.forDartType<double>();
     return Event(
-      id: intType.mapFromDatabaseResponse(data['${effectivePrefix}id']),
-      name: stringType.mapFromDatabaseResponse(data['${effectivePrefix}name']),
+      id: intType.mapFromDatabaseResponse(data['${effectivePrefix}id'])!,
+      name: stringType.mapFromDatabaseResponse(data['${effectivePrefix}name'])!,
       description: stringType
           .mapFromDatabaseResponse(data['${effectivePrefix}description']),
-      careTime:
-          boolType.mapFromDatabaseResponse(data['${effectivePrefix}care_time']),
+      careTime: boolType
+          .mapFromDatabaseResponse(data['${effectivePrefix}care_time'])!,
       lastRecordId: intType
           .mapFromDatabaseResponse(data['${effectivePrefix}last_record_id']),
       unit: stringType.mapFromDatabaseResponse(data['${effectivePrefix}unit']),
-      sumVal:
-          doubleType.mapFromDatabaseResponse(data['${effectivePrefix}sum_val']),
+      sumVal: doubleType
+          .mapFromDatabaseResponse(data['${effectivePrefix}sum_val'])!,
       sumTime: $EventsTable.$converter0.mapToDart(doubleType
-          .mapFromDatabaseResponse(data['${effectivePrefix}sum_time'])),
+          .mapFromDatabaseResponse(data['${effectivePrefix}sum_time']))!,
     );
   }
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
-    if (!nullToAbsent || id != null) {
-      map['id'] = Variable<int>(id);
-    }
-    if (!nullToAbsent || name != null) {
-      map['name'] = Variable<String>(name);
-    }
+    map['id'] = Variable<int>(id);
+    map['name'] = Variable<String>(name);
     if (!nullToAbsent || description != null) {
-      map['description'] = Variable<String>(description);
+      map['description'] = Variable<String?>(description);
     }
-    if (!nullToAbsent || careTime != null) {
-      map['care_time'] = Variable<bool>(careTime);
-    }
+    map['care_time'] = Variable<bool>(careTime);
     if (!nullToAbsent || lastRecordId != null) {
-      map['last_record_id'] = Variable<int>(lastRecordId);
+      map['last_record_id'] = Variable<int?>(lastRecordId);
     }
     if (!nullToAbsent || unit != null) {
-      map['unit'] = Variable<String>(unit);
+      map['unit'] = Variable<String?>(unit);
     }
-    if (!nullToAbsent || sumVal != null) {
-      map['sum_val'] = Variable<double>(sumVal);
-    }
-    if (!nullToAbsent || sumTime != null) {
+    map['sum_val'] = Variable<double>(sumVal);
+    {
       final converter = $EventsTable.$converter0;
-      map['sum_time'] = Variable<double>(converter.mapToSql(sumTime));
+      map['sum_time'] = Variable<double>(converter.mapToSql(sumTime)!);
     }
     return map;
   }
 
   EventsCompanion toCompanion(bool nullToAbsent) {
     return EventsCompanion(
-      id: id == null && nullToAbsent ? const Value.absent() : Value(id),
-      name: name == null && nullToAbsent ? const Value.absent() : Value(name),
+      id: Value(id),
+      name: Value(name),
       description: description == null && nullToAbsent
           ? const Value.absent()
           : Value(description),
-      careTime: careTime == null && nullToAbsent
-          ? const Value.absent()
-          : Value(careTime),
+      careTime: Value(careTime),
       lastRecordId: lastRecordId == null && nullToAbsent
           ? const Value.absent()
           : Value(lastRecordId),
       unit: unit == null && nullToAbsent ? const Value.absent() : Value(unit),
-      sumVal:
-          sumVal == null && nullToAbsent ? const Value.absent() : Value(sumVal),
-      sumTime: sumTime == null && nullToAbsent
-          ? const Value.absent()
-          : Value(sumTime),
+      sumVal: Value(sumVal),
+      sumTime: Value(sumTime),
     );
   }
 
   factory Event.fromJson(Map<String, dynamic> json,
-      {ValueSerializer serializer}) {
+      {ValueSerializer? serializer}) {
     serializer ??= moorRuntimeOptions.defaultSerializer;
     return Event(
       id: serializer.fromJson<int>(json['id']),
       name: serializer.fromJson<String>(json['name']),
-      description: serializer.fromJson<String>(json['description']),
+      description: serializer.fromJson<String?>(json['description']),
       careTime: serializer.fromJson<bool>(json['careTime']),
-      lastRecordId: serializer.fromJson<int>(json['lastRecordId']),
-      unit: serializer.fromJson<String>(json['unit']),
+      lastRecordId: serializer.fromJson<int?>(json['lastRecordId']),
+      unit: serializer.fromJson<String?>(json['unit']),
       sumVal: serializer.fromJson<double>(json['sumVal']),
       sumTime: serializer.fromJson<Duration>(json['sumTime']),
     );
   }
   @override
-  Map<String, dynamic> toJson({ValueSerializer serializer}) {
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
     serializer ??= moorRuntimeOptions.defaultSerializer;
     return <String, dynamic>{
       'id': serializer.toJson<int>(id),
       'name': serializer.toJson<String>(name),
-      'description': serializer.toJson<String>(description),
+      'description': serializer.toJson<String?>(description),
       'careTime': serializer.toJson<bool>(careTime),
-      'lastRecordId': serializer.toJson<int>(lastRecordId),
-      'unit': serializer.toJson<String>(unit),
+      'lastRecordId': serializer.toJson<int?>(lastRecordId),
+      'unit': serializer.toJson<String?>(unit),
       'sumVal': serializer.toJson<double>(sumVal),
       'sumTime': serializer.toJson<Duration>(sumTime),
     };
   }
 
   Event copyWith(
-          {int id,
-          String name,
-          String description,
-          bool careTime,
-          int lastRecordId,
-          String unit,
-          double sumVal,
-          Duration sumTime}) =>
+          {int? id,
+          String? name,
+          String? description,
+          bool? careTime,
+          int? lastRecordId,
+          String? unit,
+          double? sumVal,
+          Duration? sumTime}) =>
       Event(
         id: id ?? this.id,
         name: name ?? this.name,
@@ -748,10 +715,10 @@ class Event extends DataClass implements Insertable<Event> {
 class EventsCompanion extends UpdateCompanion<Event> {
   final Value<int> id;
   final Value<String> name;
-  final Value<String> description;
+  final Value<String?> description;
   final Value<bool> careTime;
-  final Value<int> lastRecordId;
-  final Value<String> unit;
+  final Value<int?> lastRecordId;
+  final Value<String?> unit;
   final Value<double> sumVal;
   final Value<Duration> sumTime;
   const EventsCompanion({
@@ -766,9 +733,9 @@ class EventsCompanion extends UpdateCompanion<Event> {
   });
   EventsCompanion.insert({
     this.id = const Value.absent(),
-    @required String name,
+    required String name,
     this.description = const Value.absent(),
-    @required bool careTime,
+    required bool careTime,
     this.lastRecordId = const Value.absent(),
     this.unit = const Value.absent(),
     this.sumVal = const Value.absent(),
@@ -776,14 +743,14 @@ class EventsCompanion extends UpdateCompanion<Event> {
   })  : name = Value(name),
         careTime = Value(careTime);
   static Insertable<Event> custom({
-    Expression<int> id,
-    Expression<String> name,
-    Expression<String> description,
-    Expression<bool> careTime,
-    Expression<int> lastRecordId,
-    Expression<String> unit,
-    Expression<double> sumVal,
-    Expression<Duration> sumTime,
+    Expression<int>? id,
+    Expression<String>? name,
+    Expression<String?>? description,
+    Expression<bool>? careTime,
+    Expression<int?>? lastRecordId,
+    Expression<String?>? unit,
+    Expression<double>? sumVal,
+    Expression<Duration>? sumTime,
   }) {
     return RawValuesInsertable({
       if (id != null) 'id': id,
@@ -798,14 +765,14 @@ class EventsCompanion extends UpdateCompanion<Event> {
   }
 
   EventsCompanion copyWith(
-      {Value<int> id,
-      Value<String> name,
-      Value<String> description,
-      Value<bool> careTime,
-      Value<int> lastRecordId,
-      Value<String> unit,
-      Value<double> sumVal,
-      Value<Duration> sumTime}) {
+      {Value<int>? id,
+      Value<String>? name,
+      Value<String?>? description,
+      Value<bool>? careTime,
+      Value<int?>? lastRecordId,
+      Value<String?>? unit,
+      Value<double>? sumVal,
+      Value<Duration>? sumTime}) {
     return EventsCompanion(
       id: id ?? this.id,
       name: name ?? this.name,
@@ -828,23 +795,23 @@ class EventsCompanion extends UpdateCompanion<Event> {
       map['name'] = Variable<String>(name.value);
     }
     if (description.present) {
-      map['description'] = Variable<String>(description.value);
+      map['description'] = Variable<String?>(description.value);
     }
     if (careTime.present) {
       map['care_time'] = Variable<bool>(careTime.value);
     }
     if (lastRecordId.present) {
-      map['last_record_id'] = Variable<int>(lastRecordId.value);
+      map['last_record_id'] = Variable<int?>(lastRecordId.value);
     }
     if (unit.present) {
-      map['unit'] = Variable<String>(unit.value);
+      map['unit'] = Variable<String?>(unit.value);
     }
     if (sumVal.present) {
       map['sum_val'] = Variable<double>(sumVal.value);
     }
     if (sumTime.present) {
       final converter = $EventsTable.$converter0;
-      map['sum_time'] = Variable<double>(converter.mapToSql(sumTime.value));
+      map['sum_time'] = Variable<double>(converter.mapToSql(sumTime.value)!);
     }
     return map;
   }
@@ -867,21 +834,19 @@ class EventsCompanion extends UpdateCompanion<Event> {
 
 class $EventsTable extends Events with TableInfo<$EventsTable, Event> {
   final GeneratedDatabase _db;
-  final String _alias;
+  final String? _alias;
   $EventsTable(this._db, [this._alias]);
   final VerificationMeta _idMeta = const VerificationMeta('id');
-  GeneratedIntColumn _id;
   @override
-  GeneratedIntColumn get id => _id ??= _constructId();
+  late final GeneratedIntColumn id = _constructId();
   GeneratedIntColumn _constructId() {
     return GeneratedIntColumn('id', $tableName, false,
         hasAutoIncrement: true, declaredAsPrimaryKey: true);
   }
 
   final VerificationMeta _nameMeta = const VerificationMeta('name');
-  GeneratedTextColumn _name;
   @override
-  GeneratedTextColumn get name => _name ??= _constructName();
+  late final GeneratedTextColumn name = _constructName();
   GeneratedTextColumn _constructName() {
     return GeneratedTextColumn('name', $tableName, false,
         $customConstraints: 'not null unique');
@@ -889,10 +854,8 @@ class $EventsTable extends Events with TableInfo<$EventsTable, Event> {
 
   final VerificationMeta _descriptionMeta =
       const VerificationMeta('description');
-  GeneratedTextColumn _description;
   @override
-  GeneratedTextColumn get description =>
-      _description ??= _constructDescription();
+  late final GeneratedTextColumn description = _constructDescription();
   GeneratedTextColumn _constructDescription() {
     return GeneratedTextColumn(
       'description',
@@ -902,9 +865,8 @@ class $EventsTable extends Events with TableInfo<$EventsTable, Event> {
   }
 
   final VerificationMeta _careTimeMeta = const VerificationMeta('careTime');
-  GeneratedBoolColumn _careTime;
   @override
-  GeneratedBoolColumn get careTime => _careTime ??= _constructCareTime();
+  late final GeneratedBoolColumn careTime = _constructCareTime();
   GeneratedBoolColumn _constructCareTime() {
     return GeneratedBoolColumn(
       'care_time',
@@ -915,10 +877,8 @@ class $EventsTable extends Events with TableInfo<$EventsTable, Event> {
 
   final VerificationMeta _lastRecordIdMeta =
       const VerificationMeta('lastRecordId');
-  GeneratedIntColumn _lastRecordId;
   @override
-  GeneratedIntColumn get lastRecordId =>
-      _lastRecordId ??= _constructLastRecordId();
+  late final GeneratedIntColumn lastRecordId = _constructLastRecordId();
   GeneratedIntColumn _constructLastRecordId() {
     return GeneratedIntColumn(
       'last_record_id',
@@ -928,9 +888,8 @@ class $EventsTable extends Events with TableInfo<$EventsTable, Event> {
   }
 
   final VerificationMeta _unitMeta = const VerificationMeta('unit');
-  GeneratedTextColumn _unit;
   @override
-  GeneratedTextColumn get unit => _unit ??= _constructUnit();
+  late final GeneratedTextColumn unit = _constructUnit();
   GeneratedTextColumn _constructUnit() {
     return GeneratedTextColumn(
       'unit',
@@ -940,18 +899,16 @@ class $EventsTable extends Events with TableInfo<$EventsTable, Event> {
   }
 
   final VerificationMeta _sumValMeta = const VerificationMeta('sumVal');
-  GeneratedRealColumn _sumVal;
   @override
-  GeneratedRealColumn get sumVal => _sumVal ??= _constructSumVal();
+  late final GeneratedRealColumn sumVal = _constructSumVal();
   GeneratedRealColumn _constructSumVal() {
     return GeneratedRealColumn('sum_val', $tableName, false,
         defaultValue: Constant(0));
   }
 
   final VerificationMeta _sumTimeMeta = const VerificationMeta('sumTime');
-  GeneratedRealColumn _sumTime;
   @override
-  GeneratedRealColumn get sumTime => _sumTime ??= _constructSumTime();
+  late final GeneratedRealColumn sumTime = _constructSumTime();
   GeneratedRealColumn _constructSumTime() {
     return GeneratedRealColumn('sum_time', $tableName, false,
         defaultValue: Constant(0));
@@ -972,11 +929,11 @@ class $EventsTable extends Events with TableInfo<$EventsTable, Event> {
     final context = VerificationContext();
     final data = instance.toColumns(true);
     if (data.containsKey('id')) {
-      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id'], _idMeta));
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
     }
     if (data.containsKey('name')) {
       context.handle(
-          _nameMeta, name.isAcceptableOrUnknown(data['name'], _nameMeta));
+          _nameMeta, name.isAcceptableOrUnknown(data['name']!, _nameMeta));
     } else if (isInserting) {
       context.missing(_nameMeta);
     }
@@ -984,11 +941,11 @@ class $EventsTable extends Events with TableInfo<$EventsTable, Event> {
       context.handle(
           _descriptionMeta,
           description.isAcceptableOrUnknown(
-              data['description'], _descriptionMeta));
+              data['description']!, _descriptionMeta));
     }
     if (data.containsKey('care_time')) {
       context.handle(_careTimeMeta,
-          careTime.isAcceptableOrUnknown(data['care_time'], _careTimeMeta));
+          careTime.isAcceptableOrUnknown(data['care_time']!, _careTimeMeta));
     } else if (isInserting) {
       context.missing(_careTimeMeta);
     }
@@ -996,15 +953,15 @@ class $EventsTable extends Events with TableInfo<$EventsTable, Event> {
       context.handle(
           _lastRecordIdMeta,
           lastRecordId.isAcceptableOrUnknown(
-              data['last_record_id'], _lastRecordIdMeta));
+              data['last_record_id']!, _lastRecordIdMeta));
     }
     if (data.containsKey('unit')) {
       context.handle(
-          _unitMeta, unit.isAcceptableOrUnknown(data['unit'], _unitMeta));
+          _unitMeta, unit.isAcceptableOrUnknown(data['unit']!, _unitMeta));
     }
     if (data.containsKey('sum_val')) {
       context.handle(_sumValMeta,
-          sumVal.isAcceptableOrUnknown(data['sum_val'], _sumValMeta));
+          sumVal.isAcceptableOrUnknown(data['sum_val']!, _sumValMeta));
     }
     context.handle(_sumTimeMeta, const VerificationResult.success());
     return context;
@@ -1013,7 +970,7 @@ class $EventsTable extends Events with TableInfo<$EventsTable, Event> {
   @override
   Set<GeneratedColumn> get $primaryKey => {id};
   @override
-  Event map(Map<String, dynamic> data, {String tablePrefix}) {
+  Event map(Map<String, dynamic> data, {String? tablePrefix}) {
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : null;
     return Event.fromData(data, _db, prefix: effectivePrefix);
   }
@@ -1030,38 +987,34 @@ class $EventsTable extends Events with TableInfo<$EventsTable, Event> {
 class Unit extends DataClass implements Insertable<Unit> {
   final int id;
   final String name;
-  Unit({@required this.id, @required this.name});
+  Unit({required this.id, required this.name});
   factory Unit.fromData(Map<String, dynamic> data, GeneratedDatabase db,
-      {String prefix}) {
+      {String? prefix}) {
     final effectivePrefix = prefix ?? '';
     final intType = db.typeSystem.forDartType<int>();
     final stringType = db.typeSystem.forDartType<String>();
     return Unit(
-      id: intType.mapFromDatabaseResponse(data['${effectivePrefix}id']),
-      name: stringType.mapFromDatabaseResponse(data['${effectivePrefix}name']),
+      id: intType.mapFromDatabaseResponse(data['${effectivePrefix}id'])!,
+      name: stringType.mapFromDatabaseResponse(data['${effectivePrefix}name'])!,
     );
   }
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
-    if (!nullToAbsent || id != null) {
-      map['id'] = Variable<int>(id);
-    }
-    if (!nullToAbsent || name != null) {
-      map['name'] = Variable<String>(name);
-    }
+    map['id'] = Variable<int>(id);
+    map['name'] = Variable<String>(name);
     return map;
   }
 
   UnitsCompanion toCompanion(bool nullToAbsent) {
     return UnitsCompanion(
-      id: id == null && nullToAbsent ? const Value.absent() : Value(id),
-      name: name == null && nullToAbsent ? const Value.absent() : Value(name),
+      id: Value(id),
+      name: Value(name),
     );
   }
 
   factory Unit.fromJson(Map<String, dynamic> json,
-      {ValueSerializer serializer}) {
+      {ValueSerializer? serializer}) {
     serializer ??= moorRuntimeOptions.defaultSerializer;
     return Unit(
       id: serializer.fromJson<int>(json['id']),
@@ -1069,7 +1022,7 @@ class Unit extends DataClass implements Insertable<Unit> {
     );
   }
   @override
-  Map<String, dynamic> toJson({ValueSerializer serializer}) {
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
     serializer ??= moorRuntimeOptions.defaultSerializer;
     return <String, dynamic>{
       'id': serializer.toJson<int>(id),
@@ -1077,7 +1030,7 @@ class Unit extends DataClass implements Insertable<Unit> {
     };
   }
 
-  Unit copyWith({int id, String name}) => Unit(
+  Unit copyWith({int? id, String? name}) => Unit(
         id: id ?? this.id,
         name: name ?? this.name,
       );
@@ -1107,11 +1060,11 @@ class UnitsCompanion extends UpdateCompanion<Unit> {
   });
   UnitsCompanion.insert({
     this.id = const Value.absent(),
-    @required String name,
+    required String name,
   }) : name = Value(name);
   static Insertable<Unit> custom({
-    Expression<int> id,
-    Expression<String> name,
+    Expression<int>? id,
+    Expression<String>? name,
   }) {
     return RawValuesInsertable({
       if (id != null) 'id': id,
@@ -1119,7 +1072,7 @@ class UnitsCompanion extends UpdateCompanion<Unit> {
     });
   }
 
-  UnitsCompanion copyWith({Value<int> id, Value<String> name}) {
+  UnitsCompanion copyWith({Value<int>? id, Value<String>? name}) {
     return UnitsCompanion(
       id: id ?? this.id,
       name: name ?? this.name,
@@ -1150,21 +1103,19 @@ class UnitsCompanion extends UpdateCompanion<Unit> {
 
 class $UnitsTable extends Units with TableInfo<$UnitsTable, Unit> {
   final GeneratedDatabase _db;
-  final String _alias;
+  final String? _alias;
   $UnitsTable(this._db, [this._alias]);
   final VerificationMeta _idMeta = const VerificationMeta('id');
-  GeneratedIntColumn _id;
   @override
-  GeneratedIntColumn get id => _id ??= _constructId();
+  late final GeneratedIntColumn id = _constructId();
   GeneratedIntColumn _constructId() {
     return GeneratedIntColumn('id', $tableName, false,
         hasAutoIncrement: true, declaredAsPrimaryKey: true);
   }
 
   final VerificationMeta _nameMeta = const VerificationMeta('name');
-  GeneratedTextColumn _name;
   @override
-  GeneratedTextColumn get name => _name ??= _constructName();
+  late final GeneratedTextColumn name = _constructName();
   GeneratedTextColumn _constructName() {
     return GeneratedTextColumn(
       'name',
@@ -1187,11 +1138,11 @@ class $UnitsTable extends Units with TableInfo<$UnitsTable, Unit> {
     final context = VerificationContext();
     final data = instance.toColumns(true);
     if (data.containsKey('id')) {
-      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id'], _idMeta));
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
     }
     if (data.containsKey('name')) {
       context.handle(
-          _nameMeta, name.isAcceptableOrUnknown(data['name'], _nameMeta));
+          _nameMeta, name.isAcceptableOrUnknown(data['name']!, _nameMeta));
     } else if (isInserting) {
       context.missing(_nameMeta);
     }
@@ -1201,7 +1152,7 @@ class $UnitsTable extends Units with TableInfo<$UnitsTable, Unit> {
   @override
   Set<GeneratedColumn> get $primaryKey => {id};
   @override
-  Unit map(Map<String, dynamic> data, {String tablePrefix}) {
+  Unit map(Map<String, dynamic> data, {String? tablePrefix}) {
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : null;
     return Unit.fromData(data, _db, prefix: effectivePrefix);
   }
@@ -1216,45 +1167,39 @@ class StepOffsetData extends DataClass implements Insertable<StepOffsetData> {
   final int id;
   final int step;
   final DateTime time;
-  StepOffsetData({@required this.id, @required this.step, @required this.time});
+  StepOffsetData({required this.id, required this.step, required this.time});
   factory StepOffsetData.fromData(
       Map<String, dynamic> data, GeneratedDatabase db,
-      {String prefix}) {
+      {String? prefix}) {
     final effectivePrefix = prefix ?? '';
     final intType = db.typeSystem.forDartType<int>();
     final dateTimeType = db.typeSystem.forDartType<DateTime>();
     return StepOffsetData(
-      id: intType.mapFromDatabaseResponse(data['${effectivePrefix}id']),
-      step: intType.mapFromDatabaseResponse(data['${effectivePrefix}step']),
+      id: intType.mapFromDatabaseResponse(data['${effectivePrefix}id'])!,
+      step: intType.mapFromDatabaseResponse(data['${effectivePrefix}step'])!,
       time:
-          dateTimeType.mapFromDatabaseResponse(data['${effectivePrefix}time']),
+          dateTimeType.mapFromDatabaseResponse(data['${effectivePrefix}time'])!,
     );
   }
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
-    if (!nullToAbsent || id != null) {
-      map['id'] = Variable<int>(id);
-    }
-    if (!nullToAbsent || step != null) {
-      map['step'] = Variable<int>(step);
-    }
-    if (!nullToAbsent || time != null) {
-      map['time'] = Variable<DateTime>(time);
-    }
+    map['id'] = Variable<int>(id);
+    map['step'] = Variable<int>(step);
+    map['time'] = Variable<DateTime>(time);
     return map;
   }
 
   StepOffsetCompanion toCompanion(bool nullToAbsent) {
     return StepOffsetCompanion(
-      id: id == null && nullToAbsent ? const Value.absent() : Value(id),
-      step: step == null && nullToAbsent ? const Value.absent() : Value(step),
-      time: time == null && nullToAbsent ? const Value.absent() : Value(time),
+      id: Value(id),
+      step: Value(step),
+      time: Value(time),
     );
   }
 
   factory StepOffsetData.fromJson(Map<String, dynamic> json,
-      {ValueSerializer serializer}) {
+      {ValueSerializer? serializer}) {
     serializer ??= moorRuntimeOptions.defaultSerializer;
     return StepOffsetData(
       id: serializer.fromJson<int>(json['id']),
@@ -1263,7 +1208,7 @@ class StepOffsetData extends DataClass implements Insertable<StepOffsetData> {
     );
   }
   @override
-  Map<String, dynamic> toJson({ValueSerializer serializer}) {
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
     serializer ??= moorRuntimeOptions.defaultSerializer;
     return <String, dynamic>{
       'id': serializer.toJson<int>(id),
@@ -1272,7 +1217,8 @@ class StepOffsetData extends DataClass implements Insertable<StepOffsetData> {
     };
   }
 
-  StepOffsetData copyWith({int id, int step, DateTime time}) => StepOffsetData(
+  StepOffsetData copyWith({int? id, int? step, DateTime? time}) =>
+      StepOffsetData(
         id: id ?? this.id,
         step: step ?? this.step,
         time: time ?? this.time,
@@ -1309,15 +1255,15 @@ class StepOffsetCompanion extends UpdateCompanion<StepOffsetData> {
     this.time = const Value.absent(),
   });
   StepOffsetCompanion.insert({
-    @required int id,
+    required int id,
     this.step = const Value.absent(),
-    @required DateTime time,
+    required DateTime time,
   })  : id = Value(id),
         time = Value(time);
   static Insertable<StepOffsetData> custom({
-    Expression<int> id,
-    Expression<int> step,
-    Expression<DateTime> time,
+    Expression<int>? id,
+    Expression<int>? step,
+    Expression<DateTime>? time,
   }) {
     return RawValuesInsertable({
       if (id != null) 'id': id,
@@ -1327,7 +1273,7 @@ class StepOffsetCompanion extends UpdateCompanion<StepOffsetData> {
   }
 
   StepOffsetCompanion copyWith(
-      {Value<int> id, Value<int> step, Value<DateTime> time}) {
+      {Value<int>? id, Value<int>? step, Value<DateTime>? time}) {
     return StepOffsetCompanion(
       id: id ?? this.id,
       step: step ?? this.step,
@@ -1364,12 +1310,11 @@ class StepOffsetCompanion extends UpdateCompanion<StepOffsetData> {
 class $StepOffsetTable extends StepOffset
     with TableInfo<$StepOffsetTable, StepOffsetData> {
   final GeneratedDatabase _db;
-  final String _alias;
+  final String? _alias;
   $StepOffsetTable(this._db, [this._alias]);
   final VerificationMeta _idMeta = const VerificationMeta('id');
-  GeneratedIntColumn _id;
   @override
-  GeneratedIntColumn get id => _id ??= _constructId();
+  late final GeneratedIntColumn id = _constructId();
   GeneratedIntColumn _constructId() {
     return GeneratedIntColumn(
       'id',
@@ -1379,18 +1324,16 @@ class $StepOffsetTable extends StepOffset
   }
 
   final VerificationMeta _stepMeta = const VerificationMeta('step');
-  GeneratedIntColumn _step;
   @override
-  GeneratedIntColumn get step => _step ??= _constructStep();
+  late final GeneratedIntColumn step = _constructStep();
   GeneratedIntColumn _constructStep() {
     return GeneratedIntColumn('step', $tableName, false,
         defaultValue: Constant(0));
   }
 
   final VerificationMeta _timeMeta = const VerificationMeta('time');
-  GeneratedDateTimeColumn _time;
   @override
-  GeneratedDateTimeColumn get time => _time ??= _constructTime();
+  late final GeneratedDateTimeColumn time = _constructTime();
   GeneratedDateTimeColumn _constructTime() {
     return GeneratedDateTimeColumn(
       'time',
@@ -1413,17 +1356,17 @@ class $StepOffsetTable extends StepOffset
     final context = VerificationContext();
     final data = instance.toColumns(true);
     if (data.containsKey('id')) {
-      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id'], _idMeta));
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
     } else if (isInserting) {
       context.missing(_idMeta);
     }
     if (data.containsKey('step')) {
       context.handle(
-          _stepMeta, step.isAcceptableOrUnknown(data['step'], _stepMeta));
+          _stepMeta, step.isAcceptableOrUnknown(data['step']!, _stepMeta));
     }
     if (data.containsKey('time')) {
       context.handle(
-          _timeMeta, time.isAcceptableOrUnknown(data['time'], _timeMeta));
+          _timeMeta, time.isAcceptableOrUnknown(data['time']!, _timeMeta));
     } else if (isInserting) {
       context.missing(_timeMeta);
     }
@@ -1433,7 +1376,7 @@ class $StepOffsetTable extends StepOffset
   @override
   Set<GeneratedColumn> get $primaryKey => <GeneratedColumn>{};
   @override
-  StepOffsetData map(Map<String, dynamic> data, {String tablePrefix}) {
+  StepOffsetData map(Map<String, dynamic> data, {String? tablePrefix}) {
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : null;
     return StepOffsetData.fromData(data, _db, prefix: effectivePrefix);
   }
@@ -1446,29 +1389,19 @@ class $StepOffsetTable extends StepOffset
 
 abstract class _$AppDatabase extends GeneratedDatabase {
   _$AppDatabase(QueryExecutor e) : super(SqlTypeSystem.defaultInstance, e);
-  $StepsTable _steps;
-  $StepsTable get steps => _steps ??= $StepsTable(this);
-  Index _stepTime;
-  Index get stepTime => _stepTime ??=
+  late final $StepsTable steps = $StepsTable(this);
+  late final Index stepTime =
       Index('step_time', 'CREATE INDEX step_time ON steps(time);');
-  $RecordsTable _records;
-  $RecordsTable get records => _records ??= $RecordsTable(this);
-  Index _recordsEndTime;
-  Index get recordsEndTime => _recordsEndTime ??= Index('records_end_time',
+  late final $RecordsTable records = $RecordsTable(this);
+  late final Index recordsEndTime = Index('records_end_time',
       'CREATE INDEX records_end_time ON records(end_time);');
-  Index _recordsStartTime;
-  Index get recordsStartTime => _recordsStartTime ??= Index(
-      'records_start_time',
+  late final Index recordsStartTime = Index('records_start_time',
       'CREATE INDEX records_start_time ON records(start_time);');
-  Index _recordsEventId;
-  Index get recordsEventId => _recordsEventId ??= Index('records_event_id',
+  late final Index recordsEventId = Index('records_event_id',
       'CREATE INDEX records_event_id ON records(event_id);');
-  $EventsTable _events;
-  $EventsTable get events => _events ??= $EventsTable(this);
-  $UnitsTable _units;
-  $UnitsTable get units => _units ??= $UnitsTable(this);
-  $StepOffsetTable _stepOffset;
-  $StepOffsetTable get stepOffset => _stepOffset ??= $StepOffsetTable(this);
+  late final $EventsTable events = $EventsTable(this);
+  late final $UnitsTable units = $UnitsTable(this);
+  late final $StepOffsetTable stepOffset = $StepOffsetTable(this);
   @override
   Iterable<TableInfo> get allTables => allSchemaEntities.whereType<TableInfo>();
   @override

@@ -12,11 +12,12 @@ class HeatMapSetting {
   final double weekTileMargin;
   final double monthTileMargin;
 
-  const HeatMapSetting({this.colorMap = heatmapColorMap,
-    this.dayTileSize = 15,
-    this.dayTileMargin = 5,
-    this.weekTileMargin = 6,
-    this.monthTileMargin = 2});
+  const HeatMapSetting(
+      {this.colorMap = heatmapColorMap,
+      this.dayTileSize = 15,
+      this.dayTileMargin = 5,
+      this.weekTileMargin = 6,
+      this.monthTileMargin = 2});
 }
 
 class HeatMapDataHolder extends InheritedWidget {
@@ -24,14 +25,15 @@ class HeatMapDataHolder extends InheritedWidget {
   final Map<DateTime, int> date2level;
   final Map<DateTime, double> data; // 用于toolTip
   final DateTimeRange dateRange; //因为map无序
-  final String unit;
+  String? unit;
 
-  HeatMapDataHolder({this.setting,
-    this.data,
-    this.date2level,
-    this.dateRange,
-    this.unit,
-    Widget child})
+  HeatMapDataHolder(
+      {required this.setting,
+      required this.data,
+      required this.date2level,
+      required this.dateRange,
+      this.unit,
+      required Widget child})
       : super(child: child);
 
   @override
@@ -40,22 +42,23 @@ class HeatMapDataHolder extends InheritedWidget {
   }
 
   static HeatMapDataHolder of(BuildContext context) {
-    return context.dependOnInheritedWidgetOfExactType<HeatMapDataHolder>();
+    return context.dependOnInheritedWidgetOfExactType<HeatMapDataHolder>()!;
   }
 }
 
 // ignore: must_be_immutable
 class HeatMapCalendar extends StatefulWidget {
   final HeatMapSetting setting;
-  Map<DateTime, double> data = {};
+  final Map<DateTime, double> data = {};
   final DateTimeRange dateRange;
   final String unit; //Tooltip显示的单位
 
-  HeatMapCalendar({Key key,
-    this.setting = const HeatMapSetting(),
-    @required Map<DateTime, double> input,
-    @required this.dateRange,
-    this.unit})
+  HeatMapCalendar(
+      {Key? key,
+      this.setting = const HeatMapSetting(),
+      required Map<DateTime, double> input,
+      required this.dateRange,
+      required this.unit})
       : super(key: key) {
     input.forEach((key, value) {
       this.data[getDate(key)] = value;
@@ -87,19 +90,18 @@ class HeatMapCalendarState extends State<HeatMapCalendar> {
     date2level[nilTime] = -1; //用于留白
     //可能并不是所有日期都有数据，要允许这样的留白;
     for (DateTime i = widget.dateRange.start;
-    i.compareTo(widget.dateRange.end) <= 0;
-    i = i.add(Duration(days: 1))) {
+        i.compareTo(widget.dateRange.end) <= 0;
+        i = i.add(Duration(days: 1))) {
       if (widget.data.containsKey(i)) {
         int level = 0;
         for (int j = 0; j < threshold.length; j++) {
-          if (widget.data[i] > threshold[j]) level = j;
+          if (widget.data[i]! > threshold[j]) level = j;
         }
         date2level[i] = level;
       } else {
         date2level[i] = 0;
       }
     }
-    print(date2level);
     return HeatMapDataHolder(
         setting: widget.setting,
         date2level: date2level,
