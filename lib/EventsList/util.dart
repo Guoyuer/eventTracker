@@ -1,21 +1,21 @@
 part of 'eventsList.dart';
 
-void startTimingRecord(BuildContext context) {
+void startTimingRecord(BuildContext context, DateTime now) {
   int eventId = EventDataHolder.of(context).event.id;
   DBHandle()
       .db
-      .startTimingRecordInDB((RecordsCompanion(
-          startTime: Value(DateTime.now()), eventId: Value(eventId))))
+      .startTimingRecordInDB(
+          (RecordsCompanion(startTime: Value(now), eventId: Value(eventId))))
       .then((_) => ReloadEventsNotification().dispatch(context));
 }
 
-Future<String?> inputValDialog(
-    BuildContext ctx, TextEditingController _c, String unit) {
+Future<String?> inputValDialog(BuildContext ctx, String unit) {
+  TextEditingController _c = TextEditingController();
   return showDialog<String>(
       context: ctx,
       builder: (context) {
         return AlertDialog(
-          title: Text("请输入"),
+          title: Text("请输入数据"),
           content: Row(
             children: [
               Text("共完成了"),
@@ -45,17 +45,16 @@ Future<String?> inputValDialog(
       });
 }
 
-Future addPlainRecord(BuildContext context) async {
+Future addPlainRecord(BuildContext context, DateTime time) async {
   int eventId = EventDataHolder.of(context).event.id;
   //判断是否有unit
-  TextEditingController _c = TextEditingController();
 
   String? unit = await DBHandle().db.getEventUnit(eventId);
 
   double val = 0;
   if (unit != null) {
     //有单位
-    String? valStr = await inputValDialog(context, _c, unit);
+    String? valStr = await inputValDialog(context, unit);
     if (valStr == null) return; // 对话框点了取消，不记录
     if (valStr.isNotEmpty) {
       val = double.parse(valStr);
@@ -64,18 +63,15 @@ Future addPlainRecord(BuildContext context) async {
   DBHandle()
       .db
       .addPlainRecordInDB((RecordsCompanion(
-          value: Value(val),
-          endTime: Value(DateTime.now()),
-          eventId: Value(eventId))))
+          value: Value(val), endTime: Value(time), eventId: Value(eventId))))
       .then((_) => ReloadEventsNotification().dispatch(context));
 }
 
 //按下停止记录按钮的回调函数
-Future stopTimingRecord(BuildContext context) async {
+Future stopTimingRecord(BuildContext context, DateTime time) async {
   int eventId = EventDataHolder.of(context).event.id;
 
   var db = DBHandle().db;
-  TextEditingController _c = TextEditingController();
   int recordId = await db.getLastRecordId(eventId);
 
   DateTime startTime = await db.getStartTime(recordId);
@@ -112,7 +108,7 @@ Future stopTimingRecord(BuildContext context) async {
     String? unit = await DBHandle().db.getEventUnit(eventId);
     double val = 0;
     if (unit != null) {
-      String? valStr = await inputValDialog(context, _c, unit);
+      String? valStr = await inputValDialog(context, unit);
       if (valStr == null) return;
       if (valStr.isNotEmpty) val = double.parse(valStr);
     }
@@ -123,7 +119,7 @@ Future stopTimingRecord(BuildContext context) async {
             RecordsCompanion(
                 id: Value(recordId),
                 eventId: Value(eventId),
-                endTime: Value(DateTime.now()),
+                endTime: Value(time),
                 value: Value(val)))
         .then((_) => ReloadEventsNotification().dispatch(context));
   }

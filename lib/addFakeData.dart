@@ -4,10 +4,10 @@ import 'DAO/base.dart';
 import 'dart:math';
 
 Future addData() async {
-  // await addTimingWithoutValue();
-  // await addTimingWithValue();
-  // await addPlainWithoutValue();
-  // await addPlainWithValue();
+  await addTimingWithoutValue();
+  await addTimingWithValue();
+  await addPlainWithoutValue();
+  await addPlainWithValue();
   await addStepData();
 }
 

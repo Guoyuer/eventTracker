@@ -15,6 +15,7 @@ import '../common/customWidget.dart';
 import '../DAO/base.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:duration/duration.dart';
+import 'package:flutter_datetime_picker/flutter_datetime_picker.dart';
 
 part 'util.dart';
 
@@ -68,22 +69,86 @@ class EventTileButton extends StatelessWidget {
     EventStatus status = getEventStatus(event);
     switch (status) {
       case EventStatus.plain:
-        return eventListButton(Text("新记录"), () {
-          addPlainRecord(context);
+        return eventListButton(Icon(Icons.add_rounded), Text("新记录"), () {
+          DateTime now = DateTime.now();
+          addPlainRecord(context, now);
+        }, () {
+          showToast("长按 -- 手动指定时间");
+          DatePicker.showDateTimePicker(context,
+              showTitleActions: true,
+              minTime: DateTime.now().add(Duration(days: -7)),
+              maxTime: DateTime.now().add(Duration(seconds: 1)),
+              theme: DatePickerTheme(
+                  headerColor: Colors.orange,
+                  backgroundColor: Colors.blue,
+                  itemStyle: TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 18),
+                  doneStyle: TextStyle(color: Colors.white, fontSize: 16)),
+              onConfirm: (time) {
+            addPlainRecord(context, time);
+          }, onCancel: () {
+            showToast("用户取消");
+          }, currentTime: DateTime.now(), locale: LocaleType.zh);
         });
         break;
       case EventStatus.notActive:
-        //TODO 长按停止可以手动输入开始时间
-        return eventListButton(Text("开始"), () {
-          startTimingRecord(context);
+        return eventListButton(Icon(Icons.play_arrow_outlined), Text("开始"), () {
+          DateTime now = DateTime.now();
+          startTimingRecord(context, now);
+        }, () {
+          showToast("长按 -- 手动指定开始时间");
+          DatePicker.showDateTimePicker(context,
+              showTitleActions: true,
+              minTime: DateTime.now().add(Duration(days: -7)),
+              maxTime: DateTime.now().add(Duration(seconds: 1)),
+              theme: DatePickerTheme(
+                  headerColor: Colors.orange,
+                  backgroundColor: Colors.blue,
+                  itemStyle: TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 18),
+                  doneStyle: TextStyle(color: Colors.white, fontSize: 16)),
+              onConfirm: (time) {
+            startTimingRecord(context, time);
+          }, onCancel: () {
+            showToast("用户取消");
+          }, currentTime: DateTime.now(), locale: LocaleType.zh);
         });
       case EventStatus.active:
-        //TODO 长按停止可以手动输入停止时间（校验是否早于开始时间？）
-        return eventListButton(Text("停止"), () {
-          stopTimingRecord(context);
+        return eventListButton(Icon(Icons.stop_circle_outlined), Text("停止"),
+            () {
+          stopTimingRecord(context, DateTime.now());
+        }, () async {
+          showToast("长按 -- 手动指定停止时间");
+          var db = DBHandle().db;
+          DateTime startTime = await db.getEventStartTime(event.id);
+          print(startTime);
+          DatePicker.showDateTimePicker(context,
+              showTitleActions: true,
+              minTime: startTime.add(Duration(seconds: 6)),
+              maxTime: DateTime.now(),
+              theme: DatePickerTheme(
+                  headerColor: Colors.orange,
+                  backgroundColor: Colors.blue,
+                  itemStyle: TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 18),
+                  doneStyle: TextStyle(color: Colors.white, fontSize: 16)),
+              onConfirm: (time) {
+            stopTimingRecord(context, time);
+          }, onCancel: () {
+            showToast("用户取消");
+          },
+              currentTime: startTime.add(Duration(minutes: 1)),
+              locale: LocaleType.zh);
         });
       default:
-        return eventListButton(Text("???"), () {});
+        return eventListButton(
+            Icon(Icons.help_outline_rounded), Text("???"), () {});
     }
   }
 }

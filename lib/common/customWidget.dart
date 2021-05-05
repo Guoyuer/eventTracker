@@ -19,11 +19,12 @@ RaisedButton myRaisedButton(Widget child, void Function() onPressCallBack,
       onLongPress: onLongPressCallBack);
 }
 
-Widget eventListButton(Widget child, void Function() onPressCallBack,
+Widget eventListButton(Icon icon, Widget label, void Function() onPressCallBack,
     [void Function()? onLongPressCallBack]) {
   return Container(
       margin: EdgeInsets.only(right: 7),
-      child: RaisedButton(
+      child: RaisedButton.icon(
+          icon: icon,
           color: Colors.blue,
           highlightColor: Colors.blue[700],
           colorBrightness: Brightness.dark,
@@ -31,7 +32,7 @@ Widget eventListButton(Widget child, void Function() onPressCallBack,
           shape:
               RoundedRectangleBorder(borderRadius: BorderRadius.circular(20.0)),
           // padding: EdgeInsets.symmetric(horizontal: 50),
-          child: child,
+          label: label,
           onPressed: onPressCallBack,
           onLongPress: onLongPressCallBack));
 }

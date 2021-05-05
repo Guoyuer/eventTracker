@@ -72,9 +72,12 @@ class _EventDetailsState extends State<EventDetails> {
     List<Widget> listChildren = [];
     listChildren.add(DividerWithText("项目描述"));
     if (widget.event.description == null) {
-      listChildren.add(ListTile(title: Text("无项目描述")));
+      listChildren.add(Center(
+        child: ListTile(title: Text("无项目描述")),
+      ));
     } else {
-      listChildren.add(ListTile(title: Text(widget.event.description!)));
+      listChildren
+          .add(Center(child: ListTile(title: Text(widget.event.description!))));
     }
 
     ///前三项紧密关联，共用一个FutureBuilder
@@ -226,7 +229,7 @@ class _EventDetailsState extends State<EventDetails> {
           actions: [
             IconButton(
                 onPressed: () async {
-                  bool delete = await showDialog(
+                  bool? delete = await showDialog(
                       context: context,
                       builder: (context) {
                         return AlertDialog(
@@ -274,6 +277,7 @@ Widget getMonthRecordsWidgets(
     String monthStr = month.month.toString();
     tiles.add(ListTile(title: Text(yearStr + "年" + monthStr + "月数据")));
   }
+
   records = records
       .where((element) =>
           element.endTime!.month == month.month &&

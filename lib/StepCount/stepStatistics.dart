@@ -14,34 +14,21 @@ import '../main.dart';
 import 'package:pedometer/pedometer.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-class StepDisplayModel {
-  int step = 0;
-  DateTime time = nilTime;
-
-  StepDisplayModel({required this.step, required this.time});
-}
-
-class PedometerPage extends StatelessWidget {
-  PedometerPage({Key? key}) : super(key: key);
+class StepStatPage extends StatelessWidget {
+  StepStatPage({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    return PedometerPageBuildingBlock();
+    return StepStatPageContent();
   }
 }
 
-String formatDate(DateTime d) {
-  return d.toString().substring(0, 19);
-}
-
-class PedometerPageBuildingBlock extends StatefulWidget {
+class StepStatPageContent extends StatefulWidget {
   @override
-  _PedometerPageBuildingBlockState createState() =>
-      _PedometerPageBuildingBlockState();
+  _StepStatPageContentState createState() => _StepStatPageContentState();
 }
 
-class _PedometerPageBuildingBlockState
-    extends State<PedometerPageBuildingBlock> {
+class _StepStatPageContentState extends State<StepStatPageContent> {
   // Stream<StepCount> _stepCountStream;
   // StreamSubscription _subscription;
   var db = DBHandle().db;
@@ -59,118 +46,7 @@ class _PedometerPageBuildingBlockState
   void initState() {
     super.initState();
     _dailySteps = db.getRecordsByEventId(-1);
-    // initPlatformState();
-    // getLastStep();
   }
-
-  // void getLastStep() async {
-  //   var tmp = await db.getLatestStep();
-  //   if (tmp != null) {
-  //     countEvent = StepDisplayModel(step: tmp.step, time: tmp.time);
-  //   }
-  // }
-
-  // void wrapper(Future<StepCount> event) {
-  //   print("wrapper called");
-  //   event.then((value) => onStepCount(value));
-  // }
-
-  // void onStepCount(StepCount event) async {
-  //   print("onStepCount called");
-  //   print(event);
-  //   //处理offset
-  //   int offset = 0;
-  //   StepOffsetData lastOffset = await db.getStepOffset();
-  //   if (lastOffset == null) {
-  //     await db.writeStepOffset(event.steps, event.timeStamp);
-  //     offset = event.steps;
-  //   } else {
-  //     if ((lastOffset.time.day != event.timeStamp.day) ||
-  //         lastOffset.step > event.steps) {
-  //       //与上次记录相比过了一天 或者 系统重启
-  //       await db.updateStepOffset(event.steps, event.timeStamp);
-  //       offset = event.steps;
-  //     } else {
-  //       offset = lastOffset.step;
-  //     }
-  //   }
-  //   //计算步数
-  //
-  //   setState(() {
-  //     countEvent =
-  //         StepDisplayModel(step: event.steps - offset, time: event.timeStamp);
-  //   });
-  //   db.writeStep(event.steps - offset, event.timeStamp);
-  // }
-
-  // void onStepCountError(error) {
-  //   print('onStepCountError: $error');
-  // }
-  //
-  // void _onBackgroundFetch(String taskId) async {
-  //   // _stepCountStream.listen(onStepCount);
-  //   // print("add a listen");
-  //   var event = _stepCountStream.last;
-  //   wrapper(event);
-  //   BackgroundFetch.finish(taskId);
-  // }
-  //
-  // void _onBackgroundFetchTimeout(String taskId) {
-  //   print("[Step Count] TIMEOUT: $taskId");
-  //   BackgroundFetch.finish(taskId);
-  // }
-
-//   void _onBackgroundFetch (String taskId) async {
-//   var event = await _stepCountStream.last;
-//   print(event);
-//   onStepCount(event);
-//   // _stepCountStream.listen(onStepCount).onError(onStepCountError);
-//   print("Stream元素：");
-//   print(_stepCountStream.length);
-//   // <-- Event handler
-//   // This is the fetch-event callback.
-//   print("[Step Count] Event received $taskId");
-//
-//   // IMPORTANT:  You must signal completion of your task or the OS can punish your app
-//   // for taking too long in the background.
-//   BackgroundFetch.finish(taskId);
-// }
-  void initPlatformState() async {
-    // _stepCountStream = Pedometer.stepCountStream;
-    // _subscription = _stepCountStream.listen(onStepCount);
-
-    // int status = await BackgroundFetch.configure(
-    //     BackgroundFetchConfig(
-    //         minimumFetchInterval: 15,
-    //         stopOnTerminate: false,
-    //         enableHeadless: true,
-    //         requiresBatteryNotLow: false,
-    //         requiresCharging: false,
-    //         requiresStorageNotLow: false,
-    //         requiresDeviceIdle: false,
-    //         requiredNetworkType: NetworkType.NONE),
-    //     _onBackgroundFetch,
-    //     _onBackgroundFetchTimeout);
-    // print('[Step Count] configure success: $status');
-    // if (!mounted) return;
-  }
-
-  // void _onClickBGEnable(enabled) {
-  //   setState(() {
-  //     _BGEnabled = enabled;
-  //   });
-  //   if (enabled) {
-  //     BackgroundFetch.start().then((int status) {
-  //       print("BG启动成功");
-  //     }).catchError((e) {
-  //       print("BG启动失败: $e");
-  //     });
-  //   } else {
-  //     BackgroundFetch.stop().then((int status) {
-  //       print("BG停止成功");
-  //     });
-  //   }
-  // }
 
   void switchChange(bool val) {
     setState(() {
@@ -239,7 +115,8 @@ class _PedometerPageBuildingBlockState
                           ];
                           records = records
                               .where((element) =>
-                                  element.endTime!.month == displayDate!.month &&
+                                  element.endTime!.month ==
+                                      displayDate!.month &&
                                   element.endTime!.year == displayDate!.year)
                               .toList(); //只保留本月的记录，
 
@@ -261,10 +138,11 @@ class _PedometerPageBuildingBlockState
                                     bottomTitle: AxisTitle(
                                         showTitle: true,
                                         margin: 10,
-                                        titleText: displayDate!.year.toString() +
-                                            '年' +
-                                            displayDate!.month.toString() +
-                                            '月')),
+                                        titleText:
+                                            displayDate!.year.toString() +
+                                                '年' +
+                                                displayDate!.month.toString() +
+                                                '月')),
                                 borderData: FlBorderData(show: false),
                                 gridData: FlGridData(
                                     show: true,
@@ -354,17 +232,21 @@ class _PedometerPageBuildingBlockState
         onChanged: switchChange,
       ));
     }
-    return Center(
-        child: NotificationListener(
-      onNotification: (MonthTouchedNotification n) {
-        setState(() {
-          displayDate = n.month;
-        });
-        return true;
-      },
-      child: ListView(
-        children: listChildren,
-      ),
-    ));
+    return Scaffold(
+        appBar: AppBar(
+          title: Text("行走统计"),
+        ),
+        body: Center(
+            child: NotificationListener(
+          onNotification: (MonthTouchedNotification n) {
+            setState(() {
+              displayDate = n.month;
+            });
+            return true;
+          },
+          child: ListView(
+            children: listChildren,
+          ),
+        )));
   }
 }

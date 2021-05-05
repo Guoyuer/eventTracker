@@ -31,7 +31,7 @@ class DBHandle {
 class AppDatabase extends _$AppDatabase {
   AppDatabase()
       : super(FlutterQueryExecutor.inDatabaseFolder(
-            path: "db.sqlite", logStatements: true));
+            path: "db.sqlite", logStatements: false));
 
   @override
   int get schemaVersion => 2;
@@ -111,10 +111,10 @@ class AppDatabase extends _$AppDatabase {
     return event.lastRecordId!;
   }
 
-  ///得到所有的记录
+  ///得到所有的记录，不包括active的记录
   Future<List<Record>> getRecordsByEventId(int eventId) => (select(records)
         ..orderBy([(t) => OrderingTerm(expression: t.endTime)])
-        ..where((tbl) => tbl.eventId.equals(eventId)))
+        ..where((tbl) => tbl.eventId.equals(eventId) & tbl.endTime.isNotNull()))
       .get();
 
   ///////////////////record.add类
@@ -216,6 +216,15 @@ class AppDatabase extends _$AppDatabase {
   //     ..where(events.id.equals(eventId));
   //   return query.map((row) => row.read(events.sumVal)).getSingle();
   // }
+  Future<DateTime> getEventStartTime(int eventId) async {
+    Event event = await (select(events)..where((tbl) => tbl.id.equals(eventId)))
+        .getSingle();
+    int lastRecordId = event.lastRecordId!;
+    Record record = await (select(records)
+          ..where((tbl) => tbl.id.equals(lastRecordId)))
+        .getSingle();
+    return record.startTime!;
+  }
 
   Future<String?> getEventUnit(int eventId) async {
     final query = selectOnly(events)
@@ -230,13 +239,14 @@ class AppDatabase extends _$AppDatabase {
   }
 
   ///返回成功或失败
-  Future addEventInDB(EventsCompanion event) async {
-
-    await into(events).insert(event)
-        .then((value) {
-    }).catchError((err) {
+  Future<int> addEventInDB(EventsCompanion event) async {
+    try {
+      return into(events).insert(event);
+    } catch (err) {
+      print(err);
       showToast("创建项目失败，可能是因为重名");
-    });
+      return -1;
+    }
   }
 
   Future deleteEvent(int eventId) async {
