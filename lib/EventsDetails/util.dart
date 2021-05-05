@@ -53,6 +53,7 @@ List<int> getTimeSlotSumVal(List<Record> records) {
   data.forEach((element) {
     res.add(element.toInt());
   });
+
   return res;
 }
 

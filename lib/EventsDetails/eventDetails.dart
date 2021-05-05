@@ -386,27 +386,37 @@ class _EventDetailsState extends State<EventDetails> {
         data = getTimeSlotSumVal(records);
       }
     }
-    for (int i = 0; i < 24; i++) {
-      bars.add(BarChartGroupData(x: i, barRods: [
-        BarChartRodData(y: data[i].toDouble(), colors: gradientColors)
+    List<double> processedData = [];
+    double max = 0;
+    for (int i = 0; i < 12; i++) {
+      double val = data[i * 2].toDouble() + data[i * 2 + 1];
+      if (val > max) max = val;
+      processedData.add(val);
+    }
+    for (int i = 0; i < 12; i++) {
+      bars.add(BarChartGroupData(x: i * 2, barRods: [
+        BarChartRodData(y: processedData[i], width: 15, colors: gradientColors)
       ]));
     }
-
-    var barChart = SizedBox(
-        height: 300,
-        width: 300,
-        child: BarChart(BarChartData(
-            // groupsSpace: 18,
-            // alignment: BarChartAlignment.start,
-            // titlesData: FlTitlesData(
-            //     leftTitles: SideTitles(
-            //         showTitles: true,
-            //         getTitles: (double val) {
-            //           return (val / 1000).round().toString() + 'K';
-            //         },
-            //         interval: max / 6)),
-            borderData: FlBorderData(show: false),
-            barGroups: bars)));
+    var barChart = SingleChildScrollView(
+        scrollDirection: Axis.horizontal,
+        child: Container(
+            margin: EdgeInsets.only(top: 10, right: 5),
+            child: SizedBox(
+                height: 300,
+                width: 350,
+                child: BarChart(BarChartData(
+                    groupsSpace: 18,
+                    // alignment: BarChartAlignment.start,
+                    titlesData: FlTitlesData(
+                        leftTitles: SideTitles(
+                            showTitles: true,
+                            getTitles: (double val) {
+                              return val.round().toString();
+                            },
+                            interval: max / 6)),
+                    borderData: FlBorderData(show: false),
+                    barGroups: bars)))));
     return barChart;
   }
 }
