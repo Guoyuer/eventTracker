@@ -19,6 +19,12 @@ class MonthTouchedNotification extends Notification {
   MonthTouchedNotification({required this.month});
 }
 
+class DayTouchedNotification extends Notification {
+  final DateTime day;
+
+  DayTouchedNotification({required this.day});
+}
+
 const Map<int, Color> heatmapColorMap = {
   -1: Color.fromARGB(0, 255, 255, 255), //透明，用于占位
   0: Color.fromARGB(255, 235, 237, 240),
@@ -27,3 +33,11 @@ const Map<int, Color> heatmapColorMap = {
   3: Color.fromARGB(255, 48, 161, 78),
   4: Color.fromARGB(255, 33, 110, 57),
 };
+
+List<Color> gradientColors = [
+  Color.fromARGB(255, 235, 237, 240),
+  Color.fromARGB(255, 155, 233, 168),
+  Color.fromARGB(255, 64, 196, 99),
+  Color.fromARGB(255, 48, 161, 78),
+  Color.fromARGB(255, 33, 110, 57),
+];

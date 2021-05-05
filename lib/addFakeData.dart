@@ -21,7 +21,7 @@ Future addTimingWithValue() async {
   final _random = new Random();
   int next(int min, int max) => min + _random.nextInt(max - min);
   for (int i = 300; i >= 0; i--) {
-    int minutes = next(0, 60);
+    int minutes = next(0, 1400);
     DateTime startTime = DateTime.now().add(Duration(days: -i));
     var record = RecordsCompanion(
       eventId: Value(eventId),
@@ -49,7 +49,7 @@ Future addTimingWithoutValue() async {
   final _random = new Random();
   int next(int min, int max) => min + _random.nextInt(max - min);
   for (int i = 300; i >= 0; i--) {
-    int minutes = next(0, 60);
+    int minutes = next(0, 1400);
     DateTime startTime = DateTime.now().add(Duration(days: -i));
     var record = RecordsCompanion(
       eventId: Value(eventId),
@@ -78,7 +78,8 @@ Future addPlainWithValue() async {
       var record = RecordsCompanion(
           eventId: Value(eventId),
           value: Value(next(0, 10).toDouble()),
-          endTime: Value(DateTime.now().add(Duration(days: -j))));
+          endTime: Value(
+              DateTime.now().add(Duration(days: -j, hours: next(0, 23)))));
       await db.addPlainRecordInDB(record);
       //timing with value -- end
     }
@@ -98,8 +99,8 @@ Future addPlainWithoutValue() async {
     for (int k = 1; k <= next(0, 20); k++) {
       var record = RecordsCompanion(
           eventId: Value(eventId),
-          endTime: Value(
-              DateTime.now().add(Duration(days: -j, minutes: next(6, 50)))));
+          endTime: Value(DateTime.now().add(
+              Duration(days: -j, hours: next(0, 23), minutes: next(6, 50)))));
       await db.addPlainRecordInDB(record);
       //timing with value -- end
     }

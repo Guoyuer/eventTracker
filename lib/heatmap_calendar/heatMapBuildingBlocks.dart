@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_event_tracker/common/const.dart';
+import 'package:flutter_event_tracker/common/customWidget.dart';
 import 'heatMap.dart';
 import 'util.dart';
 import 'package:date_util/date_util.dart';
@@ -77,7 +78,7 @@ class MonthTile extends StatelessWidget {
       weeks.add(WeekTile(DateTimeRange(start: nilTime, end: nilTime)));
     }
     return InkWell(
-        onTap: () {
+        onLongPress: () {
           MonthTouchedNotification(month: lastDay).dispatch(context);
         },
         child: Column(
@@ -187,7 +188,8 @@ class DayTile extends StatelessWidget {
         height: setting.dayTileSize,
         width: setting.dayTileSize,
         margin: EdgeInsets.all(setting.dayTileMargin / 2),
-        decoration: dayDecoration(setting.dayTileSize, setting.colorMap[level]!),
+        decoration:
+            dayDecoration(setting.dayTileSize, setting.colorMap[level]!),
       );
     } else {
       String valStr;
@@ -196,16 +198,21 @@ class DayTile extends StatelessWidget {
       } else {
         valStr = "0";
       }
-      return Tooltip(
-          child: Container(
-            alignment: Alignment.center,
-            height: setting.dayTileSize,
-            width: setting.dayTileSize,
-            margin: EdgeInsets.all(setting.dayTileMargin / 2),
-            decoration:
-                dayDecoration(setting.dayTileSize, setting.colorMap[level]!),
-          ),
-          message: "日期：$timeStr  值: $valStr $unit");
+      return InkWell(
+        onTap: () {
+          // showToast("日期: $timeStr 值: $valStr $unit");
+          print("日期: $timeStr 值: $valStr $unit");
+          DayTouchedNotification(day: date).dispatch(context);
+        },
+        child: Container(
+          alignment: Alignment.center,
+          height: setting.dayTileSize,
+          width: setting.dayTileSize,
+          margin: EdgeInsets.all(setting.dayTileMargin / 2),
+          decoration:
+              dayDecoration(setting.dayTileSize, setting.colorMap[level]!),
+        ),
+      );
     }
   }
 }

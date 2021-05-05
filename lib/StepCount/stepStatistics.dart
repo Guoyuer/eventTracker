@@ -106,13 +106,7 @@ class _StepStatPageContentState extends State<StepStatPageContent> {
                       switch (snapshot.connectionState) {
                         case ConnectionState.done:
                           List<Record> records = snapshot.data!;
-                          List<Color> gradientColors = [
-                            Color.fromARGB(255, 235, 237, 240),
-                            Color.fromARGB(255, 155, 233, 168),
-                            Color.fromARGB(255, 64, 196, 99),
-                            Color.fromARGB(255, 48, 161, 78),
-                            Color.fromARGB(255, 33, 110, 57),
-                          ];
+
                           records = records
                               .where((element) =>
                                   element.endTime!.month ==

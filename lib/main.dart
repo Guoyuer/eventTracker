@@ -26,32 +26,6 @@ void main() {
   runApp(EventTracker());
 }
 
-// class AppRetainWidget extends StatelessWidget {
-//   const AppRetainWidget({Key key, this.child}) : super(key: key);
-//
-//   final Widget child;
-//
-//   final _channel = const MethodChannel('com.example/app_retain');
-//
-//   @override
-//   Widget build(BuildContext context) {
-//     return WillPopScope(
-//       onWillPop: () async {
-//         if (Platform.isAndroid) {
-//           if (Navigator.of(context).canPop()) {
-//             return true;
-//           } else {
-//             _channel.invokeMethod('sendToBackground');
-//             return false;
-//           }
-//         } else {
-//           return true;
-//         }
-//       },
-//       child: child,
-//     );
-//   }
-// }
 class EventTracker extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
@@ -81,7 +55,7 @@ class MainPages extends StatefulWidget {
 
 class _MainPagesState extends State<MainPages> {
   int _selectedIndex = 0;
-  List<String> bottomLabels = ["事项", "计步", "选项"];
+  List<String> bottomLabels = ["事项", "计步", "选项", "统计"];
   bool floatingButtonVisible = true;
   List<Widget> _children = [EventList(), PedometerPage(), SettingPage()];
   dynamic eventData; //添加event用，接收返回值

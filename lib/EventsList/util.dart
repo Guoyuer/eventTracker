@@ -9,9 +9,9 @@ void startTimingRecord(BuildContext context, DateTime now) {
       .then((_) => ReloadEventsNotification().dispatch(context));
 }
 
-Future<String?> inputValDialog(BuildContext ctx, String unit) {
+Future<double?> inputValDialog(BuildContext ctx, String unit) {
   TextEditingController _c = TextEditingController();
-  return showDialog<String>(
+  return showDialog<double>(
       context: ctx,
       builder: (context) {
         return AlertDialog(
@@ -36,8 +36,13 @@ Future<String?> inputValDialog(BuildContext ctx, String unit) {
                 child: Text("取消")),
             FlatButton(
                 onPressed: () {
-                  print(_c.text);
-                  Navigator.of(context).pop(_c.text);
+                  double val;
+                  try {
+                    val = double.parse(_c.text);
+                    Navigator.of(context).pop(val);
+                  } catch (err) {
+                    showToast("请输入数值");
+                  }
                 },
                 child: Text("确认")),
           ],
@@ -51,14 +56,11 @@ Future addPlainRecord(BuildContext context, DateTime time) async {
 
   String? unit = await DBHandle().db.getEventUnit(eventId);
 
-  double val = 0;
+  double? val;
   if (unit != null) {
     //有单位
-    String? valStr = await inputValDialog(context, unit);
-    if (valStr == null) return; // 对话框点了取消，不记录
-    if (valStr.isNotEmpty) {
-      val = double.parse(valStr);
-    }
+    val = await inputValDialog(context, unit);
+    if (val == null) return; // 对话框点了取消，不记录
   }
   DBHandle()
       .db
@@ -106,11 +108,10 @@ Future stopTimingRecord(BuildContext context, DateTime time) async {
   } else {
     //该任务距开始超过5s，进行正常停止操作
     String? unit = await DBHandle().db.getEventUnit(eventId);
-    double val = 0;
+    double? val = 0;
     if (unit != null) {
-      String? valStr = await inputValDialog(context, unit);
-      if (valStr == null) return;
-      if (valStr.isNotEmpty) val = double.parse(valStr);
+      val = await inputValDialog(context, unit);
+      if (val == null) return;
     }
 
     db
