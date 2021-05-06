@@ -260,14 +260,14 @@ class AppDatabase extends _$AppDatabase {
 
   Future _eventProcessor(Event rawEvent) async {
     // print(rawEvent);
-    Future<TimingEventDisplayModel> timingEventProcessor(Event rawEvent) async {
-      bool isActive;
+    Future<TimingEventModel> timingEventProcessor(Event rawEvent) async {
+      EventStatus status;
       Duration? sumTime;
       DateTime? startTime;
       double? sumVal;
       if (rawEvent.lastRecordId == null) {
         // 当前还无记录（新创建且未开始的的event）
-        isActive = false;
+        status = EventStatus.notActive;
         sumTime = Duration(seconds: 0);
         startTime = null;
         sumVal = 0;
@@ -278,16 +278,16 @@ class AppDatabase extends _$AppDatabase {
         sumVal = rawEvent.sumVal;
         sumTime = rawEvent.sumTime;
         if (record.endTime == null) {
-          isActive = true;
+          status = EventStatus.active;
         } else {
-          isActive = false;
+          status = EventStatus.notActive;
         }
       }
-      return TimingEventDisplayModel(
+      return TimingEventModel(
           rawEvent.id,
           rawEvent.name,
           rawEvent.unit,
-          isActive,
+          status,
           sumTime,
           startTime,
           sumVal,
@@ -295,8 +295,8 @@ class AppDatabase extends _$AppDatabase {
           rawEvent.lastRecordId);
     }
 
-    Future<PlainEventDisplayModel> plainEventProcessor(Event rawEvent) async {
-      return PlainEventDisplayModel(
+    Future<PlainEventModel> plainEventProcessor(Event rawEvent) async {
+      return PlainEventModel(
           rawEvent.id,
           rawEvent.name,
           rawEvent.unit,
@@ -312,9 +312,9 @@ class AppDatabase extends _$AppDatabase {
       return plainEventProcessor(rawEvent);
   }
 
-  Future<List<BaseEventDisplayModel>> getEventsProfile() async {
+  Future<List<BaseEventModel>> getEventsProfile() async {
     var rawEvents = await getRawEvents();
-    List<BaseEventDisplayModel> events = [];
+    List<BaseEventModel> events = [];
     for (var event in rawEvents) {
       events.add(await _eventProcessor(event));
     }

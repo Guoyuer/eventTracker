@@ -23,14 +23,6 @@
 'HOURS
 'MINUTES
 '}
-entity Record{
-    *id
-    --
-    *eventId
-    startTime
-    endTime
-    value
-}
 
 entity Event{
     *id
@@ -49,7 +41,33 @@ entity Unit{
     --
     *name
 }
-
 Unit "0 or 1" |o-- Event
+
+
+entity Record{
+    *id
+    --
+    *eventId: FK<Event.id> (index)
+    startTime(index)
+    endTime(index)
+    value
+}
+
+
+entity StepOffset{
+    *id
+    --
+    *step
+    *time
+}
+
+entity Steps{
+    *id
+    --
+    *step
+    *time(index)
+}
+
+
 
 @enduml

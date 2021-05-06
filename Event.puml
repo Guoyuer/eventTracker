@@ -1,0 +1,20 @@
+@startuml
+'https://plantuml.com/class-diagram
+class Event{
+  final int id;
+  --
+  final String name;
+  --
+  final String? description;
+  --
+  final bool careTime;
+  --
+  final int? lastRecordId;
+  --
+  final String? unit;
+  --
+  final double sumVal;
+  --
+  final Duration sumTime;
+}
+@enduml

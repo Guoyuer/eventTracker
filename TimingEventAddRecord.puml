@@ -1,0 +1,40 @@
+@startuml
+'https://plantuml.com/activity-diagram-beta
+
+start
+:**开始计时项目**;
+:新增记录，写入开始时间;
+:修改项目的lastRecordId;
+if (**短按or长按停止**) then(**长按(停止时间是之前)**)
+:**手动选择时间**;
+partition function {
+ if (是否带其他量纲?) then(true)
+ :**输入量纲**;
+ :写入结束时间和物理量;
+ else (false)
+ :写入结束时间;
+ endif
+ stop
+}
+else (**短按(停止时间是现在)**)
+if (持续时间 > 5s?) then (yes)
+partition function {
+
+ if (是否带其他量纲?) then(true)
+ :**输入量纲**;
+ :写入结束时间和物理量;
+ else (false)
+ :写入结束时间;
+ endif
+ stop
+}
+else (no)
+ if (**取消or删除?**) then (取消)
+ else (删除)
+ :删除该记录;
+ :修改项目的lastRecordId;
+ endif
+ stop
+endif
+
+@enduml

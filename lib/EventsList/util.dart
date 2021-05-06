@@ -126,11 +126,11 @@ Future stopTimingRecord(BuildContext context, DateTime time) async {
   }
 }
 
-EventStatus getEventStatus(BaseEventDisplayModel event) {
-  if (event is TimingEventDisplayModel) {
+EventStatus getEventStatus(BaseEventModel event) {
+  if (event is TimingEventModel) {
     return event.status;
   } else {
-    if (event is PlainEventDisplayModel) return event.status;
+    if (event is PlainEventModel) return EventStatus.plain;
   }
   return EventStatus.plain;
 }

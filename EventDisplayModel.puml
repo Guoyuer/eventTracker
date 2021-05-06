@@ -1,0 +1,43 @@
+@startuml
+'https://plantuml.com/class-diagram
+
+class BaseEventModel{
+      int id // 事件id
+      --
+      String name // 事件名称
+      --
+      String? unit // 事件单位
+      --
+      String? description
+      --
+      int? lastRecordId
+}
+
+
+
+class PlainEventModel extends BaseEventModel{
+      int time // 事件次数
+      --
+      double? sumVal // 总量
+}
+
+class TimingEventModel extends BaseEventModel {
+  DateTime? startTime; //本次开始时间，用于计算间隔
+  --
+  Duration sumDuration; // 总持续时间
+  --
+  double? sumVal; // 总量
+  --
+  EventStatus status; //状态
+}
+
+enum EventStatus{
+    plain
+    --
+    active
+    --
+    notActive
+}
+TimingEventModel --> EventStatus
+
+@enduml

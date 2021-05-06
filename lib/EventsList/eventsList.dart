@@ -28,7 +28,7 @@ class EventList extends StatefulWidget {
 
 class _EventListState extends State<EventList> {
   // EventsDbProvider db = EventsDbProvider();
-  late Future<List<BaseEventDisplayModel>> _events;
+  late Future<List<BaseEventModel>> _events;
 
   @override
   void initState() {
@@ -38,12 +38,12 @@ class _EventListState extends State<EventList> {
 
   @override
   Widget build(BuildContext context) {
-    return FutureBuilder<List<BaseEventDisplayModel>>(
+    return FutureBuilder<List<BaseEventModel>>(
         future: _events,
         builder: (ctx, snapshot) {
           switch (snapshot.connectionState) {
             case ConnectionState.done:
-              List<BaseEventDisplayModel> events = snapshot.data!;
+              List<BaseEventModel> events = snapshot.data!;
               return ListView.builder(
                   shrinkWrap: true,
                   itemCount: events.length,
@@ -65,7 +65,7 @@ class EventTileButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    BaseEventDisplayModel event = EventDataHolder.of(context).event;
+    BaseEventModel event = EventDataHolder.of(context).event;
     EventStatus status = getEventStatus(event);
     switch (status) {
       case EventStatus.plain:
@@ -154,7 +154,7 @@ class EventTileButton extends StatelessWidget {
 }
 
 class EventDataHolder extends InheritedWidget {
-  final BaseEventDisplayModel event;
+  final BaseEventModel event;
 
   EventDataHolder({required this.event, required Widget child})
       : super(child: child);
@@ -193,19 +193,19 @@ class _EventTileState extends State<EventTile>
 
   @override
   Widget build(BuildContext context) {
-    BaseEventDisplayModel event = EventDataHolder.of(context).event;
+    BaseEventModel event = EventDataHolder.of(context).event;
     Widget eventInfo;
-    if (event is TimingEventDisplayModel) {
+    if (event is TimingEventModel) {
       String sumValStr;
       //TimingEvent
       var data = event;
-      if (!data.isActive) {
+      if (data.status == EventStatus.notActive) {
         //关闭动画
         _controller.reset();
         //inactive，显示累计时间和值(if有单位)
         String sumTimeStr = "尚未开始";
-        if (data.sumTime.inMicroseconds != 0) {
-          sumTimeStr = formatDuration(data.sumTime);
+        if (data.sumDuration.inMicroseconds != 0) {
+          sumTimeStr = formatDuration(data.sumDuration);
           sumTimeStr = "共进行$sumTimeStr";
         }
 
@@ -237,7 +237,7 @@ class _EventTileState extends State<EventTile>
     } else {
       _controller.reset();
       //PlainEvent
-      var data = (event as PlainEventDisplayModel);
+      var data = (event as PlainEventModel);
       int time = data.time;
 
       String sumTimeStr;

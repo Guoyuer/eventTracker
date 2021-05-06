@@ -55,7 +55,7 @@ class MainPages extends StatefulWidget {
 
 class _MainPagesState extends State<MainPages> {
   int _selectedIndex = 0;
-  List<String> bottomLabels = ["事项", "计步", "选项", "统计"];
+  List<String> bottomLabels = ["项目", "计步", "选项", "统计"];
   bool floatingButtonVisible = true;
   List<Widget> _children = [EventList(), PedometerPage(), SettingPage()];
   dynamic eventData; //添加event用，接收返回值

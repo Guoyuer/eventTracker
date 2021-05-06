@@ -23,15 +23,15 @@ import 'package:fl_chart/fl_chart.dart';
 class EventDetailsWrapper extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    BaseEventDisplayModel event =
-        ModalRoute.of(context)!.settings.arguments as BaseEventDisplayModel;
+    BaseEventModel event =
+        ModalRoute.of(context)!.settings.arguments as BaseEventModel;
     return EventDetails(event: event);
   }
 }
 
 class EventDetails extends StatefulWidget {
   EventDetails({Key? key, required this.event}) : super(key: key);
-  final BaseEventDisplayModel event;
+  final BaseEventModel event;
 
   @override
   _EventDetailsState createState() => _EventDetailsState();
@@ -52,7 +52,7 @@ class _EventDetailsState extends State<EventDetails> {
   void initState() {
     super.initState();
     _records = db.getRecordsByEventId(widget.event.id);
-    if (widget.event is TimingEventDisplayModel) {
+    if (widget.event is TimingEventModel) {
       toggleTexts.add("时长");
     } else {
       toggleTexts.add("次数");
@@ -76,7 +76,7 @@ class _EventDetailsState extends State<EventDetails> {
     DateTimeRange range = DateTimeRange(
         start: getDate(records[0].endTime!),
         end: getDate(records.last.endTime!));
-    if (widget.event is TimingEventDisplayModel) {
+    if (widget.event is TimingEventModel) {
       if (getSelected(isSelected) == 0) {
         //得到时长统计信息
         toolTipUnit = "分钟";
@@ -314,7 +314,7 @@ class _EventDetailsState extends State<EventDetails> {
   }
 
   Widget getDayRecordsWidgets(
-      List<Record> records, DateTime time, BaseEventDisplayModel event) {
+      List<Record> records, DateTime time, BaseEventModel event) {
     List<Widget> tiles = [];
     records = records
         .where((element) =>
@@ -324,7 +324,7 @@ class _EventDetailsState extends State<EventDetails> {
         .toList(); //只保留本日的记录，
     if (records.isEmpty) return Text("该日无记录");
     records.forEach((record) {
-      if (event is TimingEventDisplayModel) {
+      if (event is TimingEventModel) {
         String startTimeStr =
             DateFormat('MM-dd kk:mm').format(record.startTime!);
         // if (startTimeStr.substring(0, 2) == '24')
@@ -367,7 +367,7 @@ class _EventDetailsState extends State<EventDetails> {
         .toList(); //只保留本月的记录，
     List<BarChartGroupData> bars = [];
     List<int> data = List.filled(24, 0); //次数、时长（分钟）、物理量
-    if (widget.event is TimingEventDisplayModel) {
+    if (widget.event is TimingEventModel) {
       if (getSelected(isSelected) == 0) {
         //得到时长统计信息
         List<DateTimeRange> ranges = [
