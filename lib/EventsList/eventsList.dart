@@ -178,13 +178,13 @@ class _EventTileState extends State<EventTile>
     with SingleTickerProviderStateMixin {
   late final Animation<double> animation;
   late final AnimationController _controller;
-  late final int time; //渐变时长
+  late final int second; //渐变时长
   initState() {
     super.initState();
-    time = 1;
+    second = 1;
     _controller = new AnimationController(
-        duration: Duration(seconds: time),
-        reverseDuration: Duration(seconds: time),
+        duration: Duration(seconds: second),
+        reverseDuration: Duration(seconds: second),
         vsync: this)
       ..repeat(reverse: true);
 

@@ -44,7 +44,8 @@ class _EventDetailsState extends State<EventDetails> {
   List<bool> isSelected = [true];
   late String toolTipUnit;
 
-  DateTime monthOfRecords = nilTime;
+  DateTime month = nilTime;
+  List<Record> recordsOfMonth = [];
 
   // DateTime dayOfRecords = nilTime;
 
@@ -142,6 +143,7 @@ class _EventDetailsState extends State<EventDetails> {
   Widget build(BuildContext context) {
     List<Widget> listChildren = [];
     listChildren.add(DividerWithText("项目描述"));
+    bool timeVisible = true;
     if (widget.event.description == null) {
       listChildren.add(
         ListTile(title: Center(child: Text("无项目描述"))),
@@ -164,7 +166,15 @@ class _EventDetailsState extends State<EventDetails> {
                 toggleTexts.forEach((element) {
                   toggleChildren.add(Text(element));
                 });
-
+                int numOfRecords = records.length;
+                String heading = "共进行";
+                if (month != nilTime) {
+                  List<Record> recordsOfMonth =
+                      getRecordPerMonth(records, month);
+                  listChildren.add(getTimeSlotsBar(recordsOfMonth, month));
+                  numOfRecords = recordsOfMonth.length;
+                  heading = month.month.toString() + "月共进行";
+                }
                 return Column(
                   // shrinkWrap: true,
                   // scrollDirection: Axis.vertical,
@@ -187,28 +197,47 @@ class _EventDetailsState extends State<EventDetails> {
                         ),
                       ),
                     ),
-                    Align(
-                        alignment: Alignment.centerRight,
-                        child: Container(
-                            margin: EdgeInsets.only(right: 10),
-                            child: ToggleButtons(
-                                children: toggleChildren,
-                                isSelected: isSelected,
-                                onPressed: (int index) {
-                                  if (index != getSelected(isSelected)) {
-                                    for (int i = 0;
-                                        i < isSelected.length;
-                                        i++) {
-                                      setState(() {
-                                        if (i == index) {
-                                          isSelected[i] = true;
-                                        } else {
-                                          isSelected[i] = false;
-                                        }
-                                      });
+                    Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Visibility(
+                              visible: timeVisible,
+                              child: Container(
+                                  margin: EdgeInsets.only(left: 10),
+                                  child: RichText(
+                                    text: TextSpan(
+                                        style: TextStyle(
+                                            fontSize: 16, color: Colors.black),
+                                        children: [
+                                          TextSpan(text: heading),
+                                          TextSpan(
+                                              text: '$numOfRecords',
+                                              style: TextStyle(
+                                                  fontWeight: FontWeight.bold)),
+                                          TextSpan(text: "次")
+                                        ]),
+                                  ))),
+                          Container(
+                              margin: EdgeInsets.only(right: 10),
+                              child: ToggleButtons(
+                                  children: toggleChildren,
+                                  isSelected: isSelected,
+                                  onPressed: (int index) {
+                                    if (index != getSelected(isSelected)) {
+                                      for (int i = 0;
+                                          i < isSelected.length;
+                                          i++) {
+                                        setState(() {
+                                          if (i == index) {
+                                            isSelected[i] = true;
+                                          } else {
+                                            isSelected[i] = false;
+                                          }
+                                        });
+                                      }
                                     }
-                                  }
-                                }))),
+                                  }))
+                        ]),
                   ],
                 );
                 break;
@@ -216,20 +245,6 @@ class _EventDetailsState extends State<EventDetails> {
                 return loadingScreen();
             }
           }));
-
-      if (monthOfRecords != nilTime) {
-        listChildren.add(FutureBuilder<List<Record>>(
-            future: _records,
-            builder: (ctx, snapshot) {
-              switch (snapshot.connectionState) {
-                case ConnectionState.done:
-                  List<Record> records = snapshot.data!;
-                  return getTimeSlotsBar(records, monthOfRecords);
-                default:
-                  return loadingScreen();
-              }
-            }));
-      }
     } else {
       listChildren.add(Text("暂无记录"));
     }
@@ -271,7 +286,7 @@ class _EventDetailsState extends State<EventDetails> {
             onNotification: (Notification notification) {
               if (notification is MonthTouchedNotification) {
                 setState(() {
-                  monthOfRecords = notification.month;
+                  month = notification.month;
                 });
               }
               if (notification is DayTouchedNotification) {
@@ -359,12 +374,16 @@ class _EventDetailsState extends State<EventDetails> {
         });
   }
 
-  Widget getTimeSlotsBar(List<Record> records, DateTime month) {
+  List<Record> getRecordPerMonth(List<Record> records, DateTime month) {
     records = records
         .where((element) =>
             element.endTime!.month == month.month &&
             element.endTime!.year == month.year)
         .toList(); //只保留本月的记录，
+    return records;
+  }
+
+  Widget getTimeSlotsBar(List<Record> records, DateTime month) {
     List<BarChartGroupData> bars = [];
     List<int> data = List.filled(24, 0); //次数、时长（分钟）、物理量
     if (widget.event is TimingEventModel) {
@@ -401,22 +420,26 @@ class _EventDetailsState extends State<EventDetails> {
     var barChart = SingleChildScrollView(
         scrollDirection: Axis.horizontal,
         child: Container(
-            margin: EdgeInsets.only(top: 10, right: 5),
-            child: SizedBox(
-                height: 300,
-                width: 350,
-                child: BarChart(BarChartData(
-                    groupsSpace: 18,
-                    // alignment: BarChartAlignment.start,
-                    titlesData: FlTitlesData(
-                        leftTitles: SideTitles(
-                            showTitles: true,
-                            getTitles: (double val) {
-                              return val.round().toString();
-                            },
-                            interval: max / 6)),
-                    borderData: FlBorderData(show: false),
-                    barGroups: bars)))));
+            margin: EdgeInsets.only(left: 5, top: 10, right: 5),
+            child: Column(children: [
+              Text("时段活跃度"),
+              SizedBox(height: 5),
+              SizedBox(
+                  height: 300,
+                  width: 350,
+                  child: BarChart(BarChartData(
+                      groupsSpace: 18,
+                      // alignment: BarChartAlignment.start,
+                      titlesData: FlTitlesData(
+                          leftTitles: SideTitles(
+                              showTitles: true,
+                              getTitles: (double val) {
+                                return val.round().toString();
+                              },
+                              interval: max / 6)),
+                      borderData: FlBorderData(show: false),
+                      barGroups: bars)))
+            ])));
     return barChart;
   }
 }
