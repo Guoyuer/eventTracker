@@ -1,14 +1,15 @@
-import 'package:flutter/material.dart';
-import 'package:flutter_event_tracker/common/const.dart';
-import 'package:flutter_event_tracker/common/customWidget.dart';
-import 'package:sprintf/sprintf.dart';
-import 'package:flutter/widgets.dart';
-import 'package:flutter_event_tracker/common/util.dart';
-import '../DAO/base.dart';
-import '../heatmap_calendar/heatMap.dart';
-import 'package:intl/intl.dart';
 import 'dart:collection';
+import 'dart:math';
+
 import 'package:fl_chart/fl_chart.dart';
+import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
+import 'package:flutter_event_tracker/common/commonWidget.dart';
+import 'package:intl/intl.dart';
+import 'package:random_color/random_color.dart';
+
+import '../DAO/base.dart';
 
 class StatisticPage extends StatefulWidget {
   @override
@@ -16,156 +17,97 @@ class StatisticPage extends StatefulWidget {
 }
 
 class _StatisticPageState extends State<StatisticPage> {
-  DateTimeRange? range;
+  DateTimeRange range = DateTimeRange(
+      start: DateTime.now().add(Duration(days: -7)), end: DateTime.now());
 
   @override
   Widget build(BuildContext context) {
-    List<Widget> children = [];
-    children.add(RangeSelector());
-    if (range != null) {
-      print(range);
-      children.add(DisplayWidget(range!));
-    }
-    return NotificationListener(
-        onNotification: (PageChangedNotification n) {
-          setState(() {
-            range = n.range;
-          });
-          return true;
-        },
-        child: ListView(children: children));
+    String timeLStr = DateFormat('yyyy.MM.dd').format(range.start);
+    String timeRStr = DateFormat('yyyy.MM.dd').format(range.end);
+    return ListView(children: [
+      Card(
+          elevation: 10,
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Container(
+                  margin: EdgeInsets.only(left: 10),
+                  height: 40,
+                  child: Center(
+                      child: Text(
+                    timeLStr + ' 至 ' + timeRStr,
+                    style: TextStyle(fontSize: 20),
+                  ))),
+              Container(
+                  margin: EdgeInsets.only(right: 10),
+                  child: myRaisedButton(Text("更改区间"), () async {
+                    DateTimeRange? tmp = await showDateRangePicker(
+                        context: context,
+                        firstDate: DateTime.now().add(Duration(days: -100)),
+                        lastDate: DateTime.now());
+                    if (tmp != null) {
+                      setState(() {
+                        range = tmp;
+                      });
+                    }
+                  }))
+            ],
+          )),
+      Charts(range)
+    ]);
   }
 }
 
-class RangeSelector extends StatefulWidget {
+class Charts extends StatefulWidget {
   @override
-  _RangeSelectorState createState() => _RangeSelectorState();
-}
-
-class _RangeSelectorState extends State<RangeSelector> {
-  List<bool> isSelected = [true, false, false];
-  DateTimeRange range =
-      DateTimeRange(start: DateTime.now(), end: DateTime.now());
-
-  @override
-  Widget build(BuildContext context) {
-    late Duration tick;
-    switch (getSelected(isSelected)) {
-      case 0:
-        tick = Duration(days: 1);
-        break;
-      case 1:
-        tick = Duration(days: 7);
-        break;
-      case 2:
-        tick = Duration(days: 30);
-        break;
-    }
-    return Container(
-        alignment: Alignment.topCenter,
-        child: Column(children: [
-          ToggleButtons(
-              children: [Text("日"), Text("周"), Text("月")],
-              isSelected: isSelected,
-              onPressed: (int index) {
-                if (index != getSelected(isSelected)) {
-                  for (int i = 0; i < isSelected.length; i++) {
-                    setState(() {
-                      if (i == index) {
-                        isSelected[i] = true;
-                      } else {
-                        isSelected[i] = false;
-                      }
-                    });
-                  }
-                }
-              }),
-          RangeSlider(DateTime.now(), tick)
-        ]));
-  }
-}
-
-class RangeSlider extends StatefulWidget {
-  @override
-  _RangeSliderState createState() => _RangeSliderState();
-  late final DateTime current;
-  late final Duration tick;
-
-  RangeSlider(DateTime cur, Duration t) {
-    current = DateTime(cur.year, cur.month, cur.day, 23, 59, 59);
-    tick = t;
-  }
-}
-
-class _RangeSliderState extends State<RangeSlider> {
-  @override
-  Widget build(BuildContext context) {
-    List<Widget> pageViewChildren = [];
-    List<DateTimeRange> ranges = [];
-    for (int i = 100; i >= 0; i--) {
-      DateTime timeR = widget.current.add(widget.tick * (-i));
-      DateTime tmp = timeR.add(widget.tick * (-1));
-      DateTime timeL = getDate(tmp);
-
-      String timeLStr = DateFormat('yyyy.MM.dd').format(timeL);
-      String timeRStr = DateFormat('yyyy.MM.dd').format(timeR);
-      ranges.add(DateTimeRange(start: timeL, end: timeR));
-      pageViewChildren.add(Center(child: Text(timeLStr + '~' + timeRStr)));
-    }
-    PageController _c = PageController(initialPage: 102);
-
-    @override
-    void dispose() {
-      _c.dispose();
-      super.dispose();
-    }
-
-    var pageView = PageView(
-      controller: _c,
-      onPageChanged: (page) {
-        DateTimeRange range = ranges[page];
-        PageChangedNotification(range: range).dispatch(context);
-      },
-      children: pageViewChildren,
-    );
-    return Container(
-        decoration: BoxDecoration(border: Border.all(color: Colors.black38)),
-        child: SizedBox(height: 80, width: 200, child: pageView));
-  }
-}
-
-class DisplayWidget extends StatefulWidget {
-  @override
-  _DisplayWidgetState createState() => _DisplayWidgetState();
+  _ChartsState createState() => _ChartsState();
 
   late final DateTimeRange range;
 
-  DisplayWidget(this.range);
+  Charts(this.range);
 }
 
-class _DisplayWidgetState extends State<DisplayWidget> {
-  late Future<List<Record>> _records;
-  late Map<int, Event> _events = {};
+class _ChartsState extends State<Charts> {
+  // late Future<List<Record>> _records;
   AppDatabase db = DBHandle().db;
+  RandomColor _randomColor = RandomColor();
 
   @override
   void initState() {
     super.initState();
-    _records = db.getRecordsInRange(widget.range);
-    // getEvents();
+    for (int i = 0; i < 10; i++) {
+      colors.add(
+          _randomColor.randomColor(colorBrightness: ColorBrightness.light));
+    }
   }
+
+  List<Color> colors = [];
 
   @override
   Widget build(BuildContext context) {
-    getEvents();
-    print("Build Start!");
-    return FutureBuilder<List<Record>>(
-        future: _records,
+    Future<List<Record>> _records = db.getRecordsInRange(widget.range);
+    Future<Map<int, Event>> _eventsMap = db.getEventsMap();
+    return FutureBuilder(
+        future: Future.wait<Object>([_records, _eventsMap]),
         builder: (ctx, snapshot) {
           switch (snapshot.connectionState) {
             case ConnectionState.done:
-              List<Record> records = snapshot.data!;
+              List<Object> tmp = snapshot.data! as List<Object>;
+              List<Record> records = tmp[0] as List<Record>;
+              Map<int, Event> eventsMap = tmp[1] as Map<int, Event>;
+
+              while (colors.length < eventsMap.length) {
+                colors.add(_randomColor.randomColor(
+                    colorBrightness: ColorBrightness.light));
+              }
+              Map<String, Color> name2color = {}; //项目名称和颜色要统一
+              int i = 0;
+              eventsMap.forEach((key, value) {
+                name2color[value.name] = colors[i];
+                i++;
+              });
               Map<int, int> eventId2Time = {}; //{eventId, 次数}
+
               records.forEach((record) {
                 if (eventId2Time.containsKey(record.eventId)) {
                   eventId2Time[record.eventId] =
@@ -174,17 +116,35 @@ class _DisplayWidgetState extends State<DisplayWidget> {
                   eventId2Time[record.eventId] = 1;
                 }
               });
+
               Map<Event, int> event2Time = {};
               eventId2Time.forEach((key, value) {
-                event2Time[_events[key]!] = value;
+                event2Time[eventsMap[key]!] = value;
+              });
+              var pieChart = getPieChart(event2Time, name2color);
+              Map<String, List<DateTime>> eventName2RecordEnds = {};
+              records.forEach((record) {
+                String eventName = eventsMap[record.eventId]!.name;
+                if (eventName2RecordEnds.containsKey(eventName)) {
+                  eventName2RecordEnds[eventName]!.add(record.endTime!);
+                } else {
+                  eventName2RecordEnds[eventName] = [record.endTime!];
+                }
               });
 
-              var pieChart = SizedBox(
-                  height: 300,
-                  width: 300,
-                  child: PieChart(
-                      PieChartData(sections: getSections(event2Time))));
-              return pieChart;
+              var timeSlotsBar =
+                  getTimeSlotsBar(eventName2RecordEnds, name2color);
+              List<Widget> charts = [pieChart, timeSlotsBar];
+              charts = charts
+                  .map((e) => Card(
+                        elevation: 10,
+                        child: e,
+                      ))
+                  .toList();
+              return Column(
+                children: charts,
+              );
+
             // return Text("OKK");
             default:
               return loadingScreen();
@@ -192,30 +152,150 @@ class _DisplayWidgetState extends State<DisplayWidget> {
         });
   }
 
-  void getEvents() async {
-    List<Event> l = await db.getRawEvents();
-    l.forEach((element) {
-      _events[element.id] = element;
-    });
-    print("getEvents done");
-  }
-
-  List<PieChartSectionData> getSections(Map<Event, int> data) {
+  List<PieChartSectionData> getSections(
+      Map<Event, int> data, Map<String, Color> name2color) {
     List<PieChartSectionData> res = [];
     data.forEach((event, time) {
-      res.add(PieChartSectionData(title: event.name, value: time.toDouble()));
+      res.add(PieChartSectionData(
+          color: name2color[event.name],
+          radius: 80,
+          titleStyle: TextStyle(
+              fontSize: 15, fontWeight: FontWeight.bold, color: Colors.black87),
+          title: event.name + " " + time.toString(),
+          value: time.toDouble()));
     });
     return res;
   }
+
+  Widget getTimeSlotsBar(Map<String, List<DateTime>> eventName2RecordEnds,
+      Map<String, Color> name2color) {
+    List<BarChartGroupData> bars = [];
+    LinkedHashMap<String, List<double>> eventName2SlotNum =
+        LinkedHashMap<String, List<double>>();
+    eventName2RecordEnds.forEach((eventName, listOfEnds) {
+      List<double> slots = getTimeSlotNum(listOfEnds);
+      eventName2SlotNum[eventName] = slots;
+    });
+    // List<List<BarChartRodStackItem>> stacks = List.filled(12, []);
+    List<List<BarChartRodStackItem>> stacks =
+        List.generate(12, (i) => [], growable: false);
+    List<double> lastY = List.filled(12, 0);
+    eventName2SlotNum.forEach((eventName, slots) {
+      //每个项目都铺一层，颜色一样。
+      for (int j = 0; j < 12; j++) {
+        stacks[j].add(BarChartRodStackItem(
+            lastY[j], lastY[j] + slots[j], name2color[eventName]!));
+        lastY[j] += slots[j];
+      }
+    });
+    for (var a in eventName2SlotNum.keys) {
+      print(a);
+    }
+    for (int i = 0; i < 12; i++) {
+      bars.add(BarChartGroupData(x: i * 2, barRods: [
+        BarChartRodData(
+            borderRadius: BorderRadius.all(Radius.elliptical(5, 5)),
+            rodStackItems: stacks[i],
+            y: lastY[i],
+            width: 15)
+      ]));
+    }
+    double maxY = 0;
+    for (int i = 0; i < 12; i++) {
+      if (lastY[i] > maxY) maxY = lastY[i];
+    }
+
+    var barChart = SingleChildScrollView(
+        scrollDirection: Axis.horizontal,
+        child: Container(
+            margin: EdgeInsets.only(left: 5, top: 10, right: 10),
+            child: Column(children: [
+              Text(
+                "时段活跃度",
+                style: TextStyle(fontSize: 20),
+              ),
+              SizedBox(height: 10),
+              SizedBox(
+                  height: 300,
+                  width: 350,
+                  child: BarChart(BarChartData(
+                      groupsSpace: 18,
+                      // alignment: BarChartAlignment.start,
+                      titlesData: FlTitlesData(
+                          leftTitles: SideTitles(
+                              showTitles: true,
+                              getTitles: (double val) {
+                                return val.round().toString();
+                              },
+                              interval: maxY / 6)),
+                      borderData: FlBorderData(show: false),
+                      barGroups: bars)))
+            ])));
+    return barChart;
+  }
+
+  Widget getPieChart(
+      Map<Event, int> event2Time, Map<String, Color> name2color) {
+    int tot = 0;
+    for (int i in event2Time.values) {
+      tot += i;
+    }
+    var pieChart = SizedBox(
+        height: 300,
+        // width: 300,
+        child: Stack(
+          children: [
+            PieChart(PieChartData(
+                centerSpaceRadius: 70,
+                sectionsSpace: 5,
+                sections: getSections(event2Time, name2color))),
+            Center(
+                child: Container(
+              child: Center(
+                  child: Text(
+                "共 $tot 次",
+                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+              )),
+              width: 110,
+              height: 110,
+              decoration: new BoxDecoration(
+                color: Colors.orangeAccent,
+                shape: BoxShape.circle,
+              ),
+            ))
+          ],
+        ));
+    return Column(
+      children: [
+        Text(
+          "次数统计",
+          style: TextStyle(fontSize: 20),
+        ),
+        SizedBox(height: 10),
+        pieChart,
+        SizedBox(height: 30)
+      ],
+    );
+  }
 }
 
+List<double> getTimeSlotNum(List<DateTime> ends) {
+  //结束时间+1就可以了
+  List<int> data = List.filled(24, 0); //次数、时长（分钟）、物理量
+  ends.forEach((end) {
+    data[end.hour] += 1;
+  });
+  List<double> processedData = [];
+  for (int i = 0; i < 12; i++) {
+    double val = data[i * 2].toDouble() + data[i * 2 + 1];
+    processedData.add(val);
+  }
+  return processedData;
+}
 
-// class MyPieChart extends StatefulWidget{
-//
-//
-// }
-//
-// class _MyPieChart extends StatefulWidget{
-//
-//
-// }
+Color getRandomColor() {
+  final _random = Random();
+  Color _randomColor = Color.fromARGB(_random.nextInt(256),
+      _random.nextInt(256), _random.nextInt(256), _random.nextInt(256));
+  return _randomColor;
+}

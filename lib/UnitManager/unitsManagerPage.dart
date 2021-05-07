@@ -1,12 +1,11 @@
-import 'package:flutter/material.dart';
-import 'package:sqflite/sqflite.dart';
-import 'package:provider/provider.dart';
-import '../DAO/base.dart';
-import 'package:moor_flutter/moor_flutter.dart';
-import '../common/customWidget.dart';
-import 'package:fluttertoast/fluttertoast.dart';
 import 'dart:core';
-import '../common/util.dart';
+
+import 'package:flutter/material.dart';
+import 'package:fluttertoast/fluttertoast.dart';
+import 'package:moor_flutter/moor_flutter.dart';
+
+import '../DAO/base.dart';
+import '../common/commonWidget.dart';
 
 // ignore: must_be_immutable
 class UnitsManager extends StatefulWidget {

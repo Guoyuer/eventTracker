@@ -1,10 +1,10 @@
+import 'package:date_util/date_util.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_event_tracker/common/const.dart';
-import 'package:flutter_event_tracker/common/customWidget.dart';
+import 'package:intl/intl.dart';
+
 import 'heatMap.dart';
 import 'util.dart';
-import 'package:date_util/date_util.dart';
-import 'package:intl/intl.dart';
 
 //最上层组件，只需给日期区间即可
 class HeatMapDisplay extends StatelessWidget {

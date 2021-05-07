@@ -1,21 +1,13 @@
 import 'dart:async';
 
-import 'package:duration/locale.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:moor_flutter/moor_flutter.dart' hide Column;
-import '../common/const.dart';
-import '../common/util.dart';
-import 'package:fluttertoast/fluttertoast.dart';
-
-// import 'package:flutter_event_tracker/common/customWidget.dart';
-import 'package:flutter/material.dart';
-import 'package:sqflite/sqflite.dart';
-import '../common/customWidget.dart';
-import '../DAO/base.dart';
-import 'package:fluttertoast/fluttertoast.dart';
-import 'package:duration/duration.dart';
 import 'package:flutter_datetime_picker/flutter_datetime_picker.dart';
+import 'package:moor_flutter/moor_flutter.dart' hide Column;
+
+import '../DAO/base.dart';
+import '../common/commonWidget.dart';
+import '../common/const.dart';
 
 part 'util.dart';
 
@@ -52,7 +44,6 @@ class _EventListState extends State<EventList> {
                         event: events[idx], child: EventTile());
                     // return EventTile(data[idx]['id'],data[idx]['name'], true, false);
                   });
-              break;
             default:
               return loadingScreen();
           }
@@ -92,7 +83,6 @@ class EventTileButton extends StatelessWidget {
             showToast("用户取消");
           }, currentTime: DateTime.now(), locale: LocaleType.zh);
         });
-        break;
       case EventStatus.notActive:
         return eventListButton(Icon(Icons.play_arrow_outlined), Text("开始"), () {
           DateTime now = DateTime.now();
@@ -217,18 +207,18 @@ class _EventTileState extends State<EventTile>
             Align(
                 alignment: Alignment.centerLeft,
                 child: Text(sumTimeStr,
-                    style: TextStyle(color: Colors.grey[600]))),
+                    style: TextStyle(color: Colors.grey[600], fontSize: 14))),
             Align(
                 alignment: Alignment.centerLeft,
-                child:
-                    Text(sumValStr, style: TextStyle(color: Colors.grey[600]))),
+                child: Text(sumValStr,
+                    style: TextStyle(color: Colors.grey[600], fontSize: 14))),
           ]);
         } else {
           eventInfo = Align(
               alignment: Alignment.centerLeft,
               child: Text(
                 sumTimeStr,
-                style: TextStyle(color: Colors.grey[600]),
+                style: TextStyle(color: Colors.grey[600], fontSize: 14),
               ));
         }
       } else {
@@ -253,17 +243,18 @@ class _EventTileState extends State<EventTile>
         eventInfo = Column(children: [
           Align(
               alignment: Alignment.centerLeft,
-              child:
-                  Text(sumTimeStr, style: TextStyle(color: Colors.grey[600]))),
+              child: Text(sumTimeStr,
+                  style: TextStyle(color: Colors.grey[600], fontSize: 14))),
           Align(
               alignment: Alignment.centerLeft,
-              child:
-                  Text(sumValStr, style: TextStyle(color: Colors.grey[600]))),
+              child: Text(sumValStr,
+                  style: TextStyle(color: Colors.grey[600], fontSize: 14))),
         ]);
       } else {
         eventInfo = Align(
             alignment: Alignment.centerLeft,
-            child: Text(sumTimeStr, style: TextStyle(color: Colors.grey[600])));
+            child: Text(sumTimeStr,
+                style: TextStyle(color: Colors.grey[600], fontSize: 14)));
       }
     }
     return Card(

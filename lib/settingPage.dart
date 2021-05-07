@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_event_tracker/DAO/base.dart';
 import 'package:moor_db_viewer/moor_db_viewer.dart';
-import 'common/customWidget.dart';
+import 'common/commonWidget.dart';
 import 'addFakeData.dart';
 
 class SettingPage extends StatelessWidget {
@@ -55,8 +55,6 @@ class SettingPage extends StatelessWidget {
               RoundedRectangleBorder(borderRadius: BorderRadius.circular(20.0)),
           icon: Icon(Icons.add_rounded))
     ]));
-    var db = DBHandle().db;
-    return Container(padding: EdgeInsets.all(0), child: MoorDbViewer(db));
   }
 }
 

@@ -1,18 +1,13 @@
+import 'dart:async';
+
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_event_tracker/common/customWidget.dart';
-import 'package:moor_db_viewer/moor_db_viewer.dart';
-import '../heatmap_calendar/heatMap.dart';
-import '../heatmap_calendar/util.dart';
-import '../heatmap_calendar/heatMapBuildingBlocks.dart';
+import 'package:flutter_event_tracker/common/commonWidget.dart';
+
 import '../DAO/base.dart';
 import '../common/const.dart';
-import 'package:fl_chart/fl_chart.dart';
-import 'package:flutter/material.dart';
-import 'dart:async';
-import '../main.dart';
-import 'package:pedometer/pedometer.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import '../heatmap_calendar/heatMap.dart';
+import '../heatmap_calendar/util.dart';
 
 class StepStatPage extends StatelessWidget {
   StepStatPage({Key? key}) : super(key: key);
@@ -187,6 +182,7 @@ class _StepStatPageContentState extends State<StepStatPageContent> {
                             }
                             List<BarChartGroupData> bars = [];
                             for (int i = 0; i < records.length; i++) {
+                              print("HERE");
                               bars.add(BarChartGroupData(x: i + 1, barRods: [
                                 BarChartRodData(
                                     y: values[i],
@@ -214,7 +210,6 @@ class _StepStatPageContentState extends State<StepStatPageContent> {
                                 borderData: FlBorderData(show: false),
                                 barGroups: bars));
                           }
-                          break;
                         default:
                           return loadingScreen();
                       }

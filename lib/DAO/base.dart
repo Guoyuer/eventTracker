@@ -1,14 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_event_tracker/common/commonWidget.dart';
 import 'package:flutter_event_tracker/common/const.dart';
-import 'package:flutter_event_tracker/common/customWidget.dart';
 import 'package:flutter_event_tracker/heatmap_calendar/heatMap.dart';
 import 'package:moor_flutter/moor_flutter.dart';
-import 'package:date_util/date_util.dart';
+
 import 'tables.dart';
 
-part 'model/displayModel.dart';
-
 part 'base.g.dart';
+part 'model/displayModel.dart';
 // 实现单例模式
 
 class DBHandle {
@@ -213,6 +212,11 @@ class AppDatabase extends _$AppDatabase {
         .getSingle();
   }
 
+  Future<String?> getEventDesc(int eventId) async {
+    Event event = await getEventById(eventId);
+    return event.description;
+  }
+
   Future<Duration> getEventSumTime(int eventId) async {
     Event event = await (select(events)..where((tbl) => tbl.id.equals(eventId)))
         .getSingle();
@@ -246,6 +250,14 @@ class AppDatabase extends _$AppDatabase {
     return select(events).get();
   }
 
+  Future<Map<int, Event>> getEventsMap() async {
+    List<Event> events = await getRawEvents();
+    Map<int, Event> res = {};
+    events.forEach((element) {
+      res[element.id] = element;
+    });
+    return res;
+  }
 
   ///返回成功或失败
   Future<int> addEventInDB(EventsCompanion event) async {
@@ -256,6 +268,12 @@ class AppDatabase extends _$AppDatabase {
       showToast("创建项目失败，可能是因为重名");
       return -1;
     }
+  }
+
+  Future updateEventDescription(int eventId, String desc) {
+    print(desc);
+    return (update(events)..where((tbl) => tbl.id.equals(eventId)))
+        .write(EventsCompanion(description: Value(desc)));
   }
 
   Future deleteEvent(int eventId) async {

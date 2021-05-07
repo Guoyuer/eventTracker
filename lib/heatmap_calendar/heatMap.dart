@@ -25,7 +25,7 @@ class HeatMapDataHolder extends InheritedWidget {
   final Map<DateTime, int> date2level;
   final Map<DateTime, double> data; // 用于toolTip
   final DateTimeRange dateRange; //因为map无序
-  String? unit;
+  late final String? unit;
 
   HeatMapDataHolder(
       {required this.setting,

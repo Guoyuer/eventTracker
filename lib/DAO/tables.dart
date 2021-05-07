@@ -1,6 +1,4 @@
 import 'package:moor_flutter/moor_flutter.dart';
-import 'package:date_util/date_util.dart';
-import 'base.dart';
 
 //tables and converters
 class DurationConverter extends TypeConverter<Duration, double> {

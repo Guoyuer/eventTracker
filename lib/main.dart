@@ -1,27 +1,18 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
+import 'package:flutter/widgets.dart';
 import 'package:flutter_event_tracker/StepCount/stepStatistics.dart';
 import 'package:flutter_event_tracker/settingPage.dart';
-import 'StepCount/pedometer.dart';
-import 'EventsList/eventsList.dart';
-import 'EventsDetails/eventDetails.dart';
-import 'UnitManager/unitsManagerPage.dart';
-import 'common/customWidget.dart';
-import 'eventEditor.dart';
-import 'common/util.dart';
-import 'common/const.dart';
-import 'package:flutter/widgets.dart';
-import 'DAO/base.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:share/share.dart';
-import 'Statistics/statistics.dart';
-import 'package:path/path.dart';
-import 'package:sqflite/sqflite.dart';
-import 'package:path_provider/path_provider.dart';
-import 'addFakeData.dart';
-import 'package:fluttertoast/fluttertoast.dart';
 
-// import 'package:workmanager/workmanager.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'DAO/base.dart';
+import 'EventsDetails/eventDetails.dart';
+import 'EventsList/eventsList.dart';
+import 'Statistics/statistics.dart';
+import 'StepCount/pedometer.dart';
+import 'UnitManager/unitsManagerPage.dart';
+import 'common/const.dart';
+import 'eventEditor.dart';
 
 void main() {
   runApp(EventTracker());
@@ -31,6 +22,8 @@ class EventTracker extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      localizationsDelegates: [GlobalMaterialLocalizations.delegate],
+      supportedLocales: [const Locale('en'), const Locale('zh')],
       routes: {
         "eventEditor": (context) => EventEditor(),
         "unitsManager": (context) => UnitsManager(),
@@ -80,7 +73,7 @@ class _MainPagesState extends State<MainPages> {
       ),
       body: NotificationListener<ReloadEventsNotification>(
         // child: IndexedStack(children: _children, index: _selectedIndex),
-        child: _children[_selectedIndex],
+        child: IndexedStack(children: _children, index: _selectedIndex),
         onNotification: (notification) {
           setState(() {
             _children.removeAt(0);

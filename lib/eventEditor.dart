@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_event_tracker/common/const.dart';
-import 'package:flutter_event_tracker/common/customWidget.dart';
+import 'package:flutter_event_tracker/common/commonWidget.dart';
 import 'common/util.dart';
 import 'DAO/base.dart';
 import 'package:moor_flutter/moor_flutter.dart';
@@ -106,7 +106,6 @@ class _EventEditorState extends State<EventEditor> {
                                           });
                                         });
                                   });
-                              break;
                             default:
                               return loadingScreen();
                           }

@@ -1,17 +1,18 @@
+
+import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
-import 'package:flutter_event_tracker/common/const.dart';
-import 'package:flutter_event_tracker/common/customWidget.dart';
-import 'package:sprintf/sprintf.dart';
 import 'package:flutter/widgets.dart';
+import 'package:flutter_event_tracker/common/commonWidget.dart';
+import 'package:flutter_event_tracker/common/const.dart';
 import 'package:flutter_event_tracker/common/util.dart';
-import '../DAO/base.dart';
-import 'util.dart';
-import '../heatmap_calendar/heatMap.dart';
 import 'package:intl/intl.dart';
-import 'dart:collection';
+import 'package:sprintf/sprintf.dart';
+
+import '../DAO/base.dart';
 import '../common/const.dart';
-import 'package:fl_chart/fl_chart.dart';
+import '../heatmap_calendar/heatMap.dart';
+import 'util.dart';
 
 class EventDetailsWrapper extends StatelessWidget {
   @override
@@ -38,7 +39,6 @@ class _EventDetailsState extends State<EventDetails> {
   late String toolTipUnit;
 
   DateTime month = nilTime;
-  List<Record> recordsOfMonth = [];
 
   // DateTime dayOfRecords = nilTime;
 
@@ -56,8 +56,6 @@ class _EventDetailsState extends State<EventDetails> {
       isSelected.add(false);
     }
   }
-
-
 
   Map<String, dynamic> processRecord(List<Record> records) {
     // DateTimeRange range;
@@ -126,116 +124,149 @@ class _EventDetailsState extends State<EventDetails> {
     return {"range": range, "data": data};
   }
 
+  Widget getEventDescWidget() {
+    return Card(
+        elevation: 10,
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.start,
+          children: [
+            Align(
+                alignment: Alignment.center,
+                child: Text(
+                  "项目描述",
+                  style: TextStyle(fontSize: 18.0),
+                )),
+            Align(
+                alignment: Alignment.center,
+                child: DescEditable(widget.event.id))
+          ],
+        ));
+  }
+
+  Widget get2Charts() {
+    return FutureBuilder<List<Record>>(
+        future: _records,
+        builder: (ctx, snapshot) {
+          switch (snapshot.connectionState) {
+            case ConnectionState.done:
+              List<Record> records = snapshot.data!;
+              var dataForHeatMap = processRecord(records);
+              List<Record> recordsOfMonth = [];
+              List<Widget> toggleChildren =
+                  toggleTexts.map((e) => Text(e)).toList();
+              int numOfRecords;
+              String heading;
+              if (month == nilTime) {
+                numOfRecords = records.length;
+                heading = "共进行";
+              } else {
+                recordsOfMonth = getRecordPerMonth(records, month);
+                numOfRecords = recordsOfMonth.length;
+                print(numOfRecords);
+                heading = month.month.toString() + "月共进行";
+              }
+              var heatMap = Column(
+                //heatMap, title,
+                // shrinkWrap: true,
+                // scrollDirection: Axis.vertical,
+                children: [
+                  Center(
+                      child: Text(
+                    "统计数据 - " + toggleTexts[getSelected(isSelected)],
+                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20),
+                  )),
+                  Container(
+                    margin: EdgeInsets.symmetric(horizontal: 5),
+                    width: double.infinity,
+                    child: SingleChildScrollView(
+                      scrollDirection: Axis.horizontal,
+                      child: HeatMapCalendar(
+                        dateRange: dataForHeatMap['range'],
+                        input: dataForHeatMap['data'],
+                        unit: toolTipUnit,
+                      ),
+                    ),
+                  ),
+                  Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Container(
+                            margin: EdgeInsets.only(left: 10),
+                            child: RichText(
+                              text: TextSpan(
+                                  style: TextStyle(
+                                      fontSize: 16, color: Colors.black),
+                                  children: [
+                                    TextSpan(text: heading),
+                                    TextSpan(
+                                        text: '$numOfRecords',
+                                        style: TextStyle(
+                                            fontWeight: FontWeight.bold)),
+                                    TextSpan(text: " 次")
+                                  ]),
+                            )),
+                        Container(
+                            height: 35,
+                            margin: EdgeInsets.all(10),
+                            child: ToggleButtons(
+                                children: toggleChildren,
+                                borderRadius:
+                                    BorderRadius.all(Radius.circular(10)),
+                                borderWidth: 2,
+                                selectedBorderColor: Colors.blueAccent,
+                                isSelected: isSelected,
+                                onPressed: (int index) {
+                                  if (index != getSelected(isSelected)) {
+                                    for (int i = 0;
+                                        i < isSelected.length;
+                                        i++) {
+                                      setState(() {
+                                        if (i == index) {
+                                          isSelected[i] = true;
+                                        } else {
+                                          isSelected[i] = false;
+                                        }
+                                      });
+                                    }
+                                  }
+                                }))
+                      ]),
+                ],
+              );
+              var barChart;
+              if (recordsOfMonth.isNotEmpty) {
+                barChart = getTimeSlotsBar(recordsOfMonth);
+              } else {
+                barChart = getTimeSlotsBar(records);
+              }
+              List<Widget> charts = [heatMap, barChart];
+              charts = charts
+                  .map((e) => Card(
+                        elevation: 10,
+                        child: e,
+                      ))
+                  .toList();
+
+              return Column(
+                children: charts,
+              );
+            default:
+              return loadingScreen();
+          }
+        });
+  }
+
   //keep your build pure
   @override
   Widget build(BuildContext context) {
-    List<Widget> listChildren = [];
-    listChildren.add(DividerWithText("项目描述"));
-    bool timeVisible = true;
-    if (widget.event.description == null) {
-      listChildren.add(
-        ListTile(title: Center(child: Text("无项目描述"))),
-      );
-    } else {
-      listChildren
-          .add(Center(child: ListTile(title: Text(widget.event.description!))));
-    }
+    List<Widget> listChildren = [getEventDescWidget()];
 
-    ///前三项紧密关联，共用一个FutureBuilder
     if (widget.event.lastRecordId != null) {
-      listChildren.add(FutureBuilder<List<Record>>(
-          future: _records,
-          builder: (ctx, snapshot) {
-            switch (snapshot.connectionState) {
-              case ConnectionState.done:
-                List<Record> records = snapshot.data!;
-                var map = processRecord(records);
-                List<Widget> toggleChildren = [];
-                toggleTexts.forEach((element) {
-                  toggleChildren.add(Text(element));
-                });
-                int numOfRecords = records.length;
-                String heading = "共进行 ";
-                if (month != nilTime) {
-                  List<Record> recordsOfMonth =
-                      getRecordPerMonth(records, month);
-                  listChildren.add(getTimeSlotsBar(recordsOfMonth, month));
-                  numOfRecords = recordsOfMonth.length;
-                  heading = month.month.toString() + "月共进行 ";
-                }
-                return Column(
-                  // shrinkWrap: true,
-                  // scrollDirection: Axis.vertical,
-                  children: [
-                    Center(
-                        child: Text(
-                      "统计数据 - " + toggleTexts[getSelected(isSelected)],
-                      style:
-                          TextStyle(fontWeight: FontWeight.bold, fontSize: 20),
-                    )),
-                    Container(
-                      margin: EdgeInsets.symmetric(horizontal: 5),
-                      width: double.infinity,
-                      child: SingleChildScrollView(
-                        scrollDirection: Axis.horizontal,
-                        child: HeatMapCalendar(
-                          dateRange: map['range'],
-                          input: map['data'],
-                          unit: toolTipUnit,
-                        ),
-                      ),
-                    ),
-                    Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Visibility(
-                              visible: timeVisible,
-                              child: Container(
-                                  margin: EdgeInsets.only(left: 10),
-                                  child: RichText(
-                                    text: TextSpan(
-                                        style: TextStyle(
-                                            fontSize: 16, color: Colors.black),
-                                        children: [
-                                          TextSpan(text: heading),
-                                          TextSpan(
-                                              text: '$numOfRecords',
-                                              style: TextStyle(
-                                                  fontWeight: FontWeight.bold)),
-                                          TextSpan(text: " 次")
-                                        ]),
-                                  ))),
-                          Container(
-                              margin: EdgeInsets.only(right: 10),
-                              child: ToggleButtons(
-                                  children: toggleChildren,
-                                  isSelected: isSelected,
-                                  onPressed: (int index) {
-                                    if (index != getSelected(isSelected)) {
-                                      for (int i = 0;
-                                          i < isSelected.length;
-                                          i++) {
-                                        setState(() {
-                                          if (i == index) {
-                                            isSelected[i] = true;
-                                          } else {
-                                            isSelected[i] = false;
-                                          }
-                                        });
-                                      }
-                                    }
-                                  }))
-                        ]),
-                  ],
-                );
-                break;
-              default:
-                return loadingScreen();
-            }
-          }));
+      listChildren.add(get2Charts());
     } else {
       listChildren.add(Text("暂无记录"));
     }
+
     return Scaffold(
         appBar: AppBar(
           actions: [
@@ -371,7 +402,7 @@ class _EventDetailsState extends State<EventDetails> {
     return records;
   }
 
-  Widget getTimeSlotsBar(List<Record> records, DateTime month) {
+  Widget getTimeSlotsBar(List<Record> records) {
     List<BarChartGroupData> bars = [];
     List<int> data = List.filled(24, 0); //次数、时长（分钟）、物理量
     if (widget.event is TimingEventModel) {

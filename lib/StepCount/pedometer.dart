@@ -1,18 +1,10 @@
-import 'package:fl_chart/fl_chart.dart';
-import 'package:flutter/material.dart';
-import 'package:flutter_event_tracker/common/customWidget.dart';
-import 'package:moor_db_viewer/moor_db_viewer.dart';
-import '../heatmap_calendar/heatMap.dart';
-import '../heatmap_calendar/util.dart';
-import '../heatmap_calendar/heatMapBuildingBlocks.dart';
-import '../DAO/base.dart';
-import '../common/const.dart';
-import 'package:fl_chart/fl_chart.dart';
-import 'package:flutter/material.dart';
 import 'dart:async';
-import '../main.dart';
+
+import 'package:flutter/material.dart';
 import 'package:pedometer/pedometer.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+
+import '../DAO/base.dart';
+import '../heatmap_calendar/heatMap.dart';
 
 class StepDisplayModel {
   int step = 0;
@@ -51,7 +43,6 @@ class _PedometerPageBuildingBlockState
   String _status = '?';
 
   StepDisplayModel? countEvent; //初始的时候是null，注意判别
-  List<DateTime> _events = [];
   int called = 0;
 
   @override
@@ -76,8 +67,6 @@ class _PedometerPageBuildingBlockState
   }
 
   void onStepCount(StepCount event) async {
-    print("onStepCount called");
-    print(event);
     //处理offset
     int offset = 0;
     StepOffsetData? lastOffset = await db.getStepOffset();
@@ -120,7 +109,7 @@ class _PedometerPageBuildingBlockState
         mainAxisAlignment: MainAxisAlignment.center,
         children: <Widget>[
           Text(
-            'Steps taken:',
+            '已走步数:',
             style: TextStyle(fontSize: 30),
           ),
           Text(
@@ -133,7 +122,7 @@ class _PedometerPageBuildingBlockState
             color: Colors.white,
           ),
           Text(
-            'Pedestrian status:',
+            '步行状态:',
             style: TextStyle(fontSize: 30),
           ),
           Icon(

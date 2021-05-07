@@ -1,8 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_event_tracker/common/const.dart';
-import 'package:flutter_event_tracker/common/util.dart';
-import 'package:sqflite/sqflite.dart';
-import 'package:flutter_hooks/flutter_hooks.dart';
+import 'package:flutter_event_tracker/DAO/base.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 
 RaisedButton myRaisedButton(Widget child, void Function() onPressCallBack,
@@ -95,32 +92,32 @@ void showToast(String text) {
       fontSize: 16.0);
 }
 
-class EventTile1 extends StatefulWidget {
-  @override
-  EventTile1State createState() => new EventTile1State();
-}
-
-class EventTile1State extends State<EventTile1> {
-  @override
-  Widget build(BuildContext context) {
-    return Card(
-        // color: animation.value,
-        elevation: 8,
-        child: AnimatedOpacity(
-            opacity: 1,
-            duration: Duration(seconds: 2),
-            child: Container(
-                color: Colors.cyan,
-                child: Row(
-                  children: [
-                    Flexible(
-                        child: ListTile(
-                            title: Text("title"), subtitle: Text("subtitle"))),
-                    TextButton(onPressed: () {}, child: Text("button"))
-                  ],
-                ))));
-  }
-}
+// class EventTile1 extends StatefulWidget {
+//   @override
+//   EventTile1State createState() => new EventTile1State();
+// }
+//
+// class EventTile1State extends State<EventTile1> {
+//   @override
+//   Widget build(BuildContext context) {
+//     return Card(
+//         // color: animation.value,
+//         elevation: 8,
+//         child: AnimatedOpacity(
+//             opacity: 1,
+//             duration: Duration(seconds: 2),
+//             child: Container(
+//                 color: Colors.cyan,
+//                 child: Row(
+//                   children: [
+//                     Flexible(
+//                         child: ListTile(
+//                             title: Text("title"), subtitle: Text("subtitle"))),
+//                     TextButton(onPressed: () {}, child: Text("button"))
+//                   ],
+//                 ))));
+//   }
+// }
 
 class DividerWithText extends StatelessWidget {
   final String txt;
@@ -146,5 +143,85 @@ class DividerWithText extends StatelessWidget {
         ))
       ]),
     );
+  }
+}
+
+class DescEditable extends StatefulWidget {
+  // final String initText;
+  final int eventId;
+
+  DescEditable(this.eventId);
+
+  @override
+  _EditableTextState createState() => _EditableTextState();
+}
+
+class _EditableTextState extends State<DescEditable> {
+  bool _isEditingText = false;
+  late TextEditingController _c;
+  AppDatabase db = DBHandle().db;
+  late Future<String?> _desc;
+  late String desc;
+
+  @override
+  void initState() {
+    super.initState();
+    _desc = db.getEventDesc(widget.eventId);
+    _c = TextEditingController();
+  }
+
+  @override
+  void dispose() {
+    _c.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (_isEditingText) {
+      _c.text = desc;
+      return Center(
+        child: TextField(
+          onSubmitted: (newValue) {
+            setState(() {
+              // initialText = newValue;
+              desc = newValue;
+              db.updateEventDescription(widget.eventId, newValue);
+              _isEditingText = false;
+            });
+          },
+          autofocus: true,
+          controller: _c,
+        ),
+      );
+    } else {
+      _desc = db.getEventDesc(widget.eventId);
+      return InkWell(
+          onTap: () {
+            setState(() {
+              _isEditingText = true;
+            });
+          },
+          child: FutureBuilder<String?>(
+              future: _desc,
+              builder: (ctx, snapshot) {
+                switch (snapshot.connectionState) {
+                  case ConnectionState.done:
+                    String? tmp = snapshot.data;
+                    if (tmp == null) {
+                      desc = "无描述";
+                    } else {
+                      desc = tmp;
+                    }
+                    return Text(desc,
+                        style: TextStyle(
+                          color: Colors.black38,
+                          fontSize: 18.0,
+                        ));
+                  default:
+                    return Text("加载中");
+                }
+              }));
+    }
   }
 }
