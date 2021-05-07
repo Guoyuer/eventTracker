@@ -84,38 +84,46 @@ class _EventEditorState extends State<EventEditor> {
                         ])),
                     Card(
                         elevation: 8,
-                        child: Column(
-                          children: [
-                            ListTile(title: Text("选取单位")),
-                            FutureBuilder<List<Unit>>(
-                                future: _units,
-                                builder: (ctx, snapshot) {
-                                  switch (snapshot.connectionState) {
-                                    case ConnectionState.done:
-                                      List<Unit> units = snapshot.data!;
-                                      return ListView.builder(
-                                          physics:
-                                              const NeverScrollableScrollPhysics(),
-                                          shrinkWrap: true,
-                                          itemCount: units.length,
-                                          itemBuilder: (ctx, idx) {
-                                            return RadioListTile(
-                                                title: Text(units[idx].name),
-                                                groupValue: selectedUnit,
-                                                toggleable: true,
-                                                value: units[idx].name,
-                                                onChanged: (String? val) {
-                                                  setState(() {
-                                                    selectedUnit = val;
-                                                  });
-                                                });
-                                          });
-                                    default:
-                                      return loadingScreen();
+                        child: FutureBuilder<List<Unit>>(
+                            future: _units,
+                            builder: (ctx, snapshot) {
+                              switch (snapshot.connectionState) {
+                                case ConnectionState.done:
+                                  List<Unit> units = snapshot.data!;
+                                  List<Widget> children = [];
+                                  if (units.isEmpty) {
+                                    children.add(ListTile(
+                                        title: Text("暂无单位，可到单位管理页面添加")));
+                                  } else {
+                                    children
+                                        .add(ListTile(title: Text("可选择单位：")));
                                   }
-                                })
-                          ],
-                        )),
+                                  var unitsList = ListView.builder(
+                                      physics:
+                                          const NeverScrollableScrollPhysics(),
+                                      shrinkWrap: true,
+                                      itemCount: units.length,
+                                      itemBuilder: (ctx, idx) {
+                                        return RadioListTile(
+                                            title: Text(units[idx].name),
+                                            groupValue: selectedUnit,
+                                            toggleable: true,
+                                            value: units[idx].name,
+                                            onChanged: (String? val) {
+                                              setState(() {
+                                                selectedUnit = val;
+                                              });
+                                            });
+                                      });
+
+                                  children.add(unitsList);
+                                  return Column(
+                                    children: children,
+                                  );
+                                default:
+                                  return loadingScreen();
+                              }
+                            })),
                     myRaisedButton(Text("保存"), () {
                       if (_formKey.currentState!.validate()) {
                         _formKey.currentState!.save();
