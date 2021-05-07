@@ -3,7 +3,7 @@ import 'package:flutter_event_tracker/common/const.dart';
 import 'package:flutter_event_tracker/common/commonWidget.dart';
 import 'common/util.dart';
 import 'DAO/base.dart';
-import 'package:moor_flutter/moor_flutter.dart';
+import 'package:moor_flutter/moor_flutter.dart' show Value;
 
 class EventEditor extends StatefulWidget {
   EventEditor();
@@ -45,71 +45,77 @@ class _EventEditorState extends State<EventEditor> {
                 key: _formKey,
                 child: ListView(
                   children: <Widget>[
-                    TextFormField(
-                      validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return "项目名称不得为空";
-                        }
-                        return null;
-                      },
-                      onSaved: (String? value) {
-                        name = value!;
-                      },
-                      // controller: _eventNameController,
-                      autofocus: true,
-                      decoration: InputDecoration(
-                          hintText: "项目名称",
-                          prefixIcon: Icon(Icons.sticky_note_2_rounded)),
-                    ),
-                    TextFormField(
-                      onSaved: (String? value) {
-                        desc = value;
-                      },
-                      // controller: _eventDiscController,
-                      decoration: InputDecoration(
-                          hintText: "项目说明",
-                          prefixIcon: Icon(Icons.subject_rounded)),
-                    ),
-                    SwitchListTile(
-                        title: Text("关注时长"),
-                        value: careTime,
-                        onChanged: (bool val) {
-                          setState(() {
-                            careTime = val;
-                          });
-                        }),
-                    Divider(
-                      height: 20,
-                      thickness: 5,
-                      // indent: 20,
-                      // endIndent: 20,
-                    ),
-                    FutureBuilder<List<Unit>>(
-                        future: _units,
-                        builder: (ctx, snapshot) {
-                          switch (snapshot.connectionState) {
-                            case ConnectionState.done:
-                              List<Unit> units = snapshot.data!;
-                              return ListView.builder(
-                                  physics: const NeverScrollableScrollPhysics(),
-                                  shrinkWrap: true,
-                                  itemCount: units.length,
-                                  itemBuilder: (ctx, idx) {
-                                    return RadioListTile(
-                                        title: Text(units[idx].name),
-                                        groupValue: selectedUnit,
-                                        toggleable: true,
-                                        value: units[idx].name,
-                                        onChanged: (String? val) {
-                                          setState(() {
-                                            selectedUnit = val;
+                    Card(
+                        elevation: 8,
+                        child: Column(children: [
+                          TextFormField(
+                            validator: (value) {
+                              if (value == null || value.isEmpty) {
+                                return "项目名称不得为空";
+                              }
+                              return null;
+                            },
+                            onSaved: (String? value) {
+                              name = value!;
+                            },
+                            // controller: _eventNameController,
+                            autofocus: true,
+                            decoration: InputDecoration(
+                                hintText: "项目名称",
+                                prefixIcon: Icon(Icons.sticky_note_2_rounded)),
+                          ),
+                          TextFormField(
+                            onSaved: (String? value) {
+                              desc = value;
+                            },
+                            // controller: _eventDiscController,
+                            decoration: InputDecoration(
+                                hintText: "项目说明",
+                                prefixIcon: Icon(Icons.subject_rounded)),
+                          ),
+                          SwitchListTile(
+                              title: Text("关注时长"),
+                              value: careTime,
+                              onChanged: (bool val) {
+                                setState(() {
+                                  careTime = val;
+                                });
+                              })
+                        ])),
+                    Card(
+                        elevation: 8,
+                        child: Column(
+                          children: [
+                            ListTile(title: Text("选取单位")),
+                            FutureBuilder<List<Unit>>(
+                                future: _units,
+                                builder: (ctx, snapshot) {
+                                  switch (snapshot.connectionState) {
+                                    case ConnectionState.done:
+                                      List<Unit> units = snapshot.data!;
+                                      return ListView.builder(
+                                          physics:
+                                              const NeverScrollableScrollPhysics(),
+                                          shrinkWrap: true,
+                                          itemCount: units.length,
+                                          itemBuilder: (ctx, idx) {
+                                            return RadioListTile(
+                                                title: Text(units[idx].name),
+                                                groupValue: selectedUnit,
+                                                toggleable: true,
+                                                value: units[idx].name,
+                                                onChanged: (String? val) {
+                                                  setState(() {
+                                                    selectedUnit = val;
+                                                  });
+                                                });
                                           });
-                                        });
-                                  });
-                            default:
-                              return loadingScreen();
-                          }
-                        }),
+                                    default:
+                                      return loadingScreen();
+                                  }
+                                })
+                          ],
+                        )),
                     myRaisedButton(Text("保存"), () {
                       if (_formKey.currentState!.validate()) {
                         _formKey.currentState!.save();

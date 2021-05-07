@@ -179,7 +179,7 @@ class _EditableTextState extends State<DescEditable> {
                 switch (snapshot.connectionState) {
                   case ConnectionState.done:
                     String? tmp = snapshot.data;
-                    if (tmp == null) {
+                    if (tmp == null || tmp.isEmpty) {
                       desc = "无描述";
                     } else {
                       desc = tmp;
