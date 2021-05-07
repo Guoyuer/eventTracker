@@ -115,7 +115,6 @@ class EventTileButton extends StatelessWidget {
           showToast("长按 -- 手动指定停止时间");
           var db = DBHandle().db;
           DateTime startTime = await db.getEventStartTime(event.id);
-          print(startTime);
           DatePicker.showDateTimePicker(context,
               showTitleActions: true,
               minTime: startTime.add(Duration(seconds: 6)),

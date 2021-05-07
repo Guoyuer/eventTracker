@@ -144,8 +144,6 @@ class _ChartsState extends State<Charts> {
               return Column(
                 children: charts,
               );
-
-            // return Text("OKK");
             default:
               return loadingScreen();
           }
@@ -188,9 +186,6 @@ class _ChartsState extends State<Charts> {
         lastY[j] += slots[j];
       }
     });
-    for (var a in eventName2SlotNum.keys) {
-      print(a);
-    }
     for (int i = 0; i < 12; i++) {
       bars.add(BarChartGroupData(x: i * 2, barRods: [
         BarChartRodData(
@@ -205,32 +200,30 @@ class _ChartsState extends State<Charts> {
       if (lastY[i] > maxY) maxY = lastY[i];
     }
 
-    var barChart = SingleChildScrollView(
-        scrollDirection: Axis.horizontal,
-        child: Container(
-            margin: EdgeInsets.only(left: 5, top: 10, right: 10),
-            child: Column(children: [
-              Text(
-                "时段活跃度",
-                style: TextStyle(fontSize: 20),
-              ),
-              SizedBox(height: 10),
-              SizedBox(
-                  height: 300,
-                  width: 350,
-                  child: BarChart(BarChartData(
-                      groupsSpace: 18,
-                      // alignment: BarChartAlignment.start,
-                      titlesData: FlTitlesData(
-                          leftTitles: SideTitles(
-                              showTitles: true,
-                              getTitles: (double val) {
-                                return val.round().toString();
-                              },
-                              interval: maxY / 6)),
-                      borderData: FlBorderData(show: false),
-                      barGroups: bars)))
-            ])));
+    var barChart = Container(
+        margin: EdgeInsets.only(left: 5, top: 10, right: 10),
+        child: Column(children: [
+          Text(
+            "时段活跃度",
+            style: TextStyle(fontSize: 20),
+          ),
+          SizedBox(height: 10),
+          SizedBox(
+              height: 300,
+              // width: 350,
+              child: BarChart(BarChartData(
+                  groupsSpace: 18,
+                  // alignment: BarChartAlignment.start,
+                  titlesData: FlTitlesData(
+                      leftTitles: SideTitles(
+                          showTitles: true,
+                          getTitles: (double val) {
+                            return val.round().toString();
+                          },
+                          interval: maxY / 6)),
+                  borderData: FlBorderData(show: false),
+                  barGroups: bars)))
+        ]));
     return barChart;
   }
 

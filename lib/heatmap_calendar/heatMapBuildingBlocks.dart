@@ -201,7 +201,6 @@ class DayTile extends StatelessWidget {
       return InkWell(
         onTap: () {
           // showToast("日期: $timeStr 值: $valStr $unit");
-          print("日期: $timeStr 值: $valStr $unit");
           DayTouchedNotification(day: date).dispatch(context);
         },
         child: Container(

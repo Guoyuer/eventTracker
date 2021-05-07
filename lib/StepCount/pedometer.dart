@@ -60,7 +60,6 @@ class _PedometerPageBuildingBlockState
   }
 
   void onPedestrianStatusChanged(PedestrianStatus event) {
-    print(event);
     setState(() {
       _status = event.status;
     });
@@ -105,43 +104,44 @@ class _PedometerPageBuildingBlockState
   @override
   Widget build(BuildContext context) {
     return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: <Widget>[
-          Text(
-            '已走步数:',
-            style: TextStyle(fontSize: 30),
-          ),
-          Text(
-            countEvent == null ? '0' : countEvent!.step.toString(),
-            style: TextStyle(fontSize: 60),
-          ),
-          Divider(
-            height: 100,
-            thickness: 0,
-            color: Colors.white,
-          ),
-          Text(
-            '步行状态:',
-            style: TextStyle(fontSize: 30),
-          ),
-          Icon(
-            _status == 'walking'
-                ? Icons.directions_walk
-                : _status == 'stopped'
-                    ? Icons.accessibility_new
-                    : Icons.error,
-            size: 100,
-          ),
-          Center(
-            child: Text(
+      child: SingleChildScrollView(
+        // shrinkWrap: true,
+        // mainAxisAlignment: MainAxisAlignment.center,
+        child: Column(
+          children: [
+            Text(
+              '已走步数:',
+              style: TextStyle(fontSize: 30),
+            ),
+            Text(
+              countEvent == null ? '0' : countEvent!.step.toString(),
+              style: TextStyle(fontSize: 60),
+            ),
+            Divider(
+              height: 100,
+              thickness: 0,
+              color: Colors.white,
+            ),
+            Text(
+              '步行状态:',
+              style: TextStyle(fontSize: 30),
+            ),
+            Icon(
+              _status == 'walking'
+                  ? Icons.directions_walk
+                  : _status == 'stopped'
+                      ? Icons.accessibility_new
+                      : Icons.error,
+              size: 100,
+            ),
+            Text(
               _status,
               style: _status == 'walking' || _status == 'stopped'
                   ? TextStyle(fontSize: 30)
                   : TextStyle(fontSize: 20, color: Colors.red),
             ),
-          )
-        ],
+          ],
+        ),
       ),
     );
   }

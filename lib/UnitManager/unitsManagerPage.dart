@@ -114,41 +114,6 @@ class _UnitsManagerState extends State<UnitsManager> {
         });
   }
 
-  // Future<void> _displayTextInputDialog(BuildContext context) async {
-  //   return showDialog(
-  //       context: context,
-  //       builder: (context) {
-  //         return StatefulBuilder(builder: (context, setState) {
-  //           return AlertDialog(
-  //             title: Text('请输入单位'),
-  //             content: TextField(
-  //               onChanged: (value) {
-  //                 setState(() {
-  //                   // print(OKButton().enabled);
-  //                 });
-  //               },
-  //               controller: controller,
-  //             ),
-  //             // decoration: InputDecoration(hintText: "如：米"),
-  //
-  //             actions: <Widget>[
-  //               FlatButton(
-  //                 // color: Colors.red,
-  //                 // textColor: Colors.white,
-  //                 child: Text('取消'),
-  //                 onPressed: () {
-  //                   setState(() {
-  //                     // listNeedUpdate = false;
-  //                     Navigator.pop(context); //false表示不需要刷新
-  //                   });
-  //                 },
-  //               ),
-  //               addUnitButton(),
-  //             ],
-  //           );
-  //         });
-  //       });
-  // }
 
   FlatButton addUnitButton() {
     return FlatButton(

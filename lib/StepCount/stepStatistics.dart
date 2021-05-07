@@ -182,7 +182,6 @@ class _StepStatPageContentState extends State<StepStatPageContent> {
                             }
                             List<BarChartGroupData> bars = [];
                             for (int i = 0; i < records.length; i++) {
-                              print("HERE");
                               bars.add(BarChartGroupData(x: i + 1, barRods: [
                                 BarChartRodData(
                                     y: values[i],

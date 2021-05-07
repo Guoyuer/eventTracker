@@ -7,6 +7,7 @@ import 'package:moor_flutter/moor_flutter.dart';
 import 'tables.dart';
 
 part 'base.g.dart';
+
 part 'model/displayModel.dart';
 // 实现单例模式
 
@@ -264,14 +265,12 @@ class AppDatabase extends _$AppDatabase {
     try {
       return into(events).insert(event);
     } catch (err) {
-      print(err);
       showToast("创建项目失败，可能是因为重名");
       return -1;
     }
   }
 
   Future updateEventDescription(int eventId, String desc) {
-    print(desc);
     return (update(events)..where((tbl) => tbl.id.equals(eventId)))
         .write(EventsCompanion(description: Value(desc)));
   }
@@ -286,7 +285,6 @@ class AppDatabase extends _$AppDatabase {
   }
 
   Future _eventProcessor(Event rawEvent) async {
-    // print(rawEvent);
     Future<TimingEventModel> timingEventProcessor(Event rawEvent) async {
       EventStatus status;
       Duration? sumTime;

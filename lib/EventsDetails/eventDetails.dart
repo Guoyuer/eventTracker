@@ -162,7 +162,6 @@ class _EventDetailsState extends State<EventDetails> {
               } else {
                 recordsOfMonth = getRecordPerMonth(records, month);
                 numOfRecords = recordsOfMonth.length;
-                print(numOfRecords);
                 heading = month.month.toString() + "月共进行";
               }
               var heatMap = Column(

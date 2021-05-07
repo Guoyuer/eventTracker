@@ -54,9 +54,7 @@ Future<void> displayTextInputDialog(BuildContext context, String title,
             title: Text(title),
             content: TextField(
               onChanged: (value) {
-                setState(() {
-                  // print(OKButton().enabled);
-                });
+                setState(() {});
               },
               controller: c,
             ),
@@ -91,33 +89,6 @@ void showToast(String text) {
       textColor: Colors.white,
       fontSize: 16.0);
 }
-
-// class EventTile1 extends StatefulWidget {
-//   @override
-//   EventTile1State createState() => new EventTile1State();
-// }
-//
-// class EventTile1State extends State<EventTile1> {
-//   @override
-//   Widget build(BuildContext context) {
-//     return Card(
-//         // color: animation.value,
-//         elevation: 8,
-//         child: AnimatedOpacity(
-//             opacity: 1,
-//             duration: Duration(seconds: 2),
-//             child: Container(
-//                 color: Colors.cyan,
-//                 child: Row(
-//                   children: [
-//                     Flexible(
-//                         child: ListTile(
-//                             title: Text("title"), subtitle: Text("subtitle"))),
-//                     TextButton(onPressed: () {}, child: Text("button"))
-//                   ],
-//                 ))));
-//   }
-// }
 
 class DividerWithText extends StatelessWidget {
   final String txt;
