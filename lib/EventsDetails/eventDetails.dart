@@ -13,13 +13,6 @@ import 'dart:collection';
 import '../common/const.dart';
 import 'package:fl_chart/fl_chart.dart';
 
-//OK TODO 增加删除Event按钮
-//OK TODO 按照val或sum的热力图
-//OK TODO 热力图点上去显示值
-//OK TODO 点击热力图某月自动显示月份记录
-//OK TODO 将FutureBuilder最小化: HeatMap、Button、Text共用一个；recordInMonth共用一个避免不必要的重加载
-
-//TODO 修复没有数据和少量数据时的Heatmap显示BUG
 class EventDetailsWrapper extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
@@ -64,14 +57,9 @@ class _EventDetailsState extends State<EventDetails> {
     }
   }
 
-  int getSelected(List<bool> list) {
-    for (int i = 0; i < list.length; i++) {
-      if (list[i] == true) return i;
-    }
-    return -1;
-  }
 
-  Map<String, dynamic> getData(List<Record> records) {
+
+  Map<String, dynamic> processRecord(List<Record> records) {
     // DateTimeRange range;
     Map<DateTime, double> data = {};
     DateTimeRange range = DateTimeRange(
@@ -161,19 +149,19 @@ class _EventDetailsState extends State<EventDetails> {
             switch (snapshot.connectionState) {
               case ConnectionState.done:
                 List<Record> records = snapshot.data!;
-                var map = getData(records);
+                var map = processRecord(records);
                 List<Widget> toggleChildren = [];
                 toggleTexts.forEach((element) {
                   toggleChildren.add(Text(element));
                 });
                 int numOfRecords = records.length;
-                String heading = "共进行";
+                String heading = "共进行 ";
                 if (month != nilTime) {
                   List<Record> recordsOfMonth =
                       getRecordPerMonth(records, month);
                   listChildren.add(getTimeSlotsBar(recordsOfMonth, month));
                   numOfRecords = recordsOfMonth.length;
-                  heading = month.month.toString() + "月共进行";
+                  heading = month.month.toString() + "月共进行 ";
                 }
                 return Column(
                   // shrinkWrap: true,
@@ -214,7 +202,7 @@ class _EventDetailsState extends State<EventDetails> {
                                               text: '$numOfRecords',
                                               style: TextStyle(
                                                   fontWeight: FontWeight.bold)),
-                                          TextSpan(text: "次")
+                                          TextSpan(text: " 次")
                                         ]),
                                   ))),
                           Container(
@@ -423,7 +411,7 @@ class _EventDetailsState extends State<EventDetails> {
             margin: EdgeInsets.only(left: 5, top: 10, right: 5),
             child: Column(children: [
               Text("时段活跃度"),
-              SizedBox(height: 5),
+              SizedBox(height: 10),
               SizedBox(
                   height: 300,
                   width: 350,

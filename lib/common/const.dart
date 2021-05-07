@@ -9,6 +9,12 @@ enum EventStatus {
   notActive, //不在进行
 }
 
+class PageChangedNotification extends Notification {
+  final DateTimeRange range;
+
+  PageChangedNotification({required this.range});
+}
+
 class ReloadEventsNotification extends Notification {
   ReloadEventsNotification();
 }

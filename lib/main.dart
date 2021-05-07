@@ -13,6 +13,7 @@ import 'common/const.dart';
 import 'package:flutter/widgets.dart';
 import 'DAO/base.dart';
 import 'package:share/share.dart';
+import 'Statistics/statistics.dart';
 import 'package:path/path.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:path_provider/path_provider.dart';
@@ -55,9 +56,14 @@ class MainPages extends StatefulWidget {
 
 class _MainPagesState extends State<MainPages> {
   int _selectedIndex = 0;
-  List<String> bottomLabels = ["项目", "计步", "选项", "统计"];
+  List<String> bottomLabels = ["项目", "计步", "统计", "选项"];
   bool floatingButtonVisible = true;
-  List<Widget> _children = [EventList(), PedometerPage(), SettingPage()];
+  List<Widget> _children = [
+    EventList(),
+    PedometerPage(),
+    StatisticPage(),
+    SettingPage(),
+  ];
   dynamic eventData; //添加event用，接收返回值
 
   @override
@@ -85,6 +91,7 @@ class _MainPagesState extends State<MainPages> {
       ),
       bottomNavigationBar: BottomNavigationBar(
         // 底部导航
+        type: BottomNavigationBarType.fixed,
         items: <BottomNavigationBarItem>[
           BottomNavigationBarItem(
               icon: Icon(Icons.event_note_rounded), label: bottomLabels[0]),
@@ -92,36 +99,22 @@ class _MainPagesState extends State<MainPages> {
               icon: Icon(Icons.directions_walk_rounded),
               label: bottomLabels[1]),
           BottomNavigationBarItem(
-              icon: Icon(Icons.settings), label: bottomLabels[2]),
+              icon: Icon(Icons.pie_chart_outline_rounded),
+              label: bottomLabels[2]),
+          BottomNavigationBarItem(
+              icon: Icon(Icons.settings), label: bottomLabels[3]),
         ],
         currentIndex: _selectedIndex,
         fixedColor: Colors.blue,
         onTap: _onItemTapped,
       ),
       floatingActionButton: floatingButton(context),
-      // new Visibility(
-      //     visible: floatingButtonVisible,
-      //     child: FloatingActionButton(
-      //         //悬浮按钮
-      //         child: Icon(Icons.note_add_rounded),
-      //         onPressed: () {
-      //           eventData = Navigator.of(context).pushNamed("eventEditor");
-      //           eventData.then((event) {
-      //             if (event != null) {
-      //               DBHandle().db.addEventInDB(event);
-      //               setState(() {
-      //                 _children.removeAt(0);
-      //                 _children.insert(0, EventList(key: GlobalKey()));
-      //               });
-      //             }
-      //           });
-      //         })),
     );
   }
 
   List<Widget> actionButtons(BuildContext context) {
     switch (_selectedIndex) {
-      case 2:
+      case 3:
         return [
           IconButton(
               icon: Icon(Icons.share_rounded),

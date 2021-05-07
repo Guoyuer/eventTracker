@@ -1,3 +1,4 @@
+import 'package:flutter/material.dart';
 import 'package:flutter_event_tracker/common/const.dart';
 import 'package:flutter_event_tracker/common/customWidget.dart';
 import 'package:flutter_event_tracker/heatmap_calendar/heatMap.dart';
@@ -83,17 +84,24 @@ class AppDatabase extends _$AppDatabase {
     return record;
   }
 
-  // Future<List<Record>> getRecordInMonth(DateTime time) {
-  //   DateUtil dateUtil = DateUtil();
-  //   int month = time.month;
-  //   int year = time.year;
-  //   DateTime firstDay = DateTime(year, month);
-  //   DateTime lastDay =
-  //       DateTime(year, month, dateUtil.daysInMonth(month, year) - 1);
-  //   return (select(records)
-  //         ..where((tbl) => tbl.startTime.isBetweenValues(firstDay, lastDay)))
-  //       .get();
-  // }
+  Future<List<Record>> getRecordsInRange(DateTimeRange range) {
+    DateTime start = range.start;
+    DateTime end = range.end;
+    return (select(records)
+          ..where((tbl) => tbl.endTime.isBetweenValues(start, end)))
+        .get();
+  }
+
+  Future<List<Record>> getEventRecordsInRange(
+      int eventId, DateTimeRange range) {
+    DateTime start = range.start;
+    DateTime end = range.end;
+    return (select(records)
+          ..where((tbl) =>
+              tbl.endTime.isBetweenValues(start, end) &
+              tbl.eventId.equals(eventId)))
+        .get();
+  }
 
   ///得到recordId对应记录的开始时间
   Future<DateTime> getStartTime(int recordId) async {
@@ -237,6 +245,7 @@ class AppDatabase extends _$AppDatabase {
   Future<List<Event>> getRawEvents() {
     return select(events).get();
   }
+
 
   ///返回成功或失败
   Future<int> addEventInDB(EventsCompanion event) async {

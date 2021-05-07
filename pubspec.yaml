@@ -32,6 +32,7 @@ dependencies:
   pedometer:
   #  workmanager:
   #UI:
+  custom_radio:
   fl_chart:
   hooks_riverpod:
   flutter_hooks:
