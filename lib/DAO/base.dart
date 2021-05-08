@@ -136,7 +136,7 @@ class AppDatabase extends _$AppDatabase {
     return transaction(() async {
       await customUpdate(
           "update events set sum_time = sum_time + 1, last_record_id = $recordId where id = $eventId"); //step 1 更新Events的lastRecordId和sumTime
-      if (record.value != Value.absent() && record.value.value != 0) {
+      if (record.value.value != null && record.value.value != 0) {
         double val = record.value.value!;
         await customUpdate(
             "update events set sum_val = sum_val + $val where id = $eventId"); //step 2 有值才更新Events的sumVal

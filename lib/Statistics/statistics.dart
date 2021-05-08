@@ -96,6 +96,9 @@ class _ChartsState extends State<Charts> {
               List<Object> tmp = snapshot.data! as List<Object>;
               List<Record> records = tmp[0] as List<Record>;
               Map<int, Event> eventsMap = tmp[1] as Map<int, Event>;
+              records =
+                  records.where((element) => element.eventId != -1).toList();
+
               if (records.isEmpty || eventsMap.isEmpty)
                 return Card(elevation: 10, child: Text("暂无记录"));
 
