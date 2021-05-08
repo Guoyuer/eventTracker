@@ -173,7 +173,7 @@ class _EventDetailsState extends State<EventDetails> {
                     style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20),
                   )),
                   Container(
-                    margin: EdgeInsets.symmetric(horizontal: 5),
+                    margin: EdgeInsets.symmetric(horizontal: 3),
                     width: double.infinity,
                     child: SingleChildScrollView(
                       scrollDirection: Axis.horizontal,
@@ -433,35 +433,32 @@ class _EventDetailsState extends State<EventDetails> {
         BarChartRodData(y: processedData[i], width: 15, colors: gradientColors)
       ]));
     }
-    var barChart = SingleChildScrollView(
-        scrollDirection: Axis.horizontal,
-        child: Container(
-            margin: EdgeInsets.only(left: 5, top: 10, right: 5),
-            child: Column(children: [
-              Text(
-                "时段活跃度",
-                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-              ),
-              SizedBox(height: 10),
-              SizedBox(
-                  height: 300,
-                  width: 350,
-                  child: BarChart(BarChartData(
-                      barTouchData: BarTouchData(
-                          touchTooltipData: BarTouchTooltipData(
-                              tooltipBgColor: Colors.lightBlueAccent)),
-                      groupsSpace: 18,
-                      // alignment: BarChartAlignment.start,
-                      titlesData: FlTitlesData(
-                          leftTitles: SideTitles(
-                              showTitles: true,
-                              getTitles: (double val) {
-                                return val.round().toString();
-                              },
-                              interval: max / 6)),
-                      borderData: FlBorderData(show: false),
-                      barGroups: bars)))
-            ])));
+    var barChart = Column(children: [
+      Text(
+        "时段活跃度",
+        style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+      ),
+      SizedBox(height: 10),
+      Container(
+          margin: EdgeInsets.symmetric(horizontal: 10),
+          height: 300,
+          // width: 350,
+          child: BarChart(BarChartData(
+              barTouchData: BarTouchData(
+                  touchTooltipData: BarTouchTooltipData(
+                      tooltipBgColor: Colors.lightBlueAccent)),
+              groupsSpace: 30,
+              // alignment: BarChartAlignment.start,
+              titlesData: FlTitlesData(
+                  leftTitles: SideTitles(
+                      showTitles: true,
+                      getTitles: (double val) {
+                        return val.round().toString();
+                      },
+                      interval: max / 6)),
+              borderData: FlBorderData(show: false),
+              barGroups: bars)))
+    ]);
     return barChart;
   }
 }
