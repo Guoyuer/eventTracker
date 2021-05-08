@@ -49,7 +49,6 @@ class EventTracker extends StatelessWidget {
 }
 
 class MainPages extends StatefulWidget {
-  // final UniqueKey _key = UniqueKey();
 
   @override
   _MainPagesState createState() => _MainPagesState();
