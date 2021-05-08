@@ -314,7 +314,7 @@ class _EventDetailsState extends State<EventDetails> {
                     barrierLabel: "dismiss",
                     transitionDuration: Duration(milliseconds: 500),
                     transitionBuilder: (ctx, animation, animation2, child) {
-                      var fadeTween = CurveTween(curve: Curves.fastOutSlowIn);
+                      var fadeTween = CurveTween(curve: Curves.easeInOut);
                       var fadeAnimation = fadeTween.animate(animation);
                       return FadeTransition(
                           opacity: fadeAnimation, child: child);

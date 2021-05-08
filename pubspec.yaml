@@ -29,6 +29,7 @@ dependencies:
   random_color:
   flutter_launcher_icons:
   share:
+  path_provider:
   date_util:
   sprintf:
   intl:
@@ -62,7 +63,8 @@ dev_dependencies:
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
-
+assets:
+  - assets/data/shareQRCode.png
 # The following section is specific to Flutter.
 flutter:
   uses-material-design: true

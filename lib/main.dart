@@ -1,10 +1,12 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_event_tracker/StepCount/stepStatistics.dart';
 import 'package:flutter_event_tracker/settingPage.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:share/share.dart';
-
+import 'package:path_provider/path_provider.dart';
 import 'DAO/base.dart';
 import 'EventsDetails/eventDetails.dart';
 import 'EventsList/eventsList.dart';
@@ -13,6 +15,11 @@ import 'StepCount/pedometer.dart';
 import 'UnitManager/unitsManagerPage.dart';
 import 'common/const.dart';
 import 'eventEditor.dart';
+import 'dart:async';
+import 'dart:io';
+import 'dart:typed_data';
+import 'package:flutter/services.dart' show rootBundle;
+import 'package:path_provider/path_provider.dart';
 
 void main() {
   runApp(EventTracker());
@@ -59,6 +66,7 @@ class _MainPagesState extends State<MainPages> {
     SettingPage(),
   ];
   dynamic eventData; //添加event用，接收返回值
+  late String directory;
 
   @override
   void initState() {
@@ -113,7 +121,8 @@ class _MainPagesState extends State<MainPages> {
           IconButton(
               icon: Icon(Icons.share_rounded),
               onPressed: () {
-                Share.share('该应用由四川大学吴玉章学院17级本科生郭遇尔开发');
+                Share.share(
+                    '四川大学计算机系毕业设计项目。GitHub Repo：https://github.com/Guoyuer/flutter_event_tracker');
               })
         ];
       default:
