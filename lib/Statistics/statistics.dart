@@ -20,6 +20,7 @@ class _StatisticPageState extends State<StatisticPage> {
   DateTimeRange range = DateTimeRange(
       start: DateTime.now().add(Duration(days: -7)), end: DateTime.now());
 
+  //TODO rangePicker最早时间的限制
   @override
   Widget build(BuildContext context) {
     String timeLStr = DateFormat('yyyy.MM.dd').format(range.start);

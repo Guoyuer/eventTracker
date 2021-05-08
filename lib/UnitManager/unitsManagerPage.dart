@@ -2,7 +2,7 @@ import 'dart:core';
 
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
-import 'package:moor_flutter/moor_flutter.dart';
+import 'package:moor_flutter/moor_flutter.dart' hide Column;
 
 import '../DAO/base.dart';
 import '../common/commonWidget.dart';
@@ -54,45 +54,56 @@ class _UnitsManagerState extends State<UnitsManager> {
       alignment: Alignment.centerRight,
       padding: EdgeInsets.only(right: 20.0),
       color: Colors.red,
-      child: Icon(
-        Icons.delete,
-        color: Colors.white,
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Icon(
+            Icons.delete,
+            color: Colors.white,
+          ),
+          Icon(
+            Icons.delete,
+            color: Colors.white,
+          )
+        ],
       ),
     );
   }
 
   Widget _buildListView(List<Unit> units) {
-    return ListView.builder(
-      scrollDirection: Axis.vertical,
-      // shrinkWrap: true,
-      itemBuilder: (ctx, idx) {
-        if (idx == units.length) {
-          return Container(
-              padding: EdgeInsets.symmetric(horizontal: 80),
-              child: myRaisedButton(Text("添加新单位"), () {
-                displayTextInputDialog(
-                    context, "请输入单位", addUnitButton, controller);
-              }));
-        } else {
-          return Dismissible(
-            background: stackBehindDismiss(),
-            key: ObjectKey(units[idx]),
-            child: ListTile(
-                contentPadding: EdgeInsets.symmetric(horizontal: 20),
-                title: Text(units[idx].name)),
-            confirmDismiss: confirmDismissFunc,
-            onDismissed: (direction) {
-              DBHandle()
-                  .db
-                  .deleteUnit(UnitsCompanion(name: Value(units[idx].name)));
-              setState(() {
-                units.removeAt(idx);
-              });
-            },
-          );
-        }
-      },
-      itemCount: units.length + 1,
+    return Column(
+      children: [
+        ListView.builder(
+          scrollDirection: Axis.vertical,
+          shrinkWrap: true,
+          itemCount: units.length,
+          itemBuilder: (ctx, idx) {
+            return Dismissible(
+              background: stackBehindDismiss(),
+              key: ObjectKey(units[idx]),
+              child: Center(
+                  child: ListTile(
+                      contentPadding: EdgeInsets.symmetric(horizontal: 20),
+                      title: Center(child: Text(units[idx].name)))),
+              confirmDismiss: confirmDismissFunc,
+              onDismissed: (direction) {
+                DBHandle()
+                    .db
+                    .deleteUnit(UnitsCompanion(name: Value(units[idx].name)));
+                setState(() {
+                  units.removeAt(idx);
+                });
+              },
+            );
+          },
+        ),
+        Container(
+            padding: EdgeInsets.symmetric(horizontal: 100),
+            child: myRaisedButton(Text("添加新单位"), () {
+              displayTextInputDialog(
+                  context, "请输入单位", addUnitButton, controller);
+            }))
+      ],
     );
   }
 
@@ -113,7 +124,6 @@ class _UnitsManagerState extends State<UnitsManager> {
           );
         });
   }
-
 
   FlatButton addUnitButton() {
     return FlatButton(

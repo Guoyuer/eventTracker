@@ -36,6 +36,7 @@ List<int> getTimeSlotSumTime(List<DateTimeRange> ranges) {
       }
     }
   });
+  data = data.map((e) => e ~/ 60).toList();
   return data;
 }
 

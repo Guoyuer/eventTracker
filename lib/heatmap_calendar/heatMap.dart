@@ -81,14 +81,13 @@ class HeatMapCalendarState extends State<HeatMapCalendar> {
       //找到最大值同时去掉时分秒
       if (value > maxVal) maxVal = value;
     });
-    List<double> threshold = [];
+    List<double> threshold = [0];
     int colorNum = widget.setting.colorMap.length - 1; //还有一个是透明
-    for (int i = 0; i < colorNum; i++) {
+    for (int i = 0; i < colorNum - 1; i++) {
       threshold.add(i * maxVal / colorNum);
     }
     Map<DateTime, int> date2level = Map<DateTime, int>();
     date2level[nilTime] = -1; //用于留白
-    //可能并不是所有日期都有数据，要允许这样的留白;
     for (DateTime i = widget.dateRange.start;
         i.compareTo(widget.dateRange.end) <= 0;
         i = i.add(Duration(days: 1))) {
@@ -98,6 +97,7 @@ class HeatMapCalendarState extends State<HeatMapCalendar> {
           if (widget.data[i]! > threshold[j]) level = j;
         }
         date2level[i] = level;
+        //可能并不是所有日期都有数据，要允许这样的留白;
       } else {
         date2level[i] = 0;
       }

@@ -23,6 +23,7 @@ Future<double?> inputValDialog(BuildContext ctx, String unit) {
                   child: TextField(
                 controller: _c,
                 decoration: InputDecoration(hintText: "?"),
+                keyboardType: TextInputType.number,
                 textAlign: TextAlign.center,
               )),
               Text(unit),

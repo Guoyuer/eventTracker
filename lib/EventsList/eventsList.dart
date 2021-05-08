@@ -37,7 +37,7 @@ class _EventListState extends State<EventList> {
             case ConnectionState.done:
               List<BaseEventModel> events = snapshot.data!;
               return ListView.builder(
-                  shrinkWrap: true,
+                  // shrinkWrap: true,
                   itemCount: events.length,
                   itemBuilder: (ctx, idx) {
                     return EventDataHolder(
@@ -52,7 +52,7 @@ class _EventListState extends State<EventList> {
 }
 
 class EventTileButton extends StatelessWidget {
-  // final int eventId; //按钮要记住，因为操作数据库的时候要用。
+  // final int eventId; //按钮要记住，因为操作据库的时候要用。
 
   @override
   Widget build(BuildContext context) {
@@ -115,25 +115,29 @@ class EventTileButton extends StatelessWidget {
           showToast("长按 -- 手动指定停止时间");
           var db = DBHandle().db;
           DateTime startTime = await db.getEventStartTime(event.id);
-          DatePicker.showDateTimePicker(context,
-              showTitleActions: true,
-              minTime: startTime.add(Duration(seconds: 6)),
-              maxTime: DateTime.now(),
-              theme: DatePickerTheme(
-                  headerColor: Colors.orange,
-                  backgroundColor: Colors.blue,
-                  itemStyle: TextStyle(
-                      color: Colors.white,
-                      fontWeight: FontWeight.bold,
-                      fontSize: 18),
-                  doneStyle: TextStyle(color: Colors.white, fontSize: 16)),
-              onConfirm: (time) {
-            stopTimingRecord(context, time);
-          }, onCancel: () {
-            showToast("用户取消");
-          },
-              currentTime: startTime.add(Duration(minutes: 1)),
-              locale: LocaleType.zh);
+          var fiveSeconds = Duration(seconds: 5);
+          Duration thisDuration = DateTime.now().difference(startTime);
+          if (thisDuration.compareTo(fiveSeconds) < 0) {
+            showToast("开始不足5s");
+          } else {
+            DatePicker.showDateTimePicker(context,
+                showTitleActions: true,
+                minTime: startTime,
+                maxTime: DateTime.now().add(Duration(seconds: 5)),
+                theme: DatePickerTheme(
+                    headerColor: Colors.orange,
+                    backgroundColor: Colors.blue,
+                    itemStyle: TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 18),
+                    doneStyle: TextStyle(color: Colors.white, fontSize: 16)),
+                onConfirm: (time) {
+              stopTimingRecord(context, time);
+            }, onCancel: () {
+              showToast("用户取消");
+            }, locale: LocaleType.zh);
+          }
         });
       default:
         return eventListButton(

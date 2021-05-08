@@ -9,10 +9,19 @@ class SettingPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Center(
         child: Column(children: [
-      // myRaisedButton(Text("查看数据库"), () {
-      //   Navigator.push(context,
-      //       MaterialPageRoute(builder: (BuildContext ctx) => DBViewRoute()));
-      // }),
+      RaisedButton.icon(
+          label: Text("单位管理"),
+          onPressed: () {
+            Navigator.pushNamed(context, 'unitsManager');
+          },
+          color: Colors.blue,
+          highlightColor: Colors.blue[700],
+          colorBrightness: Brightness.dark,
+          splashColor: Colors.grey,
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(20.0)),
+          icon: Icon(Icons.edit_rounded)),
+      SizedBox(height: 50),
       RaisedButton.icon(
           label: Text("查看数据库"),
           onPressed: () {
@@ -28,8 +37,6 @@ class SettingPage extends StatelessWidget {
           shape:
               RoundedRectangleBorder(borderRadius: BorderRadius.circular(20.0)),
           icon: Icon(Icons.list_alt_rounded)),
-      myRaisedButton(
-          Text("单位管理"), () => Navigator.pushNamed(context, 'unitsManager')),
       RaisedButton.icon(
           label: Text("删除所有数据"),
           onPressed: () {

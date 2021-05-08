@@ -1,4 +1,3 @@
-
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
@@ -61,8 +60,7 @@ class _EventDetailsState extends State<EventDetails> {
     // DateTimeRange range;
     Map<DateTime, double> data = {};
     DateTimeRange range = DateTimeRange(
-        start: getDate(records[0].endTime!),
-        end: getDate(records.last.endTime!));
+        start: getDate(records[0].endTime!), end: getDate(DateTime.now()));
     if (widget.event is TimingEventModel) {
       if (getSelected(isSelected) == 0) {
         //得到时长统计信息
@@ -440,12 +438,18 @@ class _EventDetailsState extends State<EventDetails> {
         child: Container(
             margin: EdgeInsets.only(left: 5, top: 10, right: 5),
             child: Column(children: [
-              Text("时段活跃度"),
+              Text(
+                "时段活跃度",
+                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+              ),
               SizedBox(height: 10),
               SizedBox(
                   height: 300,
                   width: 350,
                   child: BarChart(BarChartData(
+                      barTouchData: BarTouchData(
+                          touchTooltipData: BarTouchTooltipData(
+                              tooltipBgColor: Colors.lightBlueAccent)),
                       groupsSpace: 18,
                       // alignment: BarChartAlignment.start,
                       titlesData: FlTitlesData(

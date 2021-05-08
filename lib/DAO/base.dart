@@ -263,11 +263,12 @@ class AppDatabase extends _$AppDatabase {
   ///返回成功或失败
   Future<int> addEventInDB(EventsCompanion event) async {
     try {
-      return into(events).insert(event);
+      into(events).insert(event);
     } catch (err) {
       showToast("创建项目失败，可能是因为重名");
       return -1;
     }
+    return 0;
   }
 
   Future updateEventDescription(int eventId, String desc) {
