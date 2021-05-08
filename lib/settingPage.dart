@@ -7,8 +7,9 @@ import 'addFakeData.dart';
 class SettingPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    return Center(
-        child: Column(children: [
+    return SingleChildScrollView(
+        child: Center(
+            child: Column(children: [
       RaisedButton.icon(
           label: Text("单位管理"),
           onPressed: () {
@@ -61,7 +62,7 @@ class SettingPage extends StatelessWidget {
           shape:
               RoundedRectangleBorder(borderRadius: BorderRadius.circular(20.0)),
           icon: Icon(Icons.add_rounded))
-    ]));
+    ])));
   }
 }
 

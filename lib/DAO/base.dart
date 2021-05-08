@@ -219,6 +219,7 @@ class AppDatabase extends _$AppDatabase {
   }
 
   Future<Duration> getEventSumTime(int eventId) async {
+    print(eventId);
     Event event = await (select(events)..where((tbl) => tbl.id.equals(eventId)))
         .getSingle();
     return event.sumTime;
@@ -263,12 +264,11 @@ class AppDatabase extends _$AppDatabase {
   ///返回成功或失败
   Future<int> addEventInDB(EventsCompanion event) async {
     try {
-      into(events).insert(event);
+      return into(events).insert(event);
     } catch (err) {
       showToast("创建项目失败，可能是因为重名");
       return -1;
     }
-    return 0;
   }
 
   Future updateEventDescription(int eventId, String desc) {
