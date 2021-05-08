@@ -132,7 +132,7 @@ class _EventDetailsState extends State<EventDetails> {
                 alignment: Alignment.center,
                 child: Text(
                   "项目描述",
-                  style: TextStyle(fontSize: 18.0),
+                  style: chartTitleStyle,
                 )),
             Align(
                 alignment: Alignment.center,
@@ -170,10 +170,10 @@ class _EventDetailsState extends State<EventDetails> {
                   Center(
                       child: Text(
                     "统计数据 - " + toggleTexts[getSelected(isSelected)],
-                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20),
+                    style: chartTitleStyle,
                   )),
                   Container(
-                    margin: EdgeInsets.symmetric(horizontal: 3),
+                    margin: EdgeInsets.symmetric(horizontal: 5),
                     width: double.infinity,
                     child: SingleChildScrollView(
                       scrollDirection: Axis.horizontal,
@@ -436,7 +436,7 @@ class _EventDetailsState extends State<EventDetails> {
     var barChart = Column(children: [
       Text(
         "时段活跃度",
-        style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+        style: chartTitleStyle,
       ),
       SizedBox(height: 10),
       Container(

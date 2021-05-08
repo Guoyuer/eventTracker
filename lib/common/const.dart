@@ -30,7 +30,7 @@ class DayTouchedNotification extends Notification {
 
   DayTouchedNotification({required this.day});
 }
-
+var chartTitleStyle = TextStyle(fontSize: 20.0, fontWeight: FontWeight.bold);
 const Map<int, Color> heatmapColorMap = {
   -1: Color.fromARGB(0, 255, 255, 255), //透明，用于占位
   0: Color.fromARGB(255, 235, 237, 240),
