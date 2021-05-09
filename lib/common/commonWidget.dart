@@ -27,7 +27,7 @@ Widget eventListButton(Icon icon, Widget label, void Function() onPressCallBack,
           colorBrightness: Brightness.dark,
           splashColor: Colors.grey,
           shape:
-              RoundedRectangleBorder(borderRadius: BorderRadius.circular(20.0)),
+          RoundedRectangleBorder(borderRadius: BorderRadius.circular(20.0)),
           // padding: EdgeInsets.symmetric(horizontal: 50),
           label: label,
           onPressed: onPressCallBack,
@@ -102,16 +102,16 @@ class DividerWithText extends StatelessWidget {
       child: Row(children: [
         Expanded(
             child: Divider(
-          thickness: 5,
-        )),
+              thickness: 5,
+            )),
         Text(
           txt,
           style: TextStyle(fontSize: 20),
         ),
         Expanded(
             child: Divider(
-          thickness: 5,
-        ))
+              thickness: 5,
+            ))
       ]),
     );
   }
@@ -184,11 +184,19 @@ class _EditableTextState extends State<DescEditable> {
                     } else {
                       desc = tmp;
                     }
+                    var style;
+                    if (desc == "无描述") {
+                      style = TextStyle(
+                        color: Colors.black38,
+                        fontSize: 18.0,
+                      );
+                    } else {
+                      style = TextStyle(
+                        fontSize: 18.0,
+                      );
+                    }
                     return Text(desc,
-                        style: TextStyle(
-                          color: Colors.black38,
-                          fontSize: 18.0,
-                        ));
+                        style: style);
                   default:
                     return Text("加载中");
                 }
