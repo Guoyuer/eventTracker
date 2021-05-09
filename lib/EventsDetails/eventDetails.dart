@@ -373,7 +373,7 @@ class _EventDetailsState extends State<EventDetails> {
             element.endTime!.year == time.year &&
             element.endTime!.day == time.day)
         .toList(); //只保留本日的记录，
-    if (records.isEmpty) return Text("该日无记录");
+    if (records.isEmpty) return Text("当日无记录");
     records.forEach((record) {
       if (event is TimingEventModel) {
         String startTimeStr =
@@ -401,7 +401,6 @@ class _EventDetailsState extends State<EventDetails> {
         }
       }
     });
-    print(tiles);
     return Container(
         width: 300,
         // height: 500,
