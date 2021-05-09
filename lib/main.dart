@@ -29,7 +29,7 @@ class EventTracker extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      debugShowCheckedModeBanner: false,
+      // debugShowCheckedModeBanner: false,
       localizationsDelegates: [GlobalMaterialLocalizations.delegate],
       supportedLocales: [const Locale('en'), const Locale('zh')],
       routes: {
@@ -49,7 +49,6 @@ class EventTracker extends StatelessWidget {
 }
 
 class MainPages extends StatefulWidget {
-
   @override
   _MainPagesState createState() => _MainPagesState();
 }

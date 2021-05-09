@@ -6,6 +6,8 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_event_tracker/common/commonWidget.dart';
+import 'package:flutter_event_tracker/common/const.dart';
+import 'package:flutter_event_tracker/common/util.dart';
 import 'package:intl/intl.dart';
 import 'package:random_color/random_color.dart';
 
@@ -18,7 +20,8 @@ class StatisticPage extends StatefulWidget {
 
 class _StatisticPageState extends State<StatisticPage> {
   DateTimeRange range = DateTimeRange(
-      start: DateTime.now().add(Duration(days: -7)), end: DateTime.now());
+      start: getDate(DateTime.now().add(Duration(days: -7))),
+      end: DateTime.now());
 
   //TODO rangePicker最早时间的限制
   @override
@@ -48,7 +51,9 @@ class _StatisticPageState extends State<StatisticPage> {
                         lastDate: DateTime.now());
                     if (tmp != null) {
                       setState(() {
-                        range = tmp;
+                        range = DateTimeRange(
+                            start: tmp.start,
+                            end: tmp.end.add(Duration(days: 1)));
                       });
                     }
                   }))
@@ -96,8 +101,6 @@ class _ChartsState extends State<Charts> {
               List<Object> tmp = snapshot.data! as List<Object>;
               List<Record> records = tmp[0] as List<Record>;
               Map<int, Event> eventsMap = tmp[1] as Map<int, Event>;
-              records =
-                  records.where((element) => element.eventId != -1).toList();
 
               if (records.isEmpty || eventsMap.isEmpty)
                 return Card(elevation: 10, child: Text("暂无记录"));

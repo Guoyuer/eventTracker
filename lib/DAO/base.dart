@@ -32,7 +32,7 @@ class DBHandle {
 class AppDatabase extends _$AppDatabase {
   AppDatabase()
       : super(FlutterQueryExecutor.inDatabaseFolder(
-            path: "db.sqlite", logStatements: false));
+            path: "db.sqlite", logStatements: true));
 
   @override
   int get schemaVersion => 2;
@@ -88,7 +88,9 @@ class AppDatabase extends _$AppDatabase {
     DateTime start = range.start;
     DateTime end = range.end;
     return (select(records)
-          ..where((tbl) => tbl.endTime.isBetweenValues(start, end)))
+          ..where((tbl) =>
+              tbl.endTime.isBetweenValues(start, end) &
+              tbl.eventId.equals(-1).not()))
         .get();
   }
 

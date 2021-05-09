@@ -7,6 +7,8 @@ import 'package:flutter_event_tracker/common/const.dart';
 import 'package:flutter_event_tracker/common/util.dart';
 import 'package:intl/intl.dart';
 import 'package:sprintf/sprintf.dart';
+import 'dart:math';
+import 'package:flutter/scheduler.dart';
 
 import '../DAO/base.dart';
 import '../common/const.dart';
@@ -36,7 +38,7 @@ class _EventDetailsState extends State<EventDetails> {
   List<String> toggleTexts = [];
   List<bool> isSelected = [true];
   late String toolTipUnit;
-
+  ScrollController _c = ScrollController();
   DateTime month = nilTime;
 
   // DateTime dayOfRecords = nilTime;
@@ -53,6 +55,18 @@ class _EventDetailsState extends State<EventDetails> {
     if (widget.event.unit != null) {
       toggleTexts.add(widget.event.unit!);
       isSelected.add(false);
+    }
+  }
+
+  void scrollToEnd(BuildContext context) {
+    if (!_c.hasClients) {
+      print("HERE");
+      return;
+    }
+    var scrollPosition = _c.position;
+    if (scrollPosition.maxScrollExtent > scrollPosition.minScrollExtent) {
+      _c.animateTo(scrollPosition.maxScrollExtent,
+          duration: Duration(seconds: 1), curve: Curves.easeOutCubic);
     }
   }
 
@@ -162,6 +176,9 @@ class _EventDetailsState extends State<EventDetails> {
                 numOfRecords = recordsOfMonth.length;
                 heading = month.month.toString() + "月共进行";
               }
+              WidgetsBinding.instance!.addPostFrameCallback((_) {
+                scrollToEnd(context);
+              });
               var heatMap = Column(
                 //heatMap, title,
                 // shrinkWrap: true,
@@ -176,6 +193,7 @@ class _EventDetailsState extends State<EventDetails> {
                     margin: EdgeInsets.symmetric(horizontal: 5),
                     width: double.infinity,
                     child: SingleChildScrollView(
+                      controller: _c,
                       scrollDirection: Axis.horizontal,
                       child: HeatMapCalendar(
                         dateRange: dataForHeatMap['range'],
@@ -230,11 +248,12 @@ class _EventDetailsState extends State<EventDetails> {
                       ]),
                 ],
               );
+              // _c.jumpTo(value)
               var barChart;
               if (recordsOfMonth.isNotEmpty) {
-                barChart = getTimeSlotsBar(recordsOfMonth);
+                barChart = getTimeSlotsBar(recordsOfMonth, widget.event);
               } else {
-                barChart = getTimeSlotsBar(records);
+                barChart = getTimeSlotsBar(records, widget.event);
               }
               List<Widget> charts = [heatMap, barChart];
               charts = charts
@@ -289,8 +308,9 @@ class _EventDetailsState extends State<EventDetails> {
                   if (delete != null && delete) {
                     var db = DBHandle().db;
                     db.deleteEvent(widget.event.id);
-                    ReloadEventsNotification().dispatch(context);
-                    Navigator.of(context).pop();
+                    Navigator.of(context).pop(true);
+                  } else {
+                    Navigator.of(context).pop(false);
                   }
                 },
                 icon: Icon(Icons.delete))
@@ -381,13 +401,17 @@ class _EventDetailsState extends State<EventDetails> {
         }
       }
     });
-    return ListView.builder(
-        physics: const NeverScrollableScrollPhysics(),
-        shrinkWrap: true,
-        itemCount: tiles.length,
-        itemBuilder: (ctx, idx) {
-          return tiles[idx];
-        });
+    print(tiles);
+    return Container(
+        width: 300,
+        // height: 500,
+        child: ListView.builder(
+            // physics: const NeverScrollableScrollPhysics(),
+            shrinkWrap: true,
+            itemCount: tiles.length,
+            itemBuilder: (ctx, idx) {
+              return tiles[idx];
+            }));
   }
 
   List<Record> getRecordPerMonth(List<Record> records, DateTime month) {
@@ -399,9 +423,10 @@ class _EventDetailsState extends State<EventDetails> {
     return records;
   }
 
-  Widget getTimeSlotsBar(List<Record> records) {
+  Widget getTimeSlotsBar(List<Record> records, BaseEventModel event) {
+    String unit = "";
     List<BarChartGroupData> bars = [];
-    List<int> data = List.filled(24, 0); //次数、时长（分钟）、物理量
+    List<double> data = List.filled(24, 0); //次数、时长（分钟）、物理量
     if (widget.event is TimingEventModel) {
       if (getSelected(isSelected) == 0) {
         //得到时长统计信息
@@ -410,22 +435,39 @@ class _EventDetailsState extends State<EventDetails> {
             DateTimeRange(start: record.startTime!, end: record.endTime!)
         ];
         data = getTimeSlotSumTime(ranges);
+        double maxVal = data.reduce(max);
+        //原始是秒
+        //不让y轴显示200以上的值
+        if (maxVal <= 500) {
+          unit = "秒";
+        } else {
+          if (maxVal <= 500 * 60) {
+            data = data.map((e) => e / 60).toList();
+            unit = "分钟";
+          } else {
+            data = data.map((e) => e / 3600).toList();
+            unit = "小时";
+          }
+        }
       } else {
         data = getTimeSlotSumVal(records);
+        unit = "${event.unit}";
       }
     } else {
       //plain
       if (getSelected(isSelected) == 0) {
         data = getTimeSlotSumNum(records);
+        unit = "次数";
       } else {
         data = getTimeSlotSumVal(records);
+        unit = "${event.unit}";
       }
     }
     List<double> processedData = [];
-    double max = 0;
+    double maxVal = 0;
     for (int i = 0; i < 12; i++) {
-      double val = data[i * 2].toDouble() + data[i * 2 + 1];
-      if (val > max) max = val;
+      double val = data[i * 2] + data[i * 2 + 1];
+      if (val > maxVal) maxVal = val;
       processedData.add(val);
     }
     for (int i = 0; i < 12; i++) {
@@ -444,10 +486,15 @@ class _EventDetailsState extends State<EventDetails> {
           height: 300,
           // width: 350,
           child: BarChart(BarChartData(
+              axisTitleData: FlAxisTitleData(
+                  topTitle: AxisTitle(
+                      textAlign: TextAlign.start,
+                      showTitle: true,
+                      titleText: unit)),
               barTouchData: BarTouchData(
                   touchTooltipData: BarTouchTooltipData(
                       tooltipBgColor: Colors.lightBlueAccent)),
-              groupsSpace: 30,
+              // groupsSpace: 30,
               // alignment: BarChartAlignment.start,
               titlesData: FlTitlesData(
                   leftTitles: SideTitles(
@@ -455,7 +502,7 @@ class _EventDetailsState extends State<EventDetails> {
                       getTitles: (double val) {
                         return val.round().toString();
                       },
-                      interval: max / 6)),
+                      interval: maxVal / 6)),
               borderData: FlBorderData(show: false),
               barGroups: bars)))
     ]);
