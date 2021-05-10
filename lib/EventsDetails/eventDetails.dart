@@ -41,8 +41,6 @@ class _EventDetailsState extends State<EventDetails> {
   ScrollController _c = ScrollController();
   DateTime month = nilTime;
 
-  // DateTime dayOfRecords = nilTime;
-
   @override
   void initState() {
     super.initState();
@@ -60,7 +58,6 @@ class _EventDetailsState extends State<EventDetails> {
 
   void scrollToEnd(BuildContext context) {
     if (!_c.hasClients) {
-      print("HERE");
       return;
     }
     var scrollPosition = _c.position;
@@ -464,15 +461,25 @@ class _EventDetailsState extends State<EventDetails> {
     }
     List<double> processedData = [];
     double maxVal = 0;
-    for (int i = 0; i < 12; i++) {
-      double val = data[i * 2] + data[i * 2 + 1];
-      if (val > maxVal) maxVal = val;
-      processedData.add(val);
-    }
-    for (int i = 0; i < 12; i++) {
-      bars.add(BarChartGroupData(x: i * 2, barRods: [
-        BarChartRodData(y: processedData[i], width: 15, colors: gradientColors)
-      ]));
+    if (MediaQuery.of(context).orientation == Orientation.portrait) {
+      for (int i = 0; i < 12; i++) {
+        double val = data[i * 2] + data[i * 2 + 1];
+        if (val > maxVal) maxVal = val;
+        processedData.add(val);
+      }
+      for (int i = 0; i < 12; i++) {
+        bars.add(BarChartGroupData(x: i * 2, barRods: [
+          BarChartRodData(
+              y: processedData[i], width: 15, colors: gradientColors)
+        ]));
+      }
+    } else {
+      for (int i = 0; i < 24; i++) {
+        if (data[i] > maxVal) maxVal = data[i];
+        bars.add(BarChartGroupData(x: i, barRods: [
+          BarChartRodData(y: data[i], width: 15, colors: gradientColors)
+        ]));
+      }
     }
     var barChart = Column(children: [
       Text(
@@ -499,7 +506,7 @@ class _EventDetailsState extends State<EventDetails> {
                   leftTitles: SideTitles(
                       showTitles: true,
                       getTitles: (double val) {
-                        return val.round().toString();
+                        return val.floor().toString();
                       },
                       interval: maxVal / 6)),
               borderData: FlBorderData(show: false),

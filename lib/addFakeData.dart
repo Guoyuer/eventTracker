@@ -9,6 +9,16 @@ Future addData() async {
   await addPlainWithoutValue();
   await addPlainWithValue();
   await addStepData();
+  await addUnitData();
+}
+
+Future addUnitData() async {
+  var db = DBHandle().db;
+  var unit;
+  unit = UnitsCompanion(name: Value("千米"));
+  await db.addUnit(unit);
+  unit = UnitsCompanion(name: Value("题"));
+  await db.addUnit(unit);
 }
 
 Future addTimingWithValue() async {
@@ -21,21 +31,24 @@ Future addTimingWithValue() async {
   final _random = new Random();
   int next(int min, int max) => min + _random.nextInt(max - min);
   for (int i = 300; i >= 0; i--) {
-    int minutes = next(0, 1400);
-    DateTime startTime = DateTime.now().add(Duration(days: -i));
-    var record = RecordsCompanion(
-      eventId: Value(eventId),
-      startTime: Value(startTime),
-    );
-    int recordId = await db.startTimingRecordInDB(record);
-    DateTime endTime = startTime.add(Duration(minutes: minutes, seconds: 1));
-    record = RecordsCompanion(
-        id: Value(recordId),
+    int jMax = next(0, 10);
+    for (int j = 0; j < jMax; j++) {
+      int minutes = next(0, 1400);
+      DateTime startTime = DateTime.now().add(Duration(days: -i));
+      var record = RecordsCompanion(
         eventId: Value(eventId),
-        value: Value(next(0, 10).toDouble()),
-        endTime: Value(endTime));
-    await db.stopTimingRecordInDB(
-        Duration(minutes: minutes, seconds: 1), record);
+        startTime: Value(startTime),
+      );
+      int recordId = await db.startTimingRecordInDB(record);
+      DateTime endTime = startTime.add(Duration(minutes: minutes, seconds: 1));
+      record = RecordsCompanion(
+          id: Value(recordId),
+          eventId: Value(eventId),
+          value: Value(next(0, 10).toDouble()),
+          endTime: Value(endTime));
+      await db.stopTimingRecordInDB(
+          Duration(minutes: minutes, seconds: 1), record);
+    }
   }
   //timing without value -- end
 }
@@ -49,18 +62,23 @@ Future addTimingWithoutValue() async {
   final _random = new Random();
   int next(int min, int max) => min + _random.nextInt(max - min);
   for (int i = 300; i >= 0; i--) {
-    int minutes = next(0, 1400);
-    DateTime startTime = DateTime.now().add(Duration(days: -i));
-    var record = RecordsCompanion(
-      eventId: Value(eventId),
-      startTime: Value(startTime),
-    );
-    int recordId = await db.startTimingRecordInDB(record);
-    DateTime endTime = startTime.add(Duration(minutes: minutes, seconds: 1));
-    record = RecordsCompanion(
-        id: Value(recordId), eventId: Value(eventId), endTime: Value(endTime));
-    await db.stopTimingRecordInDB(
-        Duration(minutes: minutes, seconds: 1), record);
+    int jMax = next(0, 10);
+    for (int j = 0; j < jMax; j++) {
+      int minutes = next(0, 1400);
+      DateTime startTime = DateTime.now().add(Duration(days: -i));
+      var record = RecordsCompanion(
+        eventId: Value(eventId),
+        startTime: Value(startTime),
+      );
+      int recordId = await db.startTimingRecordInDB(record);
+      DateTime endTime = startTime.add(Duration(minutes: minutes, seconds: 1));
+      record = RecordsCompanion(
+          id: Value(recordId),
+          eventId: Value(eventId),
+          endTime: Value(endTime));
+      await db.stopTimingRecordInDB(
+          Duration(minutes: minutes, seconds: 1), record);
+    }
   }
   //timing without value -- end
 }
@@ -74,7 +92,8 @@ Future addPlainWithValue() async {
       name: Value("做算法题"), careTime: Value(false), unit: Value("题"));
   var eventId = await db.addEventInDB(event);
   for (int j = 300; j >= 0; j--) {
-    for (int k = 1; k <= next(0, 20); k++) {
+    int kMax = next(0, 20);
+    for (int k = 1; k <= kMax; k++) {
       var record = RecordsCompanion(
           eventId: Value(eventId),
           value: Value(next(0, 10).toDouble()),
@@ -96,7 +115,8 @@ Future addPlainWithoutValue() async {
   var event = EventsCompanion(name: Value("吃冰淇淋"), careTime: Value(false));
   var eventId = await db.addEventInDB(event);
   for (int j = 300; j >= 0; j--) {
-    for (int k = 1; k <= next(0, 20); k++) {
+    int kMax = next(0, 20);
+    for (int k = 1; k <= kMax; k++) {
       var record = RecordsCompanion(
           eventId: Value(eventId),
           endTime: Value(DateTime.now().add(

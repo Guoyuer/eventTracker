@@ -221,7 +221,6 @@ class AppDatabase extends _$AppDatabase {
   }
 
   Future<Duration> getEventSumTime(int eventId) async {
-    print(eventId);
     Event event = await (select(events)..where((tbl) => tbl.id.equals(eventId)))
         .getSingle();
     return event.sumTime;

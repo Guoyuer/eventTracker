@@ -27,7 +27,7 @@ Widget eventListButton(Icon icon, Widget label, void Function() onPressCallBack,
           colorBrightness: Brightness.dark,
           splashColor: Colors.grey,
           shape:
-          RoundedRectangleBorder(borderRadius: BorderRadius.circular(20.0)),
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(20.0)),
           // padding: EdgeInsets.symmetric(horizontal: 50),
           label: label,
           onPressed: onPressCallBack,
@@ -102,16 +102,16 @@ class DividerWithText extends StatelessWidget {
       child: Row(children: [
         Expanded(
             child: Divider(
-              thickness: 5,
-            )),
+          thickness: 5,
+        )),
         Text(
           txt,
           style: TextStyle(fontSize: 20),
         ),
         Expanded(
             child: Divider(
-              thickness: 5,
-            ))
+          thickness: 5,
+        ))
       ]),
     );
   }
@@ -153,6 +153,7 @@ class _EditableTextState extends State<DescEditable> {
       _c.text = desc;
       return Center(
         child: TextField(
+          textAlign: TextAlign.center,
           onSubmitted: (newValue) {
             setState(() {
               // initialText = newValue;
@@ -195,8 +196,7 @@ class _EditableTextState extends State<DescEditable> {
                         fontSize: 18.0,
                       );
                     }
-                    return Text(desc,
-                        style: style);
+                    return Text(desc, style: style);
                   default:
                     return Text("加载中");
                 }

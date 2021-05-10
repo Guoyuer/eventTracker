@@ -271,9 +271,10 @@ class _EventTileState extends State<EventTile>
                     child: Container(color: const Color(0xaabeddf5)))),
             InkWell(
               onTap: () async {
-                bool deleted = await Navigator.of(context)
-                    .pushNamed("EventDetails", arguments: event) as bool;
-                if (deleted) ReloadEventsNotification().dispatch(context);
+                bool? deleted = await Navigator.of(context)
+                    .pushNamed("EventDetails", arguments: event) as bool?;
+                if (deleted != null && deleted)
+                  ReloadEventsNotification().dispatch(context);
               },
               child: Container(
                   margin: EdgeInsets.only(left: 10, top: 10),

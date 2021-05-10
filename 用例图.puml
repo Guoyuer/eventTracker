@@ -1,0 +1,13 @@
+@startuml
+skinparam actorStyle awesome
+:用户: --> (添加项目)
+'(添加新项目) as (add Event)
+
+
+rectangle 添加项目 {
+(add Event) .> (添加计时带值项目): include
+(add Event) .> (添加计时不带值项目): include
+(add Event) .> (添加计次带值项目): include
+(add Event) .> (添加计次不带值项目): include
+}
+@enduml

@@ -179,24 +179,48 @@ class _ChartsState extends State<Charts> {
     List<BarChartGroupData> bars = [];
     LinkedHashMap<String, List<double>> eventName2SlotNum =
         LinkedHashMap<String, List<double>>();
-    eventName2RecordEnds.forEach((eventName, listOfEnds) {
-      List<double> slots = getTimeSlotNum(listOfEnds);
-      eventName2SlotNum[eventName] = slots;
-    });
-    // List<List<BarChartRodStackItem>> stacks = List.filled(12, []);
+    Orientation orientation = MediaQuery.of(context).orientation;
+    if (orientation == Orientation.portrait) {
+      eventName2RecordEnds.forEach((eventName, listOfEnds) {
+        List<double> slots = getTimeSlotNum(listOfEnds);
+        List<double> processedData = [];
+        for (int i = 0; i < 12; i++) {
+          double val = slots[i * 2] + slots[i * 2 + 1];
+          processedData.add(val);
+        }
+        eventName2SlotNum[eventName] = processedData;
+      });
+    } else {
+      eventName2RecordEnds.forEach((eventName, listOfEnds) {
+        List<double> slots = getTimeSlotNum(listOfEnds);
+        eventName2SlotNum[eventName] = slots;
+      });
+    }
+
+    int numOfX;
+    if (orientation == Orientation.portrait) {
+      numOfX = 12;
+    } else {
+      numOfX = 24;
+    }
     List<List<BarChartRodStackItem>> stacks =
-        List.generate(12, (i) => [], growable: false);
-    List<double> lastY = List.filled(12, 0);
+        List.generate(numOfX, (i) => [], growable: false);
+    List<double> lastY = List.filled(numOfX, 0);
     eventName2SlotNum.forEach((eventName, slots) {
       //每个项目都铺一层，颜色一样。
-      for (int j = 0; j < 12; j++) {
+      for (int j = 0; j < numOfX; j++) {
         stacks[j].add(BarChartRodStackItem(
             lastY[j], lastY[j] + slots[j], name2color[eventName]!));
         lastY[j] += slots[j];
       }
     });
-    for (int i = 0; i < 12; i++) {
-      bars.add(BarChartGroupData(x: i * 2, barRods: [
+    for (int i = 0; i < numOfX; i++) {
+      int x;
+      if (orientation == Orientation.portrait)
+        x = i * 2;
+      else
+        x = i;
+      bars.add(BarChartGroupData(x: x, barRods: [
         BarChartRodData(
             borderRadius: BorderRadius.all(Radius.elliptical(5, 5)),
             rodStackItems: stacks[i],
@@ -205,7 +229,7 @@ class _ChartsState extends State<Charts> {
       ]));
     }
     double maxY = 0;
-    for (int i = 0; i < 12; i++) {
+    for (int i = 0; i < numOfX; i++) {
       if (lastY[i] > maxY) maxY = lastY[i];
     }
 
@@ -283,16 +307,16 @@ class _ChartsState extends State<Charts> {
 
 List<double> getTimeSlotNum(List<DateTime> ends) {
   //结束时间+1就可以了
-  List<int> data = List.filled(24, 0); //次数、时长（分钟）、物理量
+  List<double> data = List.filled(24, 0); //次数、时长（分钟）、物理量
   ends.forEach((end) {
     data[end.hour] += 1;
   });
-  List<double> processedData = [];
-  for (int i = 0; i < 12; i++) {
-    double val = data[i * 2].toDouble() + data[i * 2 + 1];
-    processedData.add(val);
-  }
-  return processedData;
+  // List<double> processedData = [];
+  // for (int i = 0; i < 12; i++) {
+  //   double val = data[i * 2].toDouble() + data[i * 2 + 1];
+  //   processedData.add(val);
+  // }
+  return data;
 }
 
 Color getRandomColor() {
