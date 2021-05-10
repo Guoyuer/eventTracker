@@ -52,6 +52,7 @@ class HeatMapCalendar extends StatefulWidget {
   final Map<DateTime, double> data = {};
   final DateTimeRange dateRange;
   final String unit; //Tooltip显示的单位
+  late double maxVal = 0;
 
   HeatMapCalendar(
       {Key? key,
@@ -61,6 +62,7 @@ class HeatMapCalendar extends StatefulWidget {
       required this.unit})
       : super(key: key) {
     input.forEach((key, value) {
+      if (value > maxVal) maxVal = value;
       this.data[getDate(key)] = value;
     });
   }
@@ -75,16 +77,10 @@ class HeatMapCalendarState extends State<HeatMapCalendar> {
   @override
   Widget build(BuildContext context) {
     //把date:double转化为date:level
-    double maxVal = 0;
-
-    widget.data.forEach((key, value) {
-      //找到最大值同时去掉时分秒
-      if (value > maxVal) maxVal = value;
-    });
     List<double> threshold = [0];
     int colorNum = widget.setting.colorMap.length - 1; //还有一个是透明
     for (int i = 0; i < colorNum - 1; i++) {
-      threshold.add(i * maxVal / colorNum);
+      threshold.add(i * widget.maxVal / colorNum);
     }
     Map<DateTime, int> date2level = Map<DateTime, int>();
     date2level[nilTime] = -1; //用于留白
