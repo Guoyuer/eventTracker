@@ -6,7 +6,7 @@ void startTimingRecord(BuildContext context, DateTime now) {
       .db
       .startTimingRecordInDB(
           (RecordsCompanion(startTime: Value(now), eventId: Value(eventId))))
-      .then((_) => ReloadEventsNotification().dispatch(context));
+      .then((_) => ReloadEventsN().dispatch(context));
 }
 
 Future<double?> inputValDialog(BuildContext ctx, String unit) {
@@ -67,7 +67,7 @@ Future addPlainRecord(BuildContext context, DateTime time) async {
       .db
       .addPlainRecordInDB((RecordsCompanion(
           value: Value(val), endTime: Value(time), eventId: Value(eventId))))
-      .then((_) => ReloadEventsNotification().dispatch(context));
+      .then((_) => ReloadEventsN().dispatch(context));
 }
 
 //按下停止记录按钮的回调函数
@@ -99,7 +99,7 @@ Future stopTimingRecord(BuildContext context, DateTime time) async {
         });
     if (delete) {
       db.deleteActiveTimingRecordInDB(recordId, eventId).then((_) {
-        ReloadEventsNotification().dispatch(context);
+        ReloadEventsN().dispatch(context);
       });
       return;
     } else {
@@ -123,7 +123,7 @@ Future stopTimingRecord(BuildContext context, DateTime time) async {
                 eventId: Value(eventId),
                 endTime: Value(time),
                 value: Value(val)))
-        .then((_) => ReloadEventsNotification().dispatch(context));
+        .then((_) => ReloadEventsN().dispatch(context));
   }
 }
 

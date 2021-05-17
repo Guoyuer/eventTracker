@@ -32,7 +32,7 @@ class Events extends Table {
 
   RealColumn get sumTime => real()
       .withDefault(Constant(0)) // 对于TimingEvent以秒的形式记录总时间，对于PlainEvent则记录次数
-      .map(const DurationConverter())();//with default了就不会nullable了
+      .map(const DurationConverter())(); //with default了就不会nullable了
 }
 
 class Records extends Table {
@@ -53,7 +53,7 @@ class Records extends Table {
 class Units extends Table {
   IntColumn get id => integer().autoIncrement()();
 
-  TextColumn get name => text()();
+  TextColumn get name => text().customConstraint("not null unique")();
 }
 
 class Steps extends Table {

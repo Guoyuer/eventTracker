@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 
 // ignore: must_be_immutable
 
@@ -9,27 +10,34 @@ enum EventStatus {
   notActive, //不在进行
 }
 
-class PageChangedNotification extends Notification {
+class PageChangedN extends Notification {
   final DateTimeRange range;
 
-  PageChangedNotification({required this.range});
+  PageChangedN({required this.range});
 }
 
-class ReloadEventsNotification extends Notification {
-  ReloadEventsNotification();
+class ReloadEventsN extends Notification {
+  ReloadEventsN();
 }
 
-class MonthTouchedNotification extends Notification {
+class ScrollDirectionN extends Notification {
+  final ScrollDirection direction;
+
+  ScrollDirectionN(this.direction);
+}
+
+class MonthTouchedN extends Notification {
   final DateTime month;
 
-  MonthTouchedNotification({required this.month});
+  MonthTouchedN({required this.month});
 }
 
-class DayTouchedNotification extends Notification {
+class DayTouchedN extends Notification {
   final DateTime day;
 
-  DayTouchedNotification({required this.day});
+  DayTouchedN({required this.day});
 }
+
 var chartTitleStyle = TextStyle(fontSize: 20.0, fontWeight: FontWeight.bold);
 const Map<int, Color> heatmapColorMap = {
   -1: Color.fromARGB(0, 255, 255, 255), //透明，用于占位

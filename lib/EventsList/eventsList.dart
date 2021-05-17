@@ -21,11 +21,15 @@ class EventList extends StatefulWidget {
 class _EventListState extends State<EventList> {
   // EventsDbProvider db = EventsDbProvider();
   late Future<List<BaseEventModel>> _events;
+  late ScrollController _c = ScrollController();
 
   @override
   void initState() {
     super.initState();
     _events = DBHandle().db.getEventsProfile();
+    _c.addListener(() {
+      ScrollDirectionN(_c.position.userScrollDirection).dispatch(context);
+    });
   }
 
   @override
@@ -36,14 +40,17 @@ class _EventListState extends State<EventList> {
           switch (snapshot.connectionState) {
             case ConnectionState.done:
               List<BaseEventModel> events = snapshot.data!;
-              return ListView.builder(
+              var list = ListView.builder(
                   // shrinkWrap: true,
+                  controller: _c,
                   itemCount: events.length,
                   itemBuilder: (ctx, idx) {
                     return EventDataHolder(
                         event: events[idx], child: EventTile());
                     // return EventTile(data[idx]['id'],data[idx]['name'], true, false);
                   });
+
+              return list;
             default:
               return loadingScreen();
           }
@@ -274,7 +281,7 @@ class _EventTileState extends State<EventTile>
                 bool? deleted = await Navigator.of(context)
                     .pushNamed("EventDetails", arguments: event) as bool?;
                 if (deleted != null && deleted)
-                  ReloadEventsNotification().dispatch(context);
+                  ReloadEventsN().dispatch(context);
               },
               child: Container(
                   margin: EdgeInsets.only(left: 10, top: 10),

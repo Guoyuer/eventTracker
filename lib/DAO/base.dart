@@ -66,7 +66,10 @@ class AppDatabase extends _$AppDatabase {
 
   Future<List<Unit>> getAllUnits() => select(units).get();
 
-  Future addUnit(UnitsCompanion unit) => into(units).insert(unit);
+  Future addUnit(UnitsCompanion unit) => into(units)
+      .insert(unit)
+      .then((value) => value)
+      .catchError((err) => throw err);
 
   Future deleteUnit(UnitsCompanion unit) {
     return (delete(units)..where((tbl) => tbl.name.equals(unit.name.value)))
@@ -264,12 +267,10 @@ class AppDatabase extends _$AppDatabase {
 
   ///返回成功或失败
   Future<int> addEventInDB(EventsCompanion event) async {
-    try {
-      return into(events).insert(event);
-    } catch (err) {
-      showToast("创建项目失败，可能是因为重名");
-      return -1;
-    }
+    return into(events)
+        .insert(event)
+        .then((value) => value)
+        .catchError((err) => throw err);
   }
 
   Future updateEventDescription(int eventId, String desc) {

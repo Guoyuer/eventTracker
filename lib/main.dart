@@ -1,8 +1,10 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_event_tracker/StepCount/stepStatistics.dart';
+import 'package:flutter_event_tracker/common/commonWidget.dart';
 import 'package:flutter_event_tracker/settingPage.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:share/share.dart';
@@ -63,13 +65,14 @@ class _MainPagesState extends State<MainPages> {
     StatisticPage(),
     SettingPage(),
   ];
-  dynamic eventData; //添加event用，接收返回值
   late String directory;
 
   @override
   void initState() {
     super.initState();
   }
+
+  bool bnVisible = true;
 
   @override
   Widget build(BuildContext context) {
@@ -78,14 +81,27 @@ class _MainPagesState extends State<MainPages> {
         title: Text("活动记录本 - " + bottomLabels[_selectedIndex]),
         actions: actionButtons(context),
       ),
-      body: NotificationListener<ReloadEventsNotification>(
+      body: NotificationListener<Notification>(
         // child: IndexedStack(children: _children, index: _selectedIndex),
         child: _children[_selectedIndex],
         onNotification: (notification) {
-          setState(() {
-            _children.removeAt(0);
-            _children.insert(0, EventList(key: GlobalKey()));
-          });
+          if (notification is ReloadEventsN) {
+            setState(() {
+              _children.removeAt(0);
+              _children.insert(0, EventList(key: GlobalKey()));
+            });
+            return true;
+          }
+          if (notification is ScrollDirectionN) {
+            setState(() {
+              if (notification.direction == ScrollDirection.reverse) {
+                bnVisible = false;
+              } else {
+                bnVisible = true;
+              }
+            });
+            return true;
+          }
           return true;
         },
       ),
@@ -108,7 +124,7 @@ class _MainPagesState extends State<MainPages> {
         fixedColor: Colors.blue,
         onTap: _onItemTapped,
       ),
-      floatingActionButton: floatingButton(context),
+      floatingActionButton: bnVisible ? floatingButton(context) : null,
     );
   }
 
@@ -134,17 +150,14 @@ class _MainPagesState extends State<MainPages> {
         return FloatingActionButton(
             //悬浮按钮
             child: Icon(Icons.note_add_rounded),
-            onPressed: () {
-              eventData = Navigator.of(context).pushNamed("eventEditor");
-              eventData.then((event) {
-                if (event != null) {
-                  DBHandle().db.addEventInDB(event);
-                  setState(() {
-                    _children.removeAt(0);
-                    _children.insert(0, EventList(key: GlobalKey()));
-                  });
-                }
-              });
+            onPressed: () async {
+              var added = await Navigator.of(context).pushNamed("eventEditor");
+              if (added != null) {
+                setState(() {
+                  _children.removeAt(0);
+                  _children.insert(0, EventList(key: GlobalKey()));
+                });
+              }
             });
       case 1:
         return FloatingActionButton(

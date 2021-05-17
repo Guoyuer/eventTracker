@@ -132,7 +132,15 @@ class _EventEditorState extends State<EventEditor> {
                             unit: Value(selectedUnit),
                             description: Value(desc),
                             careTime: Value(careTime));
-                        Navigator.pop(context, event);
+                        DBHandle()
+                            .db
+                            .addEventInDB(event)
+                            .then((value) => Navigator.pop(context, true))
+                            .catchError((err) {
+                          showToast("添加失败，可能是因为项目名重复！");
+                        });
+
+                        // Navigator.pop(context, event);
                       }
                     })
                   ],

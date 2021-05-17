@@ -79,7 +79,7 @@ class MonthTile extends StatelessWidget {
     }
     return InkWell(
         onLongPress: () {
-          MonthTouchedNotification(month: lastDay).dispatch(context);
+          MonthTouchedN(month: lastDay).dispatch(context);
         },
         child: Column(
           mainAxisSize: MainAxisSize.min,
@@ -201,7 +201,7 @@ class DayTile extends StatelessWidget {
       return InkWell(
         onTap: () {
           // showToast("日期: $timeStr 值: $valStr $unit");
-          DayTouchedNotification(day: date).dispatch(context);
+          DayTouchedN(day: date).dispatch(context);
         },
         child: Container(
           alignment: Alignment.center,

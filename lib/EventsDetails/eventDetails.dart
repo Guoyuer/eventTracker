@@ -317,12 +317,12 @@ class _EventDetailsState extends State<EventDetails> {
         body: NotificationListener(
             //在更高处监听，避免setState影响heatMap
             onNotification: (Notification notification) {
-              if (notification is MonthTouchedNotification) {
+              if (notification is MonthTouchedN) {
                 setState(() {
                   month = notification.month;
                 });
               }
-              if (notification is DayTouchedNotification) {
+              if (notification is DayTouchedN) {
                 showGeneralDialog(
                     context: context,
                     barrierDismissible: true,

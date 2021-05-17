@@ -1117,11 +1117,8 @@ class $UnitsTable extends Units with TableInfo<$UnitsTable, Unit> {
   @override
   late final GeneratedTextColumn name = _constructName();
   GeneratedTextColumn _constructName() {
-    return GeneratedTextColumn(
-      'name',
-      $tableName,
-      false,
-    );
+    return GeneratedTextColumn('name', $tableName, false,
+        $customConstraints: 'not null unique');
   }
 
   @override

@@ -216,7 +216,7 @@ class _StepStatPageContentState extends State<StepStatPageContent> {
         title: Text("行走统计"),
       ),
       body: NotificationListener(
-        onNotification: (MonthTouchedNotification n) {
+        onNotification: (MonthTouchedN n) {
           setState(() {
             displayDate = n.month;
           });
