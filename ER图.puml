@@ -30,8 +30,8 @@ entity Event{
     *name
     description
     *careTime
-    lastRecordId: FK<Record.id>
-    unit: FK<Unit.name>
+    lastRecordId
+    unit
     sumVal
     sumTime
 }
@@ -41,15 +41,15 @@ entity Unit{
     --
     *name
 }
-Unit "0 or 1" |o-- Event
+
 
 
 entity Record{
     *id
     --
-    *eventId: FK<Event.id> (index)
-    startTime(index)
-    endTime(index)
+    *eventId
+    startTime
+    endTime
     value
 }
 
@@ -67,7 +67,8 @@ entity Steps{
     *step
     *time(index)
 }
-
+Unit "0 or 1" |o-- Event
+Record "0 or many" }o-- Event
 
 
 @enduml

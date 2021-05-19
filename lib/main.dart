@@ -82,7 +82,6 @@ class _MainPagesState extends State<MainPages> {
         actions: actionButtons(context),
       ),
       body: NotificationListener<Notification>(
-        // child: IndexedStack(children: _children, index: _selectedIndex),
         child: _children[_selectedIndex],
         onNotification: (notification) {
           if (notification is ReloadEventsN) {
@@ -173,11 +172,6 @@ class _MainPagesState extends State<MainPages> {
 
   void _onItemTapped(int index) {
     setState(() {
-      // if (index == 0 || index == 1) {
-      //   floatingButtonVisible = true;
-      // } else {
-      //   floatingButtonVisible = false;
-      // }
       _selectedIndex = index;
     });
   }
