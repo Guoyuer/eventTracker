@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_event_tracker/DAO/base.dart';
 import 'package:moor_db_viewer/moor_db_viewer.dart';
-import 'common/commonWidget.dart';
 import 'addFakeData.dart';
 
 class SettingPage extends StatelessWidget {

@@ -1,7 +1,6 @@
 import 'package:date_util/date_util.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_event_tracker/common/const.dart';
-import 'package:intl/intl.dart';
 
 import 'heatMap.dart';
 import 'util.dart';

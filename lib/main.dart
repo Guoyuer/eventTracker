@@ -1,15 +1,10 @@
-import 'dart:io';
-
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_event_tracker/StepCount/stepStatistics.dart';
-import 'package:flutter_event_tracker/common/commonWidget.dart';
 import 'package:flutter_event_tracker/settingPage.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:share/share.dart';
-import 'package:path_provider/path_provider.dart';
-import 'DAO/base.dart';
 import 'EventsDetails/eventDetails.dart';
 import 'EventsList/eventsList.dart';
 import 'Statistics/statistics.dart';
@@ -17,11 +12,6 @@ import 'StepCount/pedometer.dart';
 import 'UnitManager/unitsManagerPage.dart';
 import 'common/const.dart';
 import 'eventEditor.dart';
-import 'dart:async';
-import 'dart:io';
-import 'dart:typed_data';
-import 'package:flutter/services.dart' show rootBundle;
-import 'package:path_provider/path_provider.dart';
 
 void main() {
   runApp(EventTracker());
