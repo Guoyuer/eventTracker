@@ -306,13 +306,11 @@ class _EventDetailsState extends State<EventDetails> {
                     var db = DBHandle().db;
                     db.deleteEvent(widget.event.id);
                     Navigator.of(context).pop(true);
-                  } else {
-                    Navigator.of(context).pop(false);
                   }
                 },
                 icon: Icon(Icons.delete))
           ],
-          title: Text(sprintf("%s - 项目详情", [widget.event.name])),
+          title: Text(sprintf("%s - 项目详细", [widget.event.name])),
         ),
         body: NotificationListener(
             //在更高处监听，避免setState影响heatMap

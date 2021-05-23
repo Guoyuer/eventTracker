@@ -3,9 +3,10 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:pedometer/pedometer.dart';
 
-import '../DAO/base.dart';
+import '../DAO/base.dart' as DAO;
 import '../heatmap_calendar/heatMap.dart';
 
+//TODO 按照一直前台，写好业务逻辑
 class StepDisplayModel {
   int step = 0;
   DateTime time = nilTime;
@@ -37,12 +38,12 @@ class _PedometerPageBuildingBlockState
   late final Stream<StepCount> _stepCountStream;
   late Stream<PedestrianStatus> _pedestrianStatusStream;
 
-  var db = DBHandle().db;
+  var db = DAO.DBHandle().db;
   DateTime? displayDate;
   bool accumulate = false;
   String _status = '?';
 
-  StepDisplayModel? countEvent; //初始的时候是null，注意判别
+  StepDisplayModel? countEvent; //初始时如果Step表里没记录，则是null
   int called = 0;
 
   @override
@@ -68,7 +69,7 @@ class _PedometerPageBuildingBlockState
   void onStepCount(StepCount event) async {
     //处理offset
     int offset = 0;
-    StepOffsetData? lastOffset = await db.getStepOffset();
+    DAO.StepOffsetData? lastOffset = await db.getStepOffset();
     if (lastOffset == null) {
       await db.writeStepOffset(event.steps, event.timeStamp);
       offset = event.steps;
@@ -88,7 +89,13 @@ class _PedometerPageBuildingBlockState
       countEvent =
           StepDisplayModel(step: event.steps - offset, time: event.timeStamp);
     });
-    db.writeStep(event.steps - offset, event.timeStamp);
+
+    DAO.Step? latestStep = await db.getLatestStep();
+    if (latestStep == null ||
+        latestStep.time.add(Duration(minutes: 15)).compareTo(DateTime.now()) <
+            0) {
+      db.writeStep(event.steps - offset, event.timeStamp);
+    }
   }
 
   void initPlatformState() async {

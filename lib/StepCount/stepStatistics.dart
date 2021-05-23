@@ -1,8 +1,11 @@
 import 'dart:async';
+import 'dart:math';
+import 'package:sprintf/sprintf.dart';
 
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_event_tracker/common/commonWidget.dart';
+import 'package:intl/intl.dart';
 
 import '../DAO/base.dart';
 import '../common/const.dart';
@@ -28,7 +31,8 @@ class _StepStatPageContentState extends State<StepStatPageContent> {
   // StreamSubscription _subscription;
   var db = DBHandle().db;
   late Future<List<Record>> _dailySteps;
-  DateTime? displayDate;
+  DateTime? displayMonth;
+  DateTime? displayDay;
   bool accumulate = false;
 
   // StepDisplayModel countEvent; //初始的时候是null，注意判别
@@ -47,6 +51,59 @@ class _StepStatPageContentState extends State<StepStatPageContent> {
     setState(() {
       accumulate = !accumulate;
     });
+  }
+
+  Widget getFakeTimeSlotBar() {
+    List<BarChartGroupData> bars = [];
+    final _random = new Random();
+    int next(int min, int max) => min + _random.nextInt(max - min);
+    List<int> data = [];
+    double maxVal = 0;
+    for (int i = 0; i < 24; i++) {
+      int num = next(0, 1000);
+      data.add(num);
+      if (num > maxVal) maxVal = num.toDouble();
+    }
+    for (int i = 0; i < 24; i++) {
+      bars.add(BarChartGroupData(x: i, barRods: [
+        BarChartRodData(y: data[i].toDouble(), width: 8, colors: gradientColors)
+      ]));
+    }
+
+    var barChart = Column(children: [
+      Text(
+        sprintf("%s月%s日步行情况",
+            [displayDay!.month.toString(), displayDay!.day.toString()]),
+        style: chartTitleStyle,
+      ),
+      SizedBox(height: 10),
+      Container(
+          margin: EdgeInsets.symmetric(horizontal: 10),
+          height: 300,
+          // width: 350,
+          child: BarChart(BarChartData(
+              axisTitleData: FlAxisTitleData(
+                  topTitle: AxisTitle(
+                      textAlign: TextAlign.start,
+                      showTitle: true,
+                      titleText: "步")),
+              barTouchData: BarTouchData(
+                  touchTooltipData: BarTouchTooltipData(
+                      tooltipBgColor: Colors.lightBlueAccent)),
+              // groupsSpace: 30,
+              // alignment: BarChartAlignment.start,
+              titlesData: FlTitlesData(
+                  leftTitles: SideTitles(
+                      showTitles: true,
+                      getTitles: (double val) {
+                        return val.floor().toString();
+                      },
+                      interval: maxVal / 6)),
+              borderData: FlBorderData(show: false),
+              barGroups: bars)))
+    ]);
+
+    return barChart;
   }
 
   @override
@@ -85,14 +142,19 @@ class _StepStatPageContentState extends State<StepStatPageContent> {
           }
         }));
 
-    if (displayDate != null) {
+    if (displayMonth != null) {
       listChildren.add(SizedBox(
         height: 50,
+        child: Center(
+            child: Text(
+          displayMonth!.month.toString() + "月步数统计",
+          style: chartTitleStyle,
+        )),
       ));
       listChildren.add(
         Container(
             height: 300,
-            margin: EdgeInsets.all(10),
+            margin: EdgeInsets.all(5),
             child: FutureBuilder<List<Record>>(
                 future: _dailySteps,
                 builder: (ctx, snapshot) {
@@ -102,8 +164,8 @@ class _StepStatPageContentState extends State<StepStatPageContent> {
 
                       records = records
                           .where((element) =>
-                              element.endTime!.month == displayDate!.month &&
-                              element.endTime!.year == displayDate!.year)
+                              element.endTime!.month == displayMonth!.month &&
+                              element.endTime!.year == displayMonth!.year)
                           .toList(); //只保留本月的记录，
 
                       if (accumulate) {
@@ -119,14 +181,27 @@ class _StepStatPageContentState extends State<StepStatPageContent> {
                           spots.add(FlSpot((i + 1).toDouble(), values[i]));
                         }
                         return LineChart(LineChartData(
+                            lineTouchData: LineTouchData(
+                                enabled: true,
+                                touchTooltipData: LineTouchTooltipData(
+                                    tooltipBgColor: Colors.blueGrey,
+                                    getTooltipItems: (lines) {
+                                      List<LineTooltipItem> l = [];
+                                      l.add(LineTooltipItem(
+                                          lines[0].y.toInt().toString(),
+                                          TextStyle(
+                                              color: Colors.white,
+                                              fontSize: 18)));
+                                      return l;
+                                    })),
                             minY: 0,
                             axisTitleData: FlAxisTitleData(
                                 bottomTitle: AxisTitle(
                                     showTitle: true,
                                     margin: 10,
-                                    titleText: displayDate!.year.toString() +
+                                    titleText: displayMonth!.year.toString() +
                                         '年' +
-                                        displayDate!.month.toString() +
+                                        displayMonth!.month.toString() +
                                         '月')),
                             borderData: FlBorderData(show: false),
                             gridData: FlGridData(
@@ -189,6 +264,18 @@ class _StepStatPageContentState extends State<StepStatPageContent> {
                         return BarChart(BarChartData(
                             // groupsSpace: 18,
                             // alignment: BarChartAlignment.start,
+                            barTouchData: BarTouchData(
+                                enabled: true,
+                                touchTooltipData: BarTouchTooltipData(
+                                    tooltipBgColor: Colors.blueGrey,
+                                    getTooltipItem:
+                                        (group, groupIndex, rod, rodIndex) {
+                                      return BarTooltipItem(
+                                          rod.y.toInt().toString(),
+                                          TextStyle(
+                                              color: Colors.white,
+                                              fontSize: 18));
+                                    })),
                             titlesData: FlTitlesData(
                                 leftTitles: SideTitles(
                                     showTitles: true,
@@ -211,15 +298,28 @@ class _StepStatPageContentState extends State<StepStatPageContent> {
         onChanged: switchChange,
       ));
     }
+
+    if (displayDay != null) {
+      listChildren.add(getFakeTimeSlotBar());
+    }
     return Scaffold(
       appBar: AppBar(
         title: Text("行走统计"),
       ),
       body: NotificationListener(
-        onNotification: (MonthTouchedN n) {
-          setState(() {
-            displayDate = n.month;
-          });
+        onNotification: (Notification n) {
+          if (n is MonthTouchedN) {
+            setState(() {
+              displayMonth = n.month;
+              displayDay = null;
+            });
+          }
+          if (n is DayTouchedN) {
+            setState(() {
+              displayDay = n.day;
+              displayMonth = null;
+            });
+          }
           return true;
         },
         child: ListView(children: listChildren),

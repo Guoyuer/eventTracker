@@ -180,7 +180,6 @@ class DayTile extends StatelessWidget {
     String? unit = HeatMapDataHolder.of(context).unit;
     if (unit == null) unit = "";
     int level = date2level[date]!;
-    String timeStr = DateFormat('yyyy-MM-dd').format(date);
     if (date == nilTime) {
       //占位格子
       return Container(
