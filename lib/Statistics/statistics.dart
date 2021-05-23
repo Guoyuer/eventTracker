@@ -326,10 +326,3 @@ List<double> getTimeSlotNum(List<DateTime> ends) {
   // }
   return data;
 }
-
-Color getRandomColor() {
-  final _random = Random();
-  Color _randomColor = Color.fromARGB(_random.nextInt(256),
-      _random.nextInt(256), _random.nextInt(256), _random.nextInt(256));
-  return _randomColor;
-}

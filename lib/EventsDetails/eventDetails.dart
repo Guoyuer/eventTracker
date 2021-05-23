@@ -496,8 +496,13 @@ class _EventDetailsState extends State<EventDetails> {
                       showTitle: true,
                       titleText: unit)),
               barTouchData: BarTouchData(
+                  enabled: true,
                   touchTooltipData: BarTouchTooltipData(
-                      tooltipBgColor: Colors.lightBlueAccent)),
+                      tooltipBgColor: Colors.blueGrey,
+                      getTooltipItem: (group, groupIndex, rod, rodIndex) {
+                        return BarTooltipItem(rod.y.toInt().toString(),
+                            TextStyle(color: Colors.white, fontSize: 18));
+                      })),
               // groupsSpace: 30,
               // alignment: BarChartAlignment.start,
               titlesData: FlTitlesData(

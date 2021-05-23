@@ -163,6 +163,7 @@ class _MainPagesState extends State<MainPages> {
   void _onItemTapped(int index) {
     setState(() {
       _selectedIndex = index;
+      if (_selectedIndex == 1) bnVisible = true;
     });
   }
 }
