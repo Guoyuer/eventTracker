@@ -93,6 +93,16 @@ class _StepStatPageContentState extends State<StepStatPageContent> {
               // groupsSpace: 30,
               // alignment: BarChartAlignment.start,
               titlesData: FlTitlesData(
+                  bottomTitles: SideTitles(
+                      showTitles: true,
+                      getTitles: (double val) {
+                        int tmp = val.toInt();
+                        if (tmp % 3 == 0) {
+                          return tmp.toString() + '时';
+                        } else {
+                          return "";
+                        }
+                      }),
                   leftTitles: SideTitles(
                       showTitles: true,
                       getTitles: (double val) {
@@ -110,7 +120,7 @@ class _StepStatPageContentState extends State<StepStatPageContent> {
   Widget build(BuildContext context) {
     Map<DateTime, double> data = {};
     List<Widget> listChildren = [];
-    listChildren.add(FutureBuilder<List<Record>>(
+    var heatMap = FutureBuilder<List<Record>>(
         future: _dailySteps,
         builder: (ctx, snapshot) {
           switch (snapshot.connectionState) {
@@ -128,179 +138,206 @@ class _StepStatPageContentState extends State<StepStatPageContent> {
                   data[date] = record.value!;
                 }
               });
-              return Center(
-                  child: SingleChildScrollView(
-                scrollDirection: Axis.horizontal,
-                child: HeatMapCalendar(
-                  dateRange: range,
-                  input: data,
-                  unit: "步",
-                ),
-              ));
+              return Card(
+                  elevation: 10,
+                  child: Center(
+                      child: SingleChildScrollView(
+                    scrollDirection: Axis.horizontal,
+                    child: HeatMapCalendar(
+                      dateRange: range,
+                      input: data,
+                      unit: "步",
+                    ),
+                  )));
             default:
               return loadingScreen();
           }
-        }));
+        });
+    listChildren.add(heatMap);
 
     if (displayMonth != null) {
-      listChildren.add(SizedBox(
-        height: 50,
-        child: Center(
-            child: Text(
-          displayMonth!.month.toString() + "月步数统计",
-          style: chartTitleStyle,
-        )),
-      ));
-      listChildren.add(
-        Container(
-            height: 300,
-            margin: EdgeInsets.all(5),
-            child: FutureBuilder<List<Record>>(
-                future: _dailySteps,
-                builder: (ctx, snapshot) {
-                  switch (snapshot.connectionState) {
-                    case ConnectionState.done:
-                      List<Record> records = snapshot.data!;
+      var monthStat = Card(
+        elevation: 10,
+        child: Column(
+          children: [
+            SizedBox(
+              height: 50,
+              child: Center(
+                  child: Text(
+                displayMonth!.month.toString() + "月步数统计",
+                style: chartTitleStyle,
+              )),
+            ),
+            Container(
+                height: 300,
+                margin: EdgeInsets.all(5),
+                child: FutureBuilder<List<Record>>(
+                    future: _dailySteps,
+                    builder: (ctx, snapshot) {
+                      switch (snapshot.connectionState) {
+                        case ConnectionState.done:
+                          List<Record> records = snapshot.data!;
 
-                      records = records
-                          .where((element) =>
-                              element.endTime!.month == displayMonth!.month &&
-                              element.endTime!.year == displayMonth!.year)
-                          .toList(); //只保留本月的记录，
+                          records = records
+                              .where((element) =>
+                                  element.endTime!.month ==
+                                      displayMonth!.month &&
+                                  element.endTime!.year == displayMonth!.year)
+                              .toList(); //只保留本月的记录，
 
-                      if (accumulate) {
-                        List<FlSpot> spots = [];
-                        List<double> values = [];
-                        values.add(records[0].value!);
-                        double max = values[0];
-                        for (int i = 1; i < records.length; i++) {
-                          values.add(values[i - 1] + records[i].value!);
-                          if (values[i] > max) max = values[i];
-                        }
-                        for (int i = 0; i < records.length; i++) {
-                          spots.add(FlSpot((i + 1).toDouble(), values[i]));
-                        }
-                        return LineChart(LineChartData(
-                            lineTouchData: LineTouchData(
-                                enabled: true,
-                                touchTooltipData: LineTouchTooltipData(
-                                    tooltipBgColor: Colors.blueGrey,
-                                    getTooltipItems: (lines) {
-                                      List<LineTooltipItem> l = [];
-                                      l.add(LineTooltipItem(
-                                          lines[0].y.toInt().toString(),
-                                          TextStyle(
-                                              color: Colors.white,
-                                              fontSize: 18)));
-                                      return l;
-                                    })),
-                            minY: 0,
-                            axisTitleData: FlAxisTitleData(
-                                bottomTitle: AxisTitle(
-                                    showTitle: true,
-                                    margin: 10,
-                                    titleText: displayMonth!.year.toString() +
-                                        '年' +
-                                        displayMonth!.month.toString() +
-                                        '月')),
-                            borderData: FlBorderData(show: false),
-                            gridData: FlGridData(
-                                show: true,
-                                drawHorizontalLine: true,
-                                horizontalInterval: max / 6),
-                            titlesData: FlTitlesData(
-                                leftTitles: SideTitles(
-                                    showTitles: true,
-                                    getTitles: (double val) {
-                                      return (val / 1000).round().toString() +
-                                          'K';
-                                    },
-                                    interval: max / 6),
-                                bottomTitles: SideTitles(
-                                    showTitles: true,
-                                    getTitles: (double val) {
-                                      int tmp = val.toInt();
-                                      if (tmp % 6 == 1) {
-                                        return tmp.toString() + '日';
-                                      } else {
-                                        return "";
-                                      }
-                                    })),
-                            lineBarsData: [
-                              LineChartBarData(
-                                  spots: spots,
-                                  isCurved: true,
-                                  colors: gradientColors,
-                                  dotData: FlDotData(show: false),
-                                  belowBarData: BarAreaData(
+                          if (accumulate) {
+                            List<FlSpot> spots = [];
+                            List<double> values = [];
+                            values.add(records[0].value!);
+                            double max = values[0];
+                            for (int i = 1; i < records.length; i++) {
+                              values.add(values[i - 1] + records[i].value!);
+                              if (values[i] > max) max = values[i];
+                            }
+                            for (int i = 0; i < records.length; i++) {
+                              spots.add(FlSpot((i + 1).toDouble(), values[i]));
+                            }
+                            return LineChart(LineChartData(
+                                lineTouchData: LineTouchData(
+                                    enabled: true,
+                                    touchTooltipData: LineTouchTooltipData(
+                                        tooltipBgColor: Colors.blueGrey,
+                                        getTooltipItems: (lines) {
+                                          List<LineTooltipItem> l = [];
+                                          l.add(LineTooltipItem(
+                                              lines[0].y.toInt().toString(),
+                                              TextStyle(
+                                                  color: Colors.white,
+                                                  fontSize: 18)));
+                                          return l;
+                                        })),
+                                minY: 0,
+                                axisTitleData: FlAxisTitleData(
+                                    bottomTitle: AxisTitle(
+                                        showTitle: true,
+                                        margin: 10,
+                                        titleText:
+                                            displayMonth!.year.toString() +
+                                                '年' +
+                                                displayMonth!.month.toString() +
+                                                '月')),
+                                borderData: FlBorderData(show: false),
+                                gridData: FlGridData(
                                     show: true,
+                                    drawHorizontalLine: true,
+                                    horizontalInterval: max / 6),
+                                titlesData: FlTitlesData(
+                                    leftTitles: SideTitles(
+                                        showTitles: true,
+                                        getTitles: (double val) {
+                                          return (val / 1000)
+                                                  .round()
+                                                  .toString() +
+                                              'K';
+                                        },
+                                        interval: max / 6),
+                                    bottomTitles: SideTitles(
+                                        showTitles: true,
+                                        getTitles: (double val) {
+                                          int tmp = val.toInt();
+                                          if (tmp % 6 == 1) {
+                                            return tmp.toString() + '日';
+                                          } else {
+                                            return "";
+                                          }
+                                        })),
+                                lineBarsData: [
+                                  LineChartBarData(
+                                      spots: spots,
+                                      isCurved: true,
+                                      colors: gradientColors,
+                                      dotData: FlDotData(show: false),
+                                      belowBarData: BarAreaData(
+                                        show: true,
+                                        colors: gradientColors,
+                                        // gradientFrom:Offset(0,1),
+                                        // gradientTo:Offset(0,0)
+                                        // cutOffY: cutOffYValue,
+                                        // applyCutOffY: true,
+                                      ))
+                                ]));
+                          } else {
+                            List<double> values = [];
+                            double max = 0;
+                            for (int i = 0; i < records.length; i++) {
+                              values.add(records[i].value!);
+                              if (records[i].value! > max)
+                                max = records[i].value!;
+                            }
+                            List<BarChartGroupData> bars = [];
+                            for (int i = 0; i < records.length; i++) {
+                              bars.add(BarChartGroupData(x: i + 1, barRods: [
+                                BarChartRodData(
+                                    y: values[i],
                                     colors: gradientColors,
-                                    // gradientFrom:Offset(0,1),
-                                    // gradientTo:Offset(0,0)
-                                    // cutOffY: cutOffYValue,
-                                    // applyCutOffY: true,
-                                  ))
-                            ]));
-                      } else {
-                        List<double> values = [];
-                        double max = 0;
-                        for (int i = 0; i < records.length; i++) {
-                          values.add(records[i].value!);
-                          if (records[i].value! > max) max = records[i].value!;
-                        }
-                        List<BarChartGroupData> bars = [];
-                        for (int i = 0; i < records.length; i++) {
-                          bars.add(BarChartGroupData(x: i + 1, barRods: [
-                            BarChartRodData(
-                                y: values[i],
-                                colors: gradientColors,
-                                backDrawRodData: BackgroundBarChartRodData(
-                                    show: true,
-                                    y: max,
-                                    colors: [Color(0xff72d8bf)]))
-                          ]));
-                        }
+                                    backDrawRodData: BackgroundBarChartRodData(
+                                        show: true,
+                                        y: max,
+                                        colors: [Color(0xff72d8bf)]))
+                              ]));
+                            }
 
-                        return BarChart(BarChartData(
-                            // groupsSpace: 18,
-                            // alignment: BarChartAlignment.start,
-                            barTouchData: BarTouchData(
-                                enabled: true,
-                                touchTooltipData: BarTouchTooltipData(
-                                    tooltipBgColor: Colors.blueGrey,
-                                    getTooltipItem:
-                                        (group, groupIndex, rod, rodIndex) {
-                                      return BarTooltipItem(
-                                          rod.y.toInt().toString(),
-                                          TextStyle(
-                                              color: Colors.white,
-                                              fontSize: 18));
-                                    })),
-                            titlesData: FlTitlesData(
-                                leftTitles: SideTitles(
-                                    showTitles: true,
-                                    getTitles: (double val) {
-                                      return (val / 1000).round().toString() +
-                                          'K';
-                                    },
-                                    interval: max / 6)),
-                            borderData: FlBorderData(show: false),
-                            barGroups: bars));
+                            return BarChart(BarChartData(
+                                // groupsSpace: 18,
+                                // alignment: BarChartAlignment.start,
+                                barTouchData: BarTouchData(
+                                    enabled: true,
+                                    touchTooltipData: BarTouchTooltipData(
+                                        tooltipBgColor: Colors.blueGrey,
+                                        getTooltipItem:
+                                            (group, groupIndex, rod, rodIndex) {
+                                          return BarTooltipItem(
+                                              rod.y.toInt().toString(),
+                                              TextStyle(
+                                                  color: Colors.white,
+                                                  fontSize: 18));
+                                        })),
+                                titlesData: FlTitlesData(
+                                    bottomTitles: SideTitles(
+                                        showTitles: true,
+                                        getTitles: (double val) {
+                                          int tmp = val.toInt();
+                                          if (tmp % 6 == 1) {
+                                            return tmp.toString() + '日';
+                                          } else {
+                                            return "";
+                                          }
+                                        }),
+                                    leftTitles: SideTitles(
+                                        showTitles: true,
+                                        getTitles: (double val) {
+                                          return (val / 1000)
+                                                  .round()
+                                                  .toString() +
+                                              'K';
+                                        },
+                                        interval: max / 6)),
+                                borderData: FlBorderData(show: false),
+                                barGroups: bars));
+                          }
+                        default:
+                          return loadingScreen();
                       }
-                    default:
-                      return loadingScreen();
-                  }
-                })),
+                    })),
+            SwitchListTile(
+              title: Text("显示累加值"),
+              value: accumulate,
+              onChanged: switchChange,
+            )
+          ],
+        ),
       );
-      listChildren.add(SwitchListTile(
-        title: Text("显示累加值"),
-        value: accumulate,
-        onChanged: switchChange,
-      ));
+      listChildren.add(monthStat);
     }
 
     if (displayDay != null) {
-      listChildren.add(getFakeTimeSlotBar());
+      var dayStat = Card(elevation: 10, child: getFakeTimeSlotBar());
+      listChildren.add(dayStat);
     }
     return Scaffold(
       appBar: AppBar(
