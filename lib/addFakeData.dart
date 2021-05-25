@@ -1,3 +1,4 @@
+import 'package:flutter/material.dart';
 import 'package:flutter_event_tracker/common/util.dart';
 import 'package:moor_flutter/moor_flutter.dart';
 import 'DAO/base.dart';
@@ -133,15 +134,15 @@ Future addStepData() async {
   final _random = new Random();
   var db = DBHandle().db;
   int next(int min, int max) => min + _random.nextInt(max - min);
-  var time = DateTime(2021, 1, 10, 9);
   for (int i = 0; i < 100; i++) {
-    time = getDate(time.add(Duration(days: 1))).add(Duration(hours: 9));
+    DateTime time =
+        getDate(DateTime.now().add(Duration(days: -i))).add(Duration(hours: 9));
     int step = 0; //步数
-    for (int k = 0; k < 12; k++) {
-      time = time.add(Duration(minutes: next(0, 80)));
-      step += next(0, 1000);
-      db.writeStep(step, time);
-    }
+    // for (int k = 0; k < 12; k++) {
+    //   time = time.add(Duration(minutes: next(0, 80)));
+    //   step += next(0, 1000);
+    //   db.writeStep(step, time);
+    // }
     db.writeDailyStep(step, time);
   }
 }
