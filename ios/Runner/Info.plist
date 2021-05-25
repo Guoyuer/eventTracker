@@ -47,5 +47,7 @@
     <array>
         <string>processing</string>
     </array>
+    <NSLocalNetworkUsageDescription>
+    <string>This app uses local network</string>
 </dict>
 </plist>
