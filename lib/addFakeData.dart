@@ -143,6 +143,6 @@ Future addStepData() async {
     //   step += next(0, 1000);
     //   db.writeStep(step, time);
     // }
-    db.writeDailyStep(step, time);
+    db.writeDailyStep(next(0, 15000), time);
   }
 }
