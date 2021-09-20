@@ -1,20 +1,25 @@
 # flutter_event_tracker
 
-<!-- ABOUT THE PROJECT -->
+## About the Project
 
-Functionalities:
-1. Help users to record various kinds of daily events: 
-For every events, the user can choose whether it is with or without ``unit`` and with or without ``duration``,
+### Berief description of the App:
 
-Thus creating four categories of events. 
+### How to use the app:
 
+#### ``Events`` and ``records``:
 
-For an event with duration, when it starts, a timer is automatically triggered; when it ends, the duration will be recorded. By long pressing the event, the user can manually input a former time as its starting or ending time. Simultaneous running events are allowed ant all events' status will not be disrupted by terminating the app.
+An ``event `` is an action or activity in your daily life. 
 
-For an event without duration, we only care when it is done. A short press adds a record with current time as the timepoint it ends. A long press gives the user a choice to enter a former time. () 
+For every ``event``, the user can choose whether it is with or without ``unit``, and with or without ``duration``, thus creating four categories of events. 
 
+An ``record`` is an occurrence of the corresponding event. Record is inputted by user in the following effective way.
 
-For an event with a unit, when it finishes in any way, the user can attach a value to this time record.
+#### some interaction:
+For an ``event`` with duration, when it starts, a timer is automatically triggered; when it ends, the user clicked a button and potentially input the value of the bound ``unit``. Then the corresponding ``record`` with its duration and value of ``unit`` will be generated and stored. 
+
+Note: By long pressing the ``event``, the user can manually input a former time as its starting or ending time. Simultaneous-running events are allowed ant all events' status will not be disrupted by terminating the app.
+
+For an event without duration, we only care about its ending time. A short press adds a  ``record`` of it with current time as the end time. To enter a former time as end time, a long press is needed. (Value of unites may be inputted depending on whether the event is bound with a unit).
 
 
 
