@@ -65,15 +65,13 @@ class _StepStatPageContentState extends State<StepStatPageContent> {
       if (num > maxVal) maxVal = num.toDouble();
     }
     for (int i = 0; i < 24; i++) {
-      bars.add(BarChartGroupData(x: i, barRods: [
-        BarChartRodData(y: data[i].toDouble(), width: 8, colors: gradientColors)
-      ]));
+      bars.add(BarChartGroupData(
+          x: i, barRods: [BarChartRodData(toY: data[i].toDouble(), width: 8, gradient: gradientColors)]));
     }
 
     var barChart = Column(children: [
       Text(
-        sprintf("%s月%s日步行情况",
-            [displayDay!.month.toString(), displayDay!.day.toString()]),
+        sprintf("%s月%s日步行情况", [displayDay!.month.toString(), displayDay!.day.toString()]),
         style: chartTitleStyle,
       ),
       SizedBox(height: 10),
@@ -82,33 +80,30 @@ class _StepStatPageContentState extends State<StepStatPageContent> {
           height: 300,
           // width: 350,
           child: BarChart(BarChartData(
-              axisTitleData: FlAxisTitleData(
-                  topTitle: AxisTitle(
-                      textAlign: TextAlign.start,
-                      showTitle: true,
-                      titleText: "步")),
-              barTouchData: BarTouchData(
-                  touchTooltipData: BarTouchTooltipData(
-                      tooltipBgColor: Colors.lightBlueAccent)),
+              // axisTitleData:
+              //     FlAxisTitleData(topTitle: AxisTitle(textAlign: TextAlign.start, showTitle: true, titleText: "步")),
+              barTouchData: BarTouchData(touchTooltipData: BarTouchTooltipData(tooltipBgColor: Colors.lightBlueAccent)),
               // groupsSpace: 30,
               // alignment: BarChartAlignment.start,
               titlesData: FlTitlesData(
-                  bottomTitles: SideTitles(
-                      showTitles: true,
-                      getTitles: (double val) {
-                        int tmp = val.toInt();
-                        if (tmp % 3 == 0) {
-                          return tmp.toString() + '时';
-                        } else {
-                          return "";
-                        }
-                      }),
-                  leftTitles: SideTitles(
-                      showTitles: true,
-                      getTitles: (double val) {
-                        return val.floor().toString();
-                      },
-                      interval: maxVal / 6)),
+                  bottomTitles: AxisTitles(
+                      sideTitles: SideTitles(
+                          showTitles: true,
+                          getTitlesWidget: (double val, TitleMeta meta) {
+                            int tmp = val.toInt();
+                            if (tmp % 3 == 0) {
+                              return Text(tmp.toString() + '时');
+                            } else {
+                              return Text("");
+                            }
+                          })),
+                  leftTitles: AxisTitles(
+                      sideTitles: SideTitles(
+                          showTitles: true,
+                          getTitlesWidget: (double val, TitleMeta meta) {
+                            return Text(val.floor().toString());
+                          },
+                          interval: maxVal / 6))),
               borderData: FlBorderData(show: false),
               barGroups: bars)))
     ]);
@@ -127,9 +122,8 @@ class _StepStatPageContentState extends State<StepStatPageContent> {
             case ConnectionState.done:
               List<Record> records = snapshot.data!;
               if (records.isEmpty) return Text("No data");
-              DateTimeRange range = DateTimeRange(
-                  start: getDate(records[0].endTime!),
-                  end: getDate(records.last.endTime!));
+              DateTimeRange range =
+                  DateTimeRange(start: getDate(records[0].endTime!), end: getDate(records.last.endTime!));
               records.forEach((record) {
                 var date = getDate(record.endTime!);
                 if (data.containsKey(date)) {
@@ -180,8 +174,7 @@ class _StepStatPageContentState extends State<StepStatPageContent> {
 
                           records = records
                               .where((element) =>
-                                  element.endTime!.month ==
-                                      displayMonth!.month &&
+                                  element.endTime!.month == displayMonth!.month &&
                                   element.endTime!.year == displayMonth!.year)
                               .toList(); //只保留本月的记录，
 
@@ -204,57 +197,49 @@ class _StepStatPageContentState extends State<StepStatPageContent> {
                                         tooltipBgColor: Colors.blueGrey,
                                         getTooltipItems: (lines) {
                                           List<LineTooltipItem> l = [];
-                                          l.add(LineTooltipItem(
-                                              lines[0].y.toInt().toString(),
-                                              TextStyle(
-                                                  color: Colors.white,
-                                                  fontSize: 18)));
+                                          l.add(LineTooltipItem(lines[0].y.toInt().toString(),
+                                              TextStyle(color: Colors.white, fontSize: 18)));
                                           return l;
                                         })),
                                 minY: 0,
-                                axisTitleData: FlAxisTitleData(
-                                    bottomTitle: AxisTitle(
-                                        showTitle: true,
-                                        margin: 10,
-                                        titleText:
-                                            displayMonth!.year.toString() +
-                                                '年' +
-                                                displayMonth!.month.toString() +
-                                                '月')),
+                                // axisTitleData: FlAxisTitleData(
+                                //     bottomTitle: AxisTitle(
+                                //         showTitle: true,
+                                //         margin: 10,
+                                //         titleText: displayMonth!.year.toString() +
+                                //             '年' +
+                                //             displayMonth!.month.toString() +
+                                //             '月')),
                                 borderData: FlBorderData(show: false),
-                                gridData: FlGridData(
-                                    show: true,
-                                    drawHorizontalLine: true,
-                                    horizontalInterval: max / 6),
+                                gridData: FlGridData(show: true, drawHorizontalLine: true, horizontalInterval: max / 6),
                                 titlesData: FlTitlesData(
-                                    leftTitles: SideTitles(
-                                        showTitles: true,
-                                        getTitles: (double val) {
-                                          return (val / 1000)
-                                                  .round()
-                                                  .toString() +
-                                              'K';
-                                        },
-                                        interval: max / 6),
-                                    bottomTitles: SideTitles(
-                                        showTitles: true,
-                                        getTitles: (double val) {
-                                          int tmp = val.toInt();
-                                          if (tmp % 6 == 1) {
-                                            return tmp.toString() + '日';
-                                          } else {
-                                            return "";
-                                          }
-                                        })),
+                                    leftTitles: AxisTitles(
+                                        sideTitles: SideTitles(
+                                            showTitles: true,
+                                            getTitlesWidget: (double val, TitleMeta meta) {
+                                              return Text((val / 1000).round().toString() + 'K');
+                                            },
+                                            interval: max / 6)),
+                                    bottomTitles: AxisTitles(
+                                        sideTitles: SideTitles(
+                                            showTitles: true,
+                                            getTitlesWidget: (double val, TitleMeta meta) {
+                                              int tmp = val.toInt();
+                                              if (tmp % 6 == 1) {
+                                                return Text(tmp.toString() + '日');
+                                              } else {
+                                                return Text("");
+                                              }
+                                            }))),
                                 lineBarsData: [
                                   LineChartBarData(
                                       spots: spots,
                                       isCurved: true,
-                                      colors: gradientColors,
+                                      gradient: gradientColors,
                                       dotData: FlDotData(show: false),
                                       belowBarData: BarAreaData(
                                         show: true,
-                                        colors: gradientColors,
+                                        gradient: gradientColors,
                                         // gradientFrom:Offset(0,1),
                                         // gradientTo:Offset(0,0)
                                         // cutOffY: cutOffYValue,
@@ -266,19 +251,16 @@ class _StepStatPageContentState extends State<StepStatPageContent> {
                             double max = 0;
                             for (int i = 0; i < records.length; i++) {
                               values.add(records[i].value!);
-                              if (records[i].value! > max)
-                                max = records[i].value!;
+                              if (records[i].value! > max) max = records[i].value!;
                             }
                             List<BarChartGroupData> bars = [];
                             for (int i = 0; i < records.length; i++) {
                               bars.add(BarChartGroupData(x: i + 1, barRods: [
                                 BarChartRodData(
-                                    y: values[i],
-                                    colors: gradientColors,
-                                    backDrawRodData: BackgroundBarChartRodData(
-                                        show: true,
-                                        y: max,
-                                        colors: [Color(0xff72d8bf)]))
+                                    toY: values[i],
+                                    gradient: gradientColors,
+                                    backDrawRodData:
+                                        BackgroundBarChartRodData(show: true, toY: max, color: Color(0xff72d8bf)))
                               ]));
                             }
 
@@ -289,34 +271,29 @@ class _StepStatPageContentState extends State<StepStatPageContent> {
                                     enabled: true,
                                     touchTooltipData: BarTouchTooltipData(
                                         tooltipBgColor: Colors.blueGrey,
-                                        getTooltipItem:
-                                            (group, groupIndex, rod, rodIndex) {
+                                        getTooltipItem: (group, groupIndex, rod, rodIndex) {
                                           return BarTooltipItem(
-                                              rod.y.toInt().toString(),
-                                              TextStyle(
-                                                  color: Colors.white,
-                                                  fontSize: 18));
+                                              rod.toY.toInt().toString(), TextStyle(color: Colors.white, fontSize: 18));
                                         })),
                                 titlesData: FlTitlesData(
-                                    bottomTitles: SideTitles(
-                                        showTitles: true,
-                                        getTitles: (double val) {
-                                          int tmp = val.toInt();
-                                          if (tmp % 6 == 1) {
-                                            return tmp.toString() + '日';
-                                          } else {
-                                            return "";
-                                          }
-                                        }),
-                                    leftTitles: SideTitles(
-                                        showTitles: true,
-                                        getTitles: (double val) {
-                                          return (val / 1000)
-                                                  .round()
-                                                  .toString() +
-                                              'K';
-                                        },
-                                        interval: max / 6)),
+                                    bottomTitles: AxisTitles(
+                                        sideTitles: SideTitles(
+                                            showTitles: true,
+                                            getTitlesWidget: (double val, TitleMeta meta) {
+                                              int tmp = val.toInt();
+                                              if (tmp % 6 == 1) {
+                                                return Text(tmp.toString() + '日');
+                                              } else {
+                                                return Text("");
+                                              }
+                                            })),
+                                    leftTitles: AxisTitles(
+                                        sideTitles: SideTitles(
+                                            showTitles: true,
+                                            getTitlesWidget: (double val, TitleMeta meta) {
+                                              return Text((val / 1000).round().toString() + 'K');
+                                            },
+                                            interval: max / 6))),
                                 borderData: FlBorderData(show: false),
                                 barGroups: bars));
                           }

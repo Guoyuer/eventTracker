@@ -19,9 +19,7 @@ class StatisticPage extends StatefulWidget {
 }
 
 class _StatisticPageState extends State<StatisticPage> {
-  DateTimeRange range = DateTimeRange(
-      start: getDate(DateTime.now().add(Duration(days: -7))),
-      end: DateTime.now());
+  DateTimeRange range = DateTimeRange(start: getDate(DateTime.now().add(Duration(days: -7))), end: DateTime.now());
 
   //TODO rangePicker最早时间的限制
   @override
@@ -51,9 +49,7 @@ class _StatisticPageState extends State<StatisticPage> {
                         lastDate: DateTime.now());
                     if (tmp != null) {
                       setState(() {
-                        range = DateTimeRange(
-                            start: tmp.start,
-                            end: tmp.end.add(Duration(days: 1)));
+                        range = DateTimeRange(start: tmp.start, end: tmp.end.add(Duration(days: 1)));
                       });
                     }
                   }))
@@ -82,8 +78,7 @@ class _ChartsState extends State<Charts> {
   void initState() {
     super.initState();
     for (int i = 0; i < 10; i++) {
-      colors.add(
-          _randomColor.randomColor(colorBrightness: ColorBrightness.light));
+      colors.add(_randomColor.randomColor(colorBrightness: ColorBrightness.light));
     }
   }
 
@@ -102,12 +97,10 @@ class _ChartsState extends State<Charts> {
               List<Record> records = tmp[0] as List<Record>;
               Map<int, Event> eventsMap = tmp[1] as Map<int, Event>;
 
-              if (records.isEmpty || eventsMap.isEmpty)
-                return Card(elevation: 10, child: Text("暂无记录"));
+              if (records.isEmpty || eventsMap.isEmpty) return Card(elevation: 10, child: Text("暂无记录"));
 
               while (colors.length < eventsMap.length) {
-                colors.add(_randomColor.randomColor(
-                    colorBrightness: ColorBrightness.light));
+                colors.add(_randomColor.randomColor(colorBrightness: ColorBrightness.light));
               }
               Map<String, Color> name2color = {}; //项目名称和颜色要统一
               int i = 0;
@@ -119,8 +112,7 @@ class _ChartsState extends State<Charts> {
 
               records.forEach((record) {
                 if (eventId2Time.containsKey(record.eventId)) {
-                  eventId2Time[record.eventId] =
-                      eventId2Time[record.eventId]! + 1;
+                  eventId2Time[record.eventId] = eventId2Time[record.eventId]! + 1;
                 } else {
                   eventId2Time[record.eventId] = 1;
                 }
@@ -141,8 +133,7 @@ class _ChartsState extends State<Charts> {
                 }
               });
 
-              var timeSlotsBar =
-                  getTimeSlotsBar(eventName2RecordEnds, name2color);
+              var timeSlotsBar = getTimeSlotsBar(eventName2RecordEnds, name2color);
               List<Widget> charts = [pieChart, timeSlotsBar];
               charts = charts
                   .map((e) => Card(
@@ -159,26 +150,22 @@ class _ChartsState extends State<Charts> {
         });
   }
 
-  List<PieChartSectionData> getSections(
-      Map<Event, int> data, Map<String, Color> name2color) {
+  List<PieChartSectionData> getSections(Map<Event, int> data, Map<String, Color> name2color) {
     List<PieChartSectionData> res = [];
     data.forEach((event, time) {
       res.add(PieChartSectionData(
           color: name2color[event.name],
           radius: 80,
-          titleStyle: TextStyle(
-              fontSize: 15, fontWeight: FontWeight.bold, color: Colors.black87),
+          titleStyle: TextStyle(fontSize: 15, fontWeight: FontWeight.bold, color: Colors.black87),
           title: event.name + " " + time.toString(),
           value: time.toDouble()));
     });
     return res;
   }
 
-  Widget getTimeSlotsBar(Map<String, List<DateTime>> eventName2RecordEnds,
-      Map<String, Color> name2color) {
+  Widget getTimeSlotsBar(Map<String, List<DateTime>> eventName2RecordEnds, Map<String, Color> name2color) {
     List<BarChartGroupData> bars = [];
-    LinkedHashMap<String, List<double>> eventName2SlotNum =
-        LinkedHashMap<String, List<double>>();
+    LinkedHashMap<String, List<double>> eventName2SlotNum = LinkedHashMap<String, List<double>>();
     Orientation orientation = MediaQuery.of(context).orientation;
     if (orientation == Orientation.portrait) {
       eventName2RecordEnds.forEach((eventName, listOfEnds) {
@@ -203,14 +190,12 @@ class _ChartsState extends State<Charts> {
     } else {
       numOfX = 24;
     }
-    List<List<BarChartRodStackItem>> stacks =
-        List.generate(numOfX, (i) => [], growable: false);
+    List<List<BarChartRodStackItem>> stacks = List.generate(numOfX, (i) => [], growable: false);
     List<double> lastY = List.filled(numOfX, 0);
     eventName2SlotNum.forEach((eventName, slots) {
       //每个项目都铺一层，颜色一样。
       for (int j = 0; j < numOfX; j++) {
-        stacks[j].add(BarChartRodStackItem(
-            lastY[j], lastY[j] + slots[j], name2color[eventName]!));
+        stacks[j].add(BarChartRodStackItem(lastY[j], lastY[j] + slots[j], name2color[eventName]!));
         lastY[j] += slots[j];
       }
     });
@@ -222,10 +207,7 @@ class _ChartsState extends State<Charts> {
         x = i;
       bars.add(BarChartGroupData(x: x, barRods: [
         BarChartRodData(
-            borderRadius: BorderRadius.all(Radius.elliptical(5, 5)),
-            rodStackItems: stacks[i],
-            y: lastY[i],
-            width: 15)
+            borderRadius: BorderRadius.all(Radius.elliptical(5, 5)), rodStackItems: stacks[i], toY: lastY[i], width: 15)
       ]));
     }
     double maxY = 0;
@@ -250,26 +232,26 @@ class _ChartsState extends State<Charts> {
                       touchTooltipData: BarTouchTooltipData(
                           tooltipBgColor: Colors.blueGrey,
                           getTooltipItem: (group, groupIndex, rod, rodIndex) {
-                            return BarTooltipItem(rod.y.toInt().toString(),
-                                TextStyle(color: Colors.white, fontSize: 18));
+                            return BarTooltipItem(
+                                rod.toY.toInt().toString(), TextStyle(color: Colors.white, fontSize: 18));
                           })),
                   groupsSpace: 18,
                   // alignment: BarChartAlignment.start,
                   titlesData: FlTitlesData(
-                      leftTitles: SideTitles(
-                          showTitles: true,
-                          getTitles: (double val) {
-                            return val.round().toString();
-                          },
-                          interval: maxY / 6)),
+                      leftTitles: AxisTitles(
+                          sideTitles: SideTitles(
+                              showTitles: true,
+                              getTitlesWidget: (double val, TitleMeta meta) {
+                                return Text(val.round().toString());
+                              },
+                              interval: maxY / 6))),
                   borderData: FlBorderData(show: false),
                   barGroups: bars)))
         ]));
     return barChart;
   }
 
-  Widget getPieChart(
-      Map<Event, int> event2Time, Map<String, Color> name2color) {
+  Widget getPieChart(Map<Event, int> event2Time, Map<String, Color> name2color) {
     int tot = 0;
     for (int i in event2Time.values) {
       tot += i;
@@ -279,10 +261,8 @@ class _ChartsState extends State<Charts> {
         // width: 300,
         child: Stack(
           children: [
-            PieChart(PieChartData(
-                centerSpaceRadius: 70,
-                sectionsSpace: 5,
-                sections: getSections(event2Time, name2color))),
+            PieChart(
+                PieChartData(centerSpaceRadius: 70, sectionsSpace: 5, sections: getSections(event2Time, name2color))),
             Center(
                 child: Container(
               child: Center(

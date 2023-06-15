@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:date_util/date_util.dart';
+// import 'package:date_util/date_util.dart';
 
 ///将时间段拆成一年一年的
 int getYearLength(int year) {
-  var dateUtil = DateUtil();
-  if (dateUtil.leapYear(year)) return 366;
+  final bool isLeapYear = (year % 4 == 0) && (year % 100 != 0) || (year % 400 == 0);
+  if (isLeapYear) return 366;
   return 365;
 }
 
@@ -28,8 +28,7 @@ List<DateTimeRange> split2year(DateTimeRange rawRange) {
 
   while (end.difference(i) >= Duration(days: getYearLength(i.year) - 1)) {
     //中间的完整年
-    yearRanges.add(DateTimeRange(
-        start: i, end: i.add(Duration(days: getYearLength(i.year) - 1))));
+    yearRanges.add(DateTimeRange(start: i, end: i.add(Duration(days: getYearLength(i.year) - 1))));
     i = i.add(Duration(days: getYearLength(i.year)));
   }
 
@@ -45,11 +44,8 @@ List<DateTimeRange> split2month(DateTimeRange rawRange) {
   DateTime i = rawRange.start;
   DateTime end = rawRange.end;
 
-  var dateUtil = DateUtil();
-
-  int daysInMonth = dateUtil.daysInMonth(i.month, i.year); //第一个月
-  DateTime lastDay =
-      DateTime(i.year, i.month).add(Duration(days: daysInMonth - 1));
+  int daysInMonth = DateUtils.getDaysInMonth(i.month, i.year); //第一个月
+  DateTime lastDay = DateTime(i.year, i.month).add(Duration(days: daysInMonth - 1));
   while (i.compareTo(end) < 0) {
     if (i == lastDay) {
       break;
@@ -61,13 +57,10 @@ List<DateTimeRange> split2month(DateTimeRange rawRange) {
   i = i.add(Duration(days: 1));
   //i：下个月的第一天
 
-  while (end.difference(i) >=
-      Duration(days: dateUtil.daysInMonth(i.month, i.year) - 1)) {
+  while (end.difference(i) >= Duration(days: DateUtils.getDaysInMonth(i.month, i.year) - 1)) {
     //中间的完整月
-    monthRanges.add(DateTimeRange(
-        start: i,
-        end: i.add(Duration(days: dateUtil.daysInMonth(i.month, i.year) - 1))));
-    i = i.add(Duration(days: dateUtil.daysInMonth(i.month, i.year)));
+    monthRanges.add(DateTimeRange(start: i, end: i.add(Duration(days: DateUtils.getDaysInMonth(i.month, i.year) - 1))));
+    i = i.add(Duration(days: DateUtils.getDaysInMonth(i.month, i.year)));
   }
 
   if (i.difference(end) <= Duration(days: 0)) {

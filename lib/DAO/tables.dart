@@ -1,4 +1,4 @@
-import 'package:moor_flutter/moor_flutter.dart';
+import 'package:drift/drift.dart';
 
 //tables and converters
 class DurationConverter extends TypeConverter<Duration, double> {
@@ -44,8 +44,7 @@ class Records extends Table {
 
   //startTime可为空，当不careTime的事件开始时
 
-  DateTimeColumn get endTime =>
-      dateTime().nullable()(); //endTime可为空，当careTime的事件开始时。
+  DateTimeColumn get endTime => dateTime().nullable()(); //endTime可为空，当careTime的事件开始时。
 
   RealColumn get value => real().nullable()();
 }

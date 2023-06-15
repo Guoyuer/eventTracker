@@ -2,15 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter_event_tracker/DAO/base.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 
-RaisedButton myRaisedButton(Widget child, void Function() onPressCallBack,
-    [void Function()? onLongPressCallBack]) {
-  return RaisedButton(
-      color: Colors.blue,
-      highlightColor: Colors.blue[700],
-      colorBrightness: Brightness.dark,
-      splashColor: Colors.grey,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20.0)),
-      // padding: EdgeInsets.symmetric(horizontal: 50),
+ElevatedButton myRaisedButton(Widget child, void Function() onPressCallBack, [void Function()? onLongPressCallBack]) {
+  return ElevatedButton(
+      style: ElevatedButton.styleFrom(
+        foregroundColor: Colors.blue,
+        padding: EdgeInsets.symmetric(horizontal: 50),
+      ),
+      // highlightColor: Colors.blue[700],
+      // colorBrightness: Brightness.dark,
       child: child,
       onPressed: onPressCallBack,
       onLongPress: onLongPressCallBack);
@@ -20,15 +19,16 @@ Widget eventListButton(Icon icon, Widget label, void Function() onPressCallBack,
     [void Function()? onLongPressCallBack]) {
   return Container(
       margin: EdgeInsets.only(right: 7),
-      child: RaisedButton.icon(
+      child: ElevatedButton.icon(
           icon: icon,
-          color: Colors.blue,
-          highlightColor: Colors.blue[700],
-          colorBrightness: Brightness.dark,
-          splashColor: Colors.grey,
-          shape:
-              RoundedRectangleBorder(borderRadius: BorderRadius.circular(20.0)),
-          // padding: EdgeInsets.symmetric(horizontal: 50),
+          style: ElevatedButton.styleFrom(
+            foregroundColor: Colors.blue,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20.0)),
+            padding: EdgeInsets.symmetric(horizontal: 50),
+          ),
+          // highlightColor: Colors.blue[700],
+          // colorBrightness: Brightness.dark,
+          // splashColor: Colors.grey,
           label: label,
           onPressed: onPressCallBack,
           onLongPress: onLongPressCallBack));
@@ -44,8 +44,8 @@ Widget loadingScreen() {
   );
 }
 
-Future<void> displayTextInputDialog(BuildContext context, String title,
-    Function okButton, TextEditingController c) async {
+Future<void> displayTextInputDialog(
+    BuildContext context, String title, Function okButton, TextEditingController c) async {
   return showDialog(
       context: context,
       builder: (context) {
@@ -61,9 +61,7 @@ Future<void> displayTextInputDialog(BuildContext context, String title,
             // decoration: InputDecoration(hintText: "如：米"),
 
             actions: <Widget>[
-              FlatButton(
-                // color: Colors.red,
-                // textColor: Colors.white,
+              TextButton(
                 child: Text('取消'),
                 onPressed: () {
                   setState(() {

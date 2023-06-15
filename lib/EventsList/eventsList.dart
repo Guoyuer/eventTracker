@@ -1,9 +1,10 @@
 import 'dart:async';
 
 import 'package:flutter/cupertino.dart';
-import 'package:flutter/material.dart';
-import 'package:flutter_datetime_picker/flutter_datetime_picker.dart';
-import 'package:moor_flutter/moor_flutter.dart' hide Column;
+import 'package:flutter/material.dart' hide DatePickerTheme;
+// import 'package:flutter_datetime_picker/flutter_datetime_picker.dart' show DatePickerTheme;
+// import 'package:drift_sqflite/drift_sqflite.dart' hide Column;
+import 'package:drift/drift.dart' hide Column;
 
 import '../DAO/base.dart';
 import '../common/commonWidget.dart';
@@ -45,8 +46,7 @@ class _EventListState extends State<EventList> {
                   controller: _c,
                   itemCount: events.length,
                   itemBuilder: (ctx, idx) {
-                    return EventDataHolder(
-                        event: events[idx], child: EventTile());
+                    return EventDataHolder(event: events[idx], child: EventTile());
                     // return EventTile(data[idx]['id'],data[idx]['name'], true, false);
                   });
 
@@ -72,23 +72,26 @@ class EventTileButton extends StatelessWidget {
           addPlainRecord(context, now);
         }, () {
           showToast("长按 -- 手动指定时间");
-          DatePicker.showDateTimePicker(context,
-              showTitleActions: true,
-              minTime: DateTime.now().add(Duration(days: -7)),
-              maxTime: DateTime.now().add(Duration(seconds: 1)),
-              theme: DatePickerTheme(
-                  headerColor: Colors.orange,
-                  backgroundColor: Colors.blue,
-                  itemStyle: TextStyle(
-                      color: Colors.white,
-                      fontWeight: FontWeight.bold,
-                      fontSize: 18),
-                  doneStyle: TextStyle(color: Colors.white, fontSize: 16)),
-              onConfirm: (time) {
-            addPlainRecord(context, time);
-          }, onCancel: () {
-            showToast("用户取消");
-          }, currentTime: DateTime.now(), locale: LocaleType.zh);
+          showTimePicker(
+            context: context,
+            // showTitleActions: true,
+            // minTime: DateTime.now().add(Duration(days: -7)),
+            // maxTime: DateTime.now().add(Duration(seconds: 1)),
+            initialTime: TimeOfDay.now(),
+            // theme: DatePickerTheme(
+            //     headerColor: Colors.orange,
+            //     backgroundColor: Colors.blue,
+            //     itemStyle: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 18),
+            //     doneStyle: TextStyle(color: Colors.white, fontSize: 16)),
+            // onConfirm: (time) {
+            //   addPlainRecord(context, time);
+            // },
+            // onCancel: () {
+            //   showToast("用户取消");
+            // },
+            // currentTime: DateTime.now(),
+            // locale: LocaleType.zh
+          );
         });
       case EventStatus.notActive:
         return eventListButton(Icon(Icons.play_arrow_outlined), Text("开始"), () {
@@ -96,27 +99,29 @@ class EventTileButton extends StatelessWidget {
           startTimingRecord(context, now);
         }, () {
           showToast("长按 -- 手动指定开始时间");
-          DatePicker.showDateTimePicker(context,
-              showTitleActions: true,
-              minTime: DateTime.now().add(Duration(days: -7)),
-              maxTime: DateTime.now().add(Duration(seconds: 1)),
-              theme: DatePickerTheme(
-                  headerColor: Colors.orange,
-                  backgroundColor: Colors.blue,
-                  itemStyle: TextStyle(
-                      color: Colors.white,
-                      fontWeight: FontWeight.bold,
-                      fontSize: 18),
-                  doneStyle: TextStyle(color: Colors.white, fontSize: 16)),
-              onConfirm: (time) {
-            startTimingRecord(context, time);
-          }, onCancel: () {
-            showToast("用户取消");
-          }, currentTime: DateTime.now(), locale: LocaleType.zh);
+          showTimePicker(
+            context: context,
+            initialTime: TimeOfDay.now(),
+            // showTitleActions: true,
+            // minTime: DateTime.now().add(Duration(days: -7)),
+            // maxTime: DateTime.now().add(Duration(seconds: 1)),
+            // theme: DatePickerTheme(
+            //     headerColor: Colors.orange,
+            //     backgroundColor: Colors.blue,
+            //     itemStyle: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 18),
+            //     doneStyle: TextStyle(color: Colors.white, fontSize: 16)),
+            // onConfirm: (time) {
+            //   startTimingRecord(context, time);
+            // },
+            // onCancel: () {
+            //   showToast("用户取消");
+            // },
+            // currentTime: DateTime.now(),
+            // locale: LocaleType.zh
+          );
         });
       case EventStatus.active:
-        return eventListButton(Icon(Icons.stop_circle_outlined), Text("停止"),
-            () {
+        return eventListButton(Icon(Icons.stop_circle_outlined), Text("停止"), () {
           stopTimingRecord(context, DateTime.now());
         }, () async {
           showToast("长按 -- 手动指定停止时间");
@@ -127,28 +132,29 @@ class EventTileButton extends StatelessWidget {
           if (thisDuration.compareTo(fiveSeconds) < 0) {
             showToast("开始不足5s");
           } else {
-            DatePicker.showDateTimePicker(context,
-                showTitleActions: true,
-                minTime: startTime,
-                maxTime: DateTime.now().add(Duration(seconds: 5)),
-                theme: DatePickerTheme(
-                    headerColor: Colors.orange,
-                    backgroundColor: Colors.blue,
-                    itemStyle: TextStyle(
-                        color: Colors.white,
-                        fontWeight: FontWeight.bold,
-                        fontSize: 18),
-                    doneStyle: TextStyle(color: Colors.white, fontSize: 16)),
-                onConfirm: (time) {
-              stopTimingRecord(context, time);
-            }, onCancel: () {
-              showToast("用户取消");
-            }, locale: LocaleType.zh);
+            showTimePicker(
+              context: context,
+              initialTime: TimeOfDay.now(),
+              // showTitleActions: true,
+              // minTime: startTime,
+              // maxTime: DateTime.now().add(Duration(seconds: 5)),
+              // theme: DatePickerTheme(
+              //     headerColor: Colors.orange,
+              //     backgroundColor: Colors.blue,
+              //     itemStyle: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 18),
+              //     doneStyle: TextStyle(color: Colors.white, fontSize: 16)),
+              // onConfirm: (time) {
+              //   stopTimingRecord(context, time);
+              // },
+              // onCancel: () {
+              //   showToast("用户取消");
+              // },
+              // locale: LocaleType.zh
+            );
           }
         });
       default:
-        return eventListButton(
-            Icon(Icons.help_outline_rounded), Text("???"), () {});
+        return eventListButton(Icon(Icons.help_outline_rounded), Text("???"), () {});
     }
   }
 }
@@ -156,8 +162,7 @@ class EventTileButton extends StatelessWidget {
 class EventDataHolder extends InheritedWidget {
   final BaseEventModel event;
 
-  EventDataHolder({required this.event, required Widget child})
-      : super(child: child);
+  EventDataHolder({required this.event, required Widget child}) : super(child: child);
 
   @override
   bool updateShouldNotify(EventDataHolder oldWidget) {
@@ -174,8 +179,7 @@ class EventTile extends StatefulWidget {
   _EventTileState createState() => new _EventTileState();
 }
 
-class _EventTileState extends State<EventTile>
-    with SingleTickerProviderStateMixin {
+class _EventTileState extends State<EventTile> with SingleTickerProviderStateMixin {
   late final Animation<double> animation;
   late final AnimationController _controller;
   late final int second; //渐变时长
@@ -183,9 +187,7 @@ class _EventTileState extends State<EventTile>
     super.initState();
     second = 1;
     _controller = new AnimationController(
-        duration: Duration(seconds: second),
-        reverseDuration: Duration(seconds: second),
-        vsync: this)
+        duration: Duration(seconds: second), reverseDuration: Duration(seconds: second), vsync: this)
       ..repeat(reverse: true);
 
     animation = CurvedAnimation(parent: _controller, curve: Curves.easeIn);
@@ -216,12 +218,10 @@ class _EventTileState extends State<EventTile>
           eventInfo = Column(children: [
             Align(
                 alignment: Alignment.centerLeft,
-                child: Text(sumTimeStr,
-                    style: TextStyle(color: Colors.grey[600], fontSize: 14))),
+                child: Text(sumTimeStr, style: TextStyle(color: Colors.grey[600], fontSize: 14))),
             Align(
                 alignment: Alignment.centerLeft,
-                child: Text(sumValStr,
-                    style: TextStyle(color: Colors.grey[600], fontSize: 14))),
+                child: Text(sumValStr, style: TextStyle(color: Colors.grey[600], fontSize: 14))),
           ]);
         } else {
           eventInfo = Align(
@@ -253,18 +253,15 @@ class _EventTileState extends State<EventTile>
         eventInfo = Column(children: [
           Align(
               alignment: Alignment.centerLeft,
-              child: Text(sumTimeStr,
-                  style: TextStyle(color: Colors.grey[600], fontSize: 14))),
+              child: Text(sumTimeStr, style: TextStyle(color: Colors.grey[600], fontSize: 14))),
           Align(
               alignment: Alignment.centerLeft,
-              child: Text(sumValStr,
-                  style: TextStyle(color: Colors.grey[600], fontSize: 14))),
+              child: Text(sumValStr, style: TextStyle(color: Colors.grey[600], fontSize: 14))),
         ]);
       } else {
         eventInfo = Align(
             alignment: Alignment.centerLeft,
-            child: Text(sumTimeStr,
-                style: TextStyle(color: Colors.grey[600], fontSize: 14)));
+            child: Text(sumTimeStr, style: TextStyle(color: Colors.grey[600], fontSize: 14)));
       }
     }
     return Card(
@@ -273,15 +270,11 @@ class _EventTileState extends State<EventTile>
         child: Stack(
           children: [
             Positioned.fill(
-                child: FadeTransition(
-                    opacity: animation,
-                    child: Container(color: const Color(0xaabeddf5)))),
+                child: FadeTransition(opacity: animation, child: Container(color: const Color(0xaabeddf5)))),
             InkWell(
               onTap: () async {
-                bool? deleted = await Navigator.of(context)
-                    .pushNamed("EventDetails", arguments: event) as bool?;
-                if (deleted != null && deleted)
-                  ReloadEventsN().dispatch(context);
+                bool? deleted = await Navigator.of(context).pushNamed("EventDetails", arguments: event) as bool?;
+                if (deleted != null && deleted) ReloadEventsN().dispatch(context);
               },
               child: Container(
                   margin: EdgeInsets.only(left: 10, top: 10),
@@ -304,10 +297,7 @@ class _EventTileState extends State<EventTile>
                     ],
                   )),
             ),
-            Positioned.fill(
-                child: Container(
-                    alignment: Alignment.centerRight,
-                    child: EventTileButton())),
+            Positioned.fill(child: Container(alignment: Alignment.centerRight, child: EventTileButton())),
           ],
         ));
   }

@@ -18,8 +18,7 @@ import 'util.dart';
 class EventDetailsWrapper extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    BaseEventModel event =
-        ModalRoute.of(context)!.settings.arguments as BaseEventModel;
+    BaseEventModel event = ModalRoute.of(context)!.settings.arguments as BaseEventModel;
     return EventDetails(event: event);
   }
 }
@@ -62,16 +61,14 @@ class _EventDetailsState extends State<EventDetails> {
     }
     var scrollPosition = _c.position;
     if (scrollPosition.maxScrollExtent > scrollPosition.minScrollExtent) {
-      _c.animateTo(scrollPosition.maxScrollExtent,
-          duration: Duration(seconds: 1), curve: Curves.easeOutCubic);
+      _c.animateTo(scrollPosition.maxScrollExtent, duration: Duration(seconds: 1), curve: Curves.easeOutCubic);
     }
   }
 
   Map<String, dynamic> processRecord(List<Record> records) {
     // DateTimeRange range;
     Map<DateTime, double> data = {};
-    DateTimeRange range = DateTimeRange(
-        start: getDate(records[0].endTime!), end: getDate(DateTime.now()));
+    DateTimeRange range = DateTimeRange(start: getDate(records[0].endTime!), end: getDate(DateTime.now()));
     if (widget.event is TimingEventModel) {
       if (getSelected(isSelected) == 0) {
         //得到时长统计信息
@@ -80,8 +77,7 @@ class _EventDetailsState extends State<EventDetails> {
         records.forEach((record) {
           var date = getDate(record.endTime!);
           if (tmp.containsKey(date) && record.endTime != null) {
-            tmp[date] =
-                tmp[date]! + record.endTime!.difference(record.startTime!);
+            tmp[date] = tmp[date]! + record.endTime!.difference(record.startTime!);
           } else {
             tmp[date] = record.endTime!.difference(record.startTime!);
           }
@@ -145,9 +141,7 @@ class _EventDetailsState extends State<EventDetails> {
                   "项目描述",
                   style: chartTitleStyle,
                 )),
-            Align(
-                alignment: Alignment.center,
-                child: DescEditable(widget.event.id))
+            Align(alignment: Alignment.center, child: DescEditable(widget.event.id))
           ],
         ));
   }
@@ -161,8 +155,7 @@ class _EventDetailsState extends State<EventDetails> {
               List<Record> records = snapshot.data!;
               var dataForHeatMap = processRecord(records);
               List<Record> recordsOfMonth = [];
-              List<Widget> toggleChildren =
-                  toggleTexts.map((e) => Text(e)).toList();
+              List<Widget> toggleChildren = toggleTexts.map((e) => Text(e)).toList();
               int numOfRecords;
               String heading;
               if (month == nilTime) {
@@ -173,7 +166,7 @@ class _EventDetailsState extends State<EventDetails> {
                 numOfRecords = recordsOfMonth.length;
                 heading = month.month.toString() + "月共进行";
               }
-              WidgetsBinding.instance!.addPostFrameCallback((_) {
+              WidgetsBinding.instance.addPostFrameCallback((_) {
                 scrollToEnd(context);
               });
               var heatMap = Column(
@@ -199,50 +192,39 @@ class _EventDetailsState extends State<EventDetails> {
                       ),
                     ),
                   ),
-                  Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Container(
-                            margin: EdgeInsets.only(left: 10),
-                            child: RichText(
-                              text: TextSpan(
-                                  style: TextStyle(
-                                      fontSize: 16, color: Colors.black),
-                                  children: [
-                                    TextSpan(text: heading),
-                                    TextSpan(
-                                        text: '$numOfRecords',
-                                        style: TextStyle(
-                                            fontWeight: FontWeight.bold)),
-                                    TextSpan(text: " 次")
-                                  ]),
-                            )),
-                        Container(
-                            height: 35,
-                            margin: EdgeInsets.all(10),
-                            child: ToggleButtons(
-                                children: toggleChildren,
-                                borderRadius:
-                                    BorderRadius.all(Radius.circular(10)),
-                                borderWidth: 2,
-                                selectedBorderColor: Colors.blueAccent,
-                                isSelected: isSelected,
-                                onPressed: (int index) {
-                                  if (index != getSelected(isSelected)) {
-                                    for (int i = 0;
-                                        i < isSelected.length;
-                                        i++) {
-                                      setState(() {
-                                        if (i == index) {
-                                          isSelected[i] = true;
-                                        } else {
-                                          isSelected[i] = false;
-                                        }
-                                      });
+                  Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
+                    Container(
+                        margin: EdgeInsets.only(left: 10),
+                        child: RichText(
+                          text: TextSpan(style: TextStyle(fontSize: 16, color: Colors.black), children: [
+                            TextSpan(text: heading),
+                            TextSpan(text: '$numOfRecords', style: TextStyle(fontWeight: FontWeight.bold)),
+                            TextSpan(text: " 次")
+                          ]),
+                        )),
+                    Container(
+                        height: 35,
+                        margin: EdgeInsets.all(10),
+                        child: ToggleButtons(
+                            children: toggleChildren,
+                            borderRadius: BorderRadius.all(Radius.circular(10)),
+                            borderWidth: 2,
+                            selectedBorderColor: Colors.blueAccent,
+                            isSelected: isSelected,
+                            onPressed: (int index) {
+                              if (index != getSelected(isSelected)) {
+                                for (int i = 0; i < isSelected.length; i++) {
+                                  setState(() {
+                                    if (i == index) {
+                                      isSelected[i] = true;
+                                    } else {
+                                      isSelected[i] = false;
                                     }
-                                  }
-                                }))
-                      ]),
+                                  });
+                                }
+                              }
+                            }))
+                  ]),
                 ],
               );
               // _c.jumpTo(value)
@@ -291,14 +273,8 @@ class _EventDetailsState extends State<EventDetails> {
                         return AlertDialog(
                           title: Text("是否删除该项目及所有记录？"),
                           actions: [
-                            TextButton(
-                                onPressed: () =>
-                                    Navigator.of(context).pop(false),
-                                child: Text("否")),
-                            TextButton(
-                                onPressed: () =>
-                                    Navigator.of(context).pop(true),
-                                child: Text("是"))
+                            TextButton(onPressed: () => Navigator.of(context).pop(false), child: Text("否")),
+                            TextButton(onPressed: () => Navigator.of(context).pop(true), child: Text("是"))
                           ],
                         );
                       });
@@ -329,12 +305,10 @@ class _EventDetailsState extends State<EventDetails> {
                     transitionBuilder: (ctx, animation, animation2, child) {
                       var fadeTween = CurveTween(curve: Curves.easeInOut);
                       var fadeAnimation = fadeTween.animate(animation);
-                      return FadeTransition(
-                          opacity: fadeAnimation, child: child);
+                      return FadeTransition(opacity: fadeAnimation, child: child);
                     },
-                    pageBuilder: (BuildContext context,
-                        Animation<double> animation,
-                        Animation<double> secondaryAnimation) {
+                    pageBuilder:
+                        (BuildContext context, Animation<double> animation, Animation<double> secondaryAnimation) {
                       DateTime day = notification.day;
                       String timeStr = DateFormat('yyyy.MM.dd').format(day);
                       return AlertDialog(
@@ -345,8 +319,7 @@ class _EventDetailsState extends State<EventDetails> {
                               switch (snapshot.connectionState) {
                                 case ConnectionState.done:
                                   List<Record> records = snapshot.data!;
-                                  return getDayRecordsWidgets(
-                                      records, day, widget.event);
+                                  return getDayRecordsWidgets(records, day, widget.event);
                                 default:
                                   return loadingScreen();
                               }
@@ -359,8 +332,7 @@ class _EventDetailsState extends State<EventDetails> {
             child: ListView(children: listChildren)));
   }
 
-  Widget getDayRecordsWidgets(
-      List<Record> records, DateTime time, BaseEventModel event) {
+  Widget getDayRecordsWidgets(List<Record> records, DateTime time, BaseEventModel event) {
     List<Widget> tiles = [];
     records = records
         .where((element) =>
@@ -371,8 +343,7 @@ class _EventDetailsState extends State<EventDetails> {
     if (records.isEmpty) return Text("当日无记录");
     records.forEach((record) {
       if (event is TimingEventModel) {
-        String startTimeStr =
-            DateFormat('MM-dd kk:mm').format(record.startTime!);
+        String startTimeStr = DateFormat('MM-dd kk:mm').format(record.startTime!);
         // if (startTimeStr.substring(0, 2) == '24')
         //   startTimeStr = '00' + startTimeStr.substring(2);
         String endTimeStr = DateFormat('MM-dd kk:mm').format(record.endTime!);
@@ -410,9 +381,7 @@ class _EventDetailsState extends State<EventDetails> {
 
   List<Record> getRecordPerMonth(List<Record> records, DateTime month) {
     records = records
-        .where((element) =>
-            element.endTime!.month == month.month &&
-            element.endTime!.year == month.year)
+        .where((element) => element.endTime!.month == month.month && element.endTime!.year == month.year)
         .toList(); //只保留本月的记录，
     return records;
   }
@@ -425,8 +394,7 @@ class _EventDetailsState extends State<EventDetails> {
       if (getSelected(isSelected) == 0) {
         //得到时长统计信息
         List<DateTimeRange> ranges = [
-          for (Record record in records)
-            DateTimeRange(start: record.startTime!, end: record.endTime!)
+          for (Record record in records) DateTimeRange(start: record.startTime!, end: record.endTime!)
         ];
         data = getTimeSlotSumTime(ranges);
         double maxVal = data.reduce(max);
@@ -466,17 +434,14 @@ class _EventDetailsState extends State<EventDetails> {
         processedData.add(val);
       }
       for (int i = 0; i < 12; i++) {
-        bars.add(BarChartGroupData(x: i * 2, barRods: [
-          BarChartRodData(
-              y: processedData[i], width: 15, colors: gradientColors)
-        ]));
+        bars.add(BarChartGroupData(
+            x: i * 2, barRods: [BarChartRodData(toY: processedData[i], width: 15, gradient: gradientColors)]));
       }
     } else {
       for (int i = 0; i < 24; i++) {
         if (data[i] > maxVal) maxVal = data[i];
-        bars.add(BarChartGroupData(x: i, barRods: [
-          BarChartRodData(y: data[i], width: 15, colors: gradientColors)
-        ]));
+        bars.add(
+            BarChartGroupData(x: i, barRods: [BarChartRodData(toY: data[i], width: 15, gradient: gradientColors)]));
       }
     }
     var barChart = Column(children: [
@@ -490,28 +455,25 @@ class _EventDetailsState extends State<EventDetails> {
           height: 300,
           // width: 350,
           child: BarChart(BarChartData(
-              axisTitleData: FlAxisTitleData(
-                  topTitle: AxisTitle(
-                      textAlign: TextAlign.start,
-                      showTitle: true,
-                      titleText: unit)),
+              // axisTitleData:
+              //     FlAxisTitleData(topTitle: AxisTitle(textAlign: TextAlign.start, showTitle: true, titleText: unit)),
               barTouchData: BarTouchData(
                   enabled: true,
                   touchTooltipData: BarTouchTooltipData(
                       tooltipBgColor: Colors.blueGrey,
                       getTooltipItem: (group, groupIndex, rod, rodIndex) {
-                        return BarTooltipItem(rod.y.toInt().toString(),
-                            TextStyle(color: Colors.white, fontSize: 18));
+                        return BarTooltipItem(rod.toY.toInt().toString(), TextStyle(color: Colors.white, fontSize: 18));
                       })),
               // groupsSpace: 30,
               // alignment: BarChartAlignment.start,
               titlesData: FlTitlesData(
-                  leftTitles: SideTitles(
-                      showTitles: true,
-                      getTitles: (double val) {
-                        return val.floor().toString();
-                      },
-                      interval: maxVal / 6)),
+                  leftTitles: AxisTitles(
+                      sideTitles: SideTitles(
+                          showTitles: true,
+                          getTitlesWidget: (double val, TitleMeta meta) {
+                            return Text(val.floor().toString());
+                          },
+                          interval: maxVal / 6))),
               borderData: FlBorderData(show: false),
               barGroups: bars)))
     ]);

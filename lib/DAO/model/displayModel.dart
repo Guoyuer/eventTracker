@@ -7,8 +7,7 @@ class BaseEventModel {
   String? description;
   int? lastRecordId;
 
-  BaseEventModel(this.id, this.name,
-      [this.unit, this.description, this.lastRecordId]);
+  BaseEventModel(this.id, this.name, [this.unit, this.description, this.lastRecordId]);
 }
 
 class PlainEventModel extends BaseEventModel {
@@ -17,8 +16,7 @@ class PlainEventModel extends BaseEventModel {
 
   // EventStatus get status => EventStatus.plain;
 
-  PlainEventModel(int id, String name, String? unit, this.time,
-      [this.sumVal, String? description, int? lastRecordId])
+  PlainEventModel(int id, String name, String? unit, this.time, [this.sumVal, String? description, int? lastRecordId])
       : super(id, name, unit, description, lastRecordId);
 }
 
@@ -29,8 +27,7 @@ class TimingEventModel extends BaseEventModel {
   double? sumVal; // 总量
 
   //Active时就没必要获取总时间了
-  TimingEventModel(
-      int id, String name, String? unit, this.status, this.sumDuration,
+  TimingEventModel(int id, String name, String? unit, this.status, this.sumDuration,
       [this.startTime, this.sumVal, String? description, int? lastRecordId])
       : super(id, name, unit, description, lastRecordId);
 }

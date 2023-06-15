@@ -48,10 +48,10 @@ const Map<int, Color> heatmapColorMap = {
   4: Color.fromARGB(255, 33, 110, 57),
 };
 
-List<Color> gradientColors = [
+LinearGradient gradientColors = LinearGradient(colors: [
   Color.fromARGB(255, 235, 237, 240),
   Color.fromARGB(255, 155, 233, 168),
   Color.fromARGB(255, 64, 196, 99),
   Color.fromARGB(255, 48, 161, 78),
   Color.fromARGB(255, 33, 110, 57),
-];
+]);

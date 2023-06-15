@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_event_tracker/common/commonWidget.dart';
 import 'DAO/base.dart';
-import 'package:moor_flutter/moor_flutter.dart' show Value;
+import 'package:drift_sqflite/drift_sqflite.dart' show Value;
+import 'package:drift/drift.dart' show Value;
 
 class EventEditor extends StatefulWidget {
   EventEditor();
@@ -58,18 +59,15 @@ class _EventEditorState extends State<EventEditor> {
                             },
                             // controller: _eventNameController,
                             autofocus: true,
-                            decoration: InputDecoration(
-                                hintText: "项目名称",
-                                prefixIcon: Icon(Icons.sticky_note_2_rounded)),
+                            decoration:
+                                InputDecoration(hintText: "项目名称", prefixIcon: Icon(Icons.sticky_note_2_rounded)),
                           ),
                           TextFormField(
                             onSaved: (String? value) {
                               desc = value;
                             },
                             // controller: _eventDiscController,
-                            decoration: InputDecoration(
-                                hintText: "项目说明",
-                                prefixIcon: Icon(Icons.subject_rounded)),
+                            decoration: InputDecoration(hintText: "项目说明", prefixIcon: Icon(Icons.subject_rounded)),
                           ),
                           SwitchListTile(
                               title: Text("关注时长"),
@@ -90,15 +88,12 @@ class _EventEditorState extends State<EventEditor> {
                                   List<Unit> units = snapshot.data!;
                                   List<Widget> children = [];
                                   if (units.isEmpty) {
-                                    children.add(ListTile(
-                                        title: Text("暂无单位，可到单位管理页面添加")));
+                                    children.add(ListTile(title: Text("暂无单位，可到单位管理页面添加")));
                                   } else {
-                                    children
-                                        .add(ListTile(title: Text("可选择单位：")));
+                                    children.add(ListTile(title: Text("可选择单位：")));
                                   }
                                   var unitsList = ListView.builder(
-                                      physics:
-                                          const NeverScrollableScrollPhysics(),
+                                      physics: const NeverScrollableScrollPhysics(),
                                       shrinkWrap: true,
                                       itemCount: units.length,
                                       itemBuilder: (ctx, idx) {

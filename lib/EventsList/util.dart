@@ -4,8 +4,7 @@ void startTimingRecord(BuildContext context, DateTime now) {
   int eventId = EventDataHolder.of(context).event.id;
   DBHandle()
       .db
-      .startTimingRecordInDB(
-          (RecordsCompanion(startTime: Value(now), eventId: Value(eventId))))
+      .startTimingRecordInDB((RecordsCompanion(startTime: Value(now), eventId: Value(eventId))))
       .then((_) => ReloadEventsN().dispatch(context));
 }
 
@@ -30,12 +29,12 @@ Future<double?> inputValDialog(BuildContext ctx, String unit) {
             ],
           ),
           actions: [
-            FlatButton(
+            TextButton(
                 onPressed: () {
                   Navigator.of(context).pop(null);
                 },
                 child: Text("取消")),
-            FlatButton(
+            TextButton(
                 onPressed: () {
                   double val;
                   try {
@@ -65,8 +64,7 @@ Future addPlainRecord(BuildContext context, DateTime time) async {
   }
   DBHandle()
       .db
-      .addPlainRecordInDB((RecordsCompanion(
-          value: Value(val), endTime: Value(time), eventId: Value(eventId))))
+      .addPlainRecordInDB((RecordsCompanion(value: Value(val), endTime: Value(time), eventId: Value(eventId))))
       .then((_) => ReloadEventsN().dispatch(context));
 }
 
@@ -88,12 +86,8 @@ Future stopTimingRecord(BuildContext context, DateTime time) async {
           return AlertDialog(
             title: Text("时间不足5s，删除该记录还是继续？"),
             actions: [
-              TextButton(
-                  onPressed: () => Navigator.of(context).pop(true),
-                  child: Text("删除")),
-              TextButton(
-                  onPressed: () => Navigator.of(context).pop(false),
-                  child: Text("继续"))
+              TextButton(onPressed: () => Navigator.of(context).pop(true), child: Text("删除")),
+              TextButton(onPressed: () => Navigator.of(context).pop(false), child: Text("继续"))
             ],
           );
         });
@@ -116,13 +110,8 @@ Future stopTimingRecord(BuildContext context, DateTime time) async {
     }
 
     db
-        .stopTimingRecordInDB(
-            thisDuration,
-            RecordsCompanion(
-                id: Value(recordId),
-                eventId: Value(eventId),
-                endTime: Value(time),
-                value: Value(val)))
+        .stopTimingRecordInDB(thisDuration,
+            RecordsCompanion(id: Value(recordId), eventId: Value(eventId), endTime: Value(time), value: Value(val)))
         .then((_) => ReloadEventsN().dispatch(context));
   }
 }
