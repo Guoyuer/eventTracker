@@ -8,7 +8,7 @@ import 'package:share/share.dart';
 import 'EventsDetails/eventDetails.dart';
 import 'EventsList/eventsList.dart';
 import 'Statistics/statistics.dart';
-import 'StepCount/pedometer.dart';
+// import 'StepCount/pedometer.dart';
 import 'UnitManager/unitsManagerPage.dart';
 import 'common/const.dart';
 import 'eventEditor.dart';
@@ -51,7 +51,7 @@ class _MainPagesState extends State<MainPages> {
   bool floatingButtonVisible = true;
   List<Widget> _children = [
     EventList(),
-    PedometerPage(),
+    // PedometerPage(),
     StatisticPage(),
     SettingPage(),
   ];
@@ -98,16 +98,10 @@ class _MainPagesState extends State<MainPages> {
         // 底部导航
         type: BottomNavigationBarType.fixed,
         items: <BottomNavigationBarItem>[
-          BottomNavigationBarItem(
-              icon: Icon(Icons.event_note_rounded), label: bottomLabels[0]),
-          BottomNavigationBarItem(
-              icon: Icon(Icons.directions_walk_rounded),
-              label: bottomLabels[1]),
-          BottomNavigationBarItem(
-              icon: Icon(Icons.pie_chart_outline_rounded),
-              label: bottomLabels[2]),
-          BottomNavigationBarItem(
-              icon: Icon(Icons.settings), label: bottomLabels[3]),
+          BottomNavigationBarItem(icon: Icon(Icons.event_note_rounded), label: bottomLabels[0]),
+          BottomNavigationBarItem(icon: Icon(Icons.directions_walk_rounded), label: bottomLabels[1]),
+          BottomNavigationBarItem(icon: Icon(Icons.pie_chart_outline_rounded), label: bottomLabels[2]),
+          BottomNavigationBarItem(icon: Icon(Icons.settings), label: bottomLabels[3]),
         ],
         currentIndex: _selectedIndex,
         fixedColor: Colors.blue,
@@ -124,8 +118,7 @@ class _MainPagesState extends State<MainPages> {
           IconButton(
               icon: Icon(Icons.share_rounded),
               onPressed: () {
-                Share.share(
-                    '四川大学计算机系毕业设计项目。GitHub Repo：https://github.com/Guoyuer/flutter_event_tracker');
+                Share.share('四川大学计算机系毕业设计项目。GitHub Repo：https://github.com/Guoyuer/flutter_event_tracker');
               })
         ];
       default:

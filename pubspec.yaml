@@ -31,7 +31,7 @@ dependencies:
   share:
   sprintf:
   intl:
-  pedometer:
+  # pedometer:
   #UI:
   fl_chart:
   # flutter_datetime_picker:
