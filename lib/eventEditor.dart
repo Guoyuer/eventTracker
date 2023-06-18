@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_event_tracker/common/commonWidget.dart';
 import 'DAO/base.dart';
-import 'package:drift_sqflite/drift_sqflite.dart' show Value;
 import 'package:drift/drift.dart' show Value;
 
 class EventEditor extends StatefulWidget {

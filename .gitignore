@@ -28,5 +28,6 @@ lib/DAO/*.g.dart
 android/
 windows/
 web/
+ios/
 .idea/
 .vscode/

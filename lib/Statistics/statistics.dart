@@ -1,12 +1,8 @@
 import 'dart:collection';
-import 'dart:math';
 
 import 'package:fl_chart/fl_chart.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
 import 'package:flutter_event_tracker/common/commonWidget.dart';
-import 'package:flutter_event_tracker/common/const.dart';
 import 'package:flutter_event_tracker/common/util.dart';
 import 'package:intl/intl.dart';
 import 'package:random_color/random_color.dart';
@@ -93,7 +89,7 @@ class _ChartsState extends State<Charts> {
         builder: (ctx, snapshot) {
           switch (snapshot.connectionState) {
             case ConnectionState.done:
-              List<Object> tmp = snapshot.data! as List<Object>;
+              List<Object> tmp = snapshot.data!;
               List<Record> records = tmp[0] as List<Record>;
               Map<int, Event> eventsMap = tmp[1] as Map<int, Event>;
 

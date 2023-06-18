@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
-import 'package:flutter/widgets.dart';
 import 'package:flutter_event_tracker/StepCount/stepStatistics.dart';
 import 'package:flutter_event_tracker/settingPage.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
@@ -12,8 +11,13 @@ import 'Statistics/statistics.dart';
 import 'UnitManager/unitsManagerPage.dart';
 import 'common/const.dart';
 import 'eventEditor.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'firebase_options.dart';
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+
+  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
   runApp(EventTracker());
 }
 
