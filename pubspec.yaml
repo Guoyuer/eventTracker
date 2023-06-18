@@ -1,4 +1,4 @@
-name: flutter_event_tracker
+name: event_tracker
 description: An event tracker in Flutter
 
 # The following line prevents the package from being accidentally published to
@@ -25,6 +25,7 @@ dependencies:
     sdk: flutter
   flutter:
     sdk: flutter
+  flutter_riverpod: ^2.3.6
   fluttertoast: ^8.2.2
   random_color:
   # flutter_launcher_icons:

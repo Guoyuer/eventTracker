@@ -1,4 +1,4 @@
-import 'package:flutter_event_tracker/common/util.dart';
+import 'package:event_tracker/common/util.dart';
 import 'package:drift/drift.dart';
 
 import 'DAO/base.dart';

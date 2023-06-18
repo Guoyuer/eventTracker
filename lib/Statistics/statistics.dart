@@ -2,8 +2,8 @@ import 'dart:collection';
 
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_event_tracker/common/commonWidget.dart';
-import 'package:flutter_event_tracker/common/util.dart';
+import 'package:event_tracker/common/commonWidget.dart';
+import 'package:event_tracker/common/util.dart';
 import 'package:intl/intl.dart';
 import 'package:random_color/random_color.dart';
 

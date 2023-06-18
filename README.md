@@ -1,4 +1,4 @@
-# flutter_event_tracker
+# event_tracker
 
 
 ## How to use the app:

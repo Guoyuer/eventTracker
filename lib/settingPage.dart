@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_event_tracker/DAO/base.dart';
+import 'package:event_tracker/DAO/base.dart';
 import 'package:moor_db_viewer/moor_db_viewer.dart';
 import 'addFakeData.dart';
 
@@ -15,7 +15,7 @@ class SettingPage extends StatelessWidget {
             Navigator.pushNamed(context, 'unitsManager');
           },
           style: ElevatedButton.styleFrom(
-            foregroundColor: Colors.blue,
+            backgroundColor: Colors.blue,
             // highlightColor: Colors.blue[700],
             // colorBrightness: Brightness.dark,
             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20.0)),
@@ -29,7 +29,7 @@ class SettingPage extends StatelessWidget {
             Navigator.push(context, MaterialPageRoute(builder: (BuildContext ctx) => DBViewRoute()));
           },
           style: ElevatedButton.styleFrom(
-            foregroundColor: Colors.blue,
+            backgroundColor: Colors.blue,
             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20.0)),
           ),
           // highlightColor: Colors.blue[700],
@@ -42,7 +42,7 @@ class SettingPage extends StatelessWidget {
             DBHandle().db.deleteEverything();
           },
           style: ElevatedButton.styleFrom(
-            foregroundColor: Colors.blue,
+            backgroundColor: Colors.blue,
             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20.0)),
           ),
           // highlightColor: Colors.blue[700],
@@ -55,7 +55,7 @@ class SettingPage extends StatelessWidget {
             addData();
           },
           style: ElevatedButton.styleFrom(
-            foregroundColor: Colors.blue,
+            backgroundColor: Colors.blue,
             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20.0)),
           ),
           // highlightColor: Colors.blue[700],

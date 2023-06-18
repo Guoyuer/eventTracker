@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_event_tracker/common/const.dart';
-import 'package:flutter_event_tracker/heatmap_calendar/heatMap.dart';
+import 'package:event_tracker/common/const.dart';
+import 'package:event_tracker/heatmap_calendar/heatMap.dart';
 import 'package:drift_sqflite/drift_sqflite.dart';
 import 'package:drift/drift.dart';
 

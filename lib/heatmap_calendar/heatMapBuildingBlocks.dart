@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_event_tracker/common/const.dart';
+import 'package:event_tracker/common/const.dart';
 
 import 'heatMap.dart';
 import 'util.dart';

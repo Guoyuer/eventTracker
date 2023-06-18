@@ -4,7 +4,7 @@ import 'package:sprintf/sprintf.dart';
 
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_event_tracker/common/commonWidget.dart';
+import 'package:event_tracker/common/commonWidget.dart';
 
 import '../DAO/base.dart';
 import '../common/const.dart';

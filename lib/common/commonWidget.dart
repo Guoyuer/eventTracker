@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_event_tracker/DAO/base.dart';
+import 'package:event_tracker/DAO/base.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 
 ElevatedButton myRaisedButton(Widget child, void Function() onPressCallBack, [void Function()? onLongPressCallBack]) {
   return ElevatedButton(
       style: ElevatedButton.styleFrom(
-        foregroundColor: Colors.blue,
+        backgroundColor: Colors.blue,
         padding: EdgeInsets.symmetric(horizontal: 50),
       ),
       // highlightColor: Colors.blue[700],
@@ -22,7 +22,7 @@ Widget eventListButton(Icon icon, Widget label, void Function() onPressCallBack,
       child: ElevatedButton.icon(
           icon: icon,
           style: ElevatedButton.styleFrom(
-            foregroundColor: Colors.blue,
+            backgroundColor: Colors.blue,
             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20.0)),
             padding: EdgeInsets.symmetric(horizontal: 50),
           ),
