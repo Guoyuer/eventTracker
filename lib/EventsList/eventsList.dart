@@ -1,39 +1,28 @@
 import 'dart:async';
+import 'dart:ffi';
 
 import 'package:flutter/material.dart' hide DatePickerTheme;
 // import 'package:flutter_datetime_picker/flutter_datetime_picker.dart' show DatePickerTheme;
 // import 'package:drift_sqflite/drift_sqflite.dart' hide Column;
 import 'package:drift/drift.dart' hide Column;
-
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../stateProviders.dart';
 import '../DAO/base.dart';
 import '../common/commonWidget.dart';
 import '../common/const.dart';
 
 part 'util.dart';
 
-class EventList extends StatefulWidget {
+class EventList extends ConsumerWidget {
   EventList({Key? key}) : super(key: key);
 
   @override
-  _EventListState createState() => _EventListState();
-}
-
-class _EventListState extends State<EventList> {
-  // EventsDbProvider db = EventsDbProvider();
-  late Future<List<BaseEventModel>> _events;
-  late ScrollController _c = ScrollController();
-
-  @override
-  void initState() {
-    super.initState();
-    _events = DBHandle().db.getEventsProfile();
+  Widget build(BuildContext context, WidgetRef ref) {
+    ScrollController _c = ScrollController();
+    Future<List<BaseEventModel>> _events = DBHandle().db.getEventsProfile();
     _c.addListener(() {
-      ScrollDirectionN(_c.position.userScrollDirection).dispatch(context);
+      ref.read(eventListScrollDirProvider.notifier).update((state) => state = _c.position.userScrollDirection);
     });
-  }
-
-  @override
-  Widget build(BuildContext context) {
     return FutureBuilder<List<BaseEventModel>>(
         future: _events,
         builder: (ctx, snapshot) {

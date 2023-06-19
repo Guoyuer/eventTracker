@@ -97,7 +97,7 @@ class AppDatabase extends _$AppDatabase {
     final query = selectOnly(records)
       ..addColumns([records.startTime])
       ..where(records.id.equals(recordId));
-    return query.map((row) => row.read(records.startTime)!).getSingle() as DateTime;
+    return query.map((row) => row.read(records.startTime)!).getSingle();
   }
 
   ///得到eventId对应事件的LastRecordId
@@ -215,7 +215,7 @@ class AppDatabase extends _$AppDatabase {
       ..addColumns([events.unit])
       ..where(events.id.equals(eventId));
 
-    return query.map((row) => row.read(events.unit)).getSingleOrNull() as String?;
+    return query.map((row) => row.read(events.unit)).getSingleOrNull();
   }
 
   Future<List<Event>> getRawEvents() {
