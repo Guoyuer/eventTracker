@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:ffi';
 
 import 'package:flutter/material.dart' hide DatePickerTheme;
 // import 'package:flutter_datetime_picker/flutter_datetime_picker.dart' show DatePickerTheme;
@@ -28,7 +27,16 @@ class EventList extends ConsumerWidget {
         builder: (ctx, snapshot) {
           switch (snapshot.connectionState) {
             case ConnectionState.done:
+              if (snapshot.hasError) {
+                return Center(child: Text("加载项目失败：${snapshot.error}"));
+              }
+              if (!snapshot.hasData) {
+                return loadingScreen();
+              }
               List<BaseEventModel> events = snapshot.data!;
+              if (events.isEmpty) {
+                return Center(child: Text("暂无项目"));
+              }
               var list = ListView.builder(
                   // shrinkWrap: true,
                   controller: _c,

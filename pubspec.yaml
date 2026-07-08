@@ -50,6 +50,7 @@ dependencies:
   # Use with the CupertinoIcons class for iOS style icons.
   cupertino_icons: ^1.0.5
   firebase_core: ^2.14.0
+  sqflite_common_ffi: 2.2.5
 
 flutter_icons:
   ios: true

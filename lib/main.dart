@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
+import 'package:flutter/foundation.dart'
+    show TargetPlatform, defaultTargetPlatform, kIsWeb;
 import 'package:event_tracker/StepCount/stepStatistics.dart';
 import 'package:event_tracker/settingPage.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
@@ -15,13 +17,30 @@ import 'common/const.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
 import 'stateProviders.dart';
+import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  if (_usesSqfliteFfiOnCurrentPlatform) {
+    sqfliteFfiInit();
+    databaseFactory = databaseFactoryFfi;
+  }
 
-  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+  if (_supportsFirebaseOnCurrentPlatform) {
+    await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+  }
   runApp(ProviderScope(child: EventTracker()));
 }
+
+bool get _supportsFirebaseOnCurrentPlatform =>
+    kIsWeb ||
+    defaultTargetPlatform == TargetPlatform.android ||
+    defaultTargetPlatform == TargetPlatform.iOS;
+
+bool get _usesSqfliteFfiOnCurrentPlatform =>
+    defaultTargetPlatform == TargetPlatform.windows ||
+    defaultTargetPlatform == TargetPlatform.linux ||
+    defaultTargetPlatform == TargetPlatform.macOS;
 
 class EventTracker extends StatelessWidget {
   @override
