@@ -45,9 +45,9 @@ Completed slice:
 
 Next slice:
 
-1. Extract daily totals used by activity detail heatmaps.
-2. Extract time-slot distribution used by activity detail bar charts.
-3. Add tests for timed and plain activities, with and without units.
+1. Extract cross-activity summary aggregation used by `Statistics`.
+2. Move statistics time-slot stacking into a pure analytics module.
+3. Add tests for multi-activity counts and stacked time slots.
 4. Keep `flutter analyze`, `flutter test`, and `flutter build windows` green.
 
 ### 2. Make Aggregate Totals an Explicit Rule
@@ -80,10 +80,17 @@ Longer-term option:
 
 Current problem: `EventDetails` and `Statistics` compute chart and heatmap data inside Widgets. That makes chart bugs hard to test and makes the UI files large.
 
+Current status:
+
+- Extracted activity detail heatmap daily totals into `activity_detail_analytics.dart`.
+- Extracted activity detail time-slot distribution into `activity_detail_analytics.dart`.
+- Removed the old `EventsDetails/util.dart` helper after moving its behavior behind typed analytics results.
+- Added tests for timed duration, plain counts, plain values, record filtering, and adjacent-hour grouping.
+
 Target modules:
 
-- `daily_activity_totals.dart`
-- `time_slot_distribution.dart`
+- `activity_detail_analytics.dart`
+- `statistics_analytics.dart`
 - `activity_summary.dart`
 - `heatmap_series.dart`
 
@@ -93,11 +100,11 @@ Rules:
 - Inputs should be domain models or simple value objects, not Widgets.
 - Tests should assert chart input data without rendering Flutter charts.
 
-Next analytics slice:
+Remaining analytics slice:
 
-1. Extract daily totals used by activity detail heatmaps.
-2. Extract time-slot distribution used by activity detail bar charts.
-3. Add tests for timed and plain activities, with and without units.
+1. Extract cross-activity summary data used by the statistics pie chart.
+2. Extract stacked time-slot distribution used by the statistics bar chart.
+3. Add tests for records with multiple activities and empty records.
 4. Replace Widget-local calculation with calls into analytics modules.
 
 ### 4. Fix Step Record Design
@@ -179,7 +186,7 @@ Rule:
 
 Recommended order from here:
 
-1. Activity detail analytics extraction.
+1. Statistics analytics extraction.
 2. Step repository and sentinel containment.
 3. Riverpod activity list provider.
 4. Developer page split.

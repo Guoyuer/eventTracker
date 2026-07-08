@@ -1,15 +1,14 @@
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
+import 'package:event_tracker/analytics/activity_detail_analytics.dart';
 import 'package:event_tracker/common/commonWidget.dart';
 import 'package:event_tracker/common/const.dart';
 import 'package:event_tracker/common/util.dart';
 import 'package:intl/intl.dart';
 import 'package:sprintf/sprintf.dart';
-import 'dart:math';
 
 import '../DAO/base.dart';
 import '../heatmap_calendar/heatMap.dart';
-import 'util.dart';
 
 class EventDetailsWrapper extends StatelessWidget {
   @override
@@ -33,8 +32,7 @@ class _EventDetailsState extends State<EventDetails> {
   AppDatabase db = DBHandle().db;
   List<String> toggleTexts = [];
   List<bool> isSelected = [true];
-  late String toolTipUnit;
-  ScrollController _c = ScrollController();
+  final ScrollController _scrollController = ScrollController();
   DateTime month = nilTime;
 
   @override
@@ -53,80 +51,20 @@ class _EventDetailsState extends State<EventDetails> {
   }
 
   void scrollToEnd(BuildContext context) {
-    if (!_c.hasClients) {
+    if (!_scrollController.hasClients) {
       return;
     }
-    var scrollPosition = _c.position;
+    var scrollPosition = _scrollController.position;
     if (scrollPosition.maxScrollExtent > scrollPosition.minScrollExtent) {
-      _c.animateTo(scrollPosition.maxScrollExtent,
+      _scrollController.animateTo(scrollPosition.maxScrollExtent,
           duration: Duration(seconds: 1), curve: Curves.easeOutCubic);
     }
   }
 
-  Map<String, dynamic> processRecord(List<Record> records) {
-    // DateTimeRange range;
-    Map<DateTime, double> data = {};
-    DateTimeRange range = DateTimeRange(
-        start: getDate(records[0].endTime!), end: getDate(DateTime.now()));
-    if (widget.event is TimingEventModel) {
-      if (getSelected(isSelected) == 0) {
-        //得到时长统计信息
-        toolTipUnit = "分钟";
-        Map<DateTime, Duration> tmp = {};
-        records.forEach((record) {
-          var date = getDate(record.endTime!);
-          if (tmp.containsKey(date) && record.endTime != null) {
-            tmp[date] =
-                tmp[date]! + record.endTime!.difference(record.startTime!);
-          } else {
-            tmp[date] = record.endTime!.difference(record.startTime!);
-          }
-        });
-        tmp.forEach((key, value) {
-          data[key] = value.inMinutes.toDouble();
-        }); //转换为数值
-      } else {
-        //得到物理量统计信息
-        toolTipUnit = widget.event.unit!;
-        records.forEach((record) {
-          var date = getDate(record.endTime!);
-          if (data.containsKey(date)) {
-            data[date] = data[date]! + record.value!;
-          } else {
-            data[date] = record.value!;
-          }
-        });
-      }
-    } else {
-      //plain
-      // range = DateTimeRange(
-      //     start: getDate(records[0].endTime!),
-      //     end: getDate(records.last.endTime!));
-      if (getSelected(isSelected) == 0) {
-        toolTipUnit = "次数";
-        //得到次数统计信息
-        records.forEach((record) {
-          var date = getDate(record.endTime!); //因为没有startTime
-          if (data.containsKey(date)) {
-            data[date] = data[date]! + 1;
-          } else {
-            data[date] = 1;
-          } //转换为数值
-        });
-      } else {
-        //得到数值统计信息
-        toolTipUnit = widget.event.unit!;
-        records.forEach((record) {
-          var date = getDate(record.endTime!); //因为没有startTime
-          if (data.containsKey(date)) {
-            data[date] = data[date]! + record.value!;
-          } else {
-            data[date] = record.value!;
-          } //转换为数值
-        });
-      }
-    }
-    return {"range": range, "data": data};
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
   }
 
   Widget getEventDescWidget() {
@@ -155,7 +93,15 @@ class _EventDetailsState extends State<EventDetails> {
           switch (snapshot.connectionState) {
             case ConnectionState.done:
               List<Record> records = snapshot.data!;
-              var dataForHeatMap = processRecord(records);
+              final selectedIndex = getSelected(isSelected);
+              final selectedMetric =
+                  metricForActivitySelection(widget.event, selectedIndex);
+              final heatMapSeries = buildActivityHeatmapSeries(
+                records: records,
+                activity: widget.event,
+                metric: selectedMetric,
+                now: DateTime.now(),
+              );
               List<Record> recordsOfMonth = [];
               List<Widget> toggleChildren =
                   toggleTexts.map((e) => Text(e)).toList();
@@ -165,7 +111,7 @@ class _EventDetailsState extends State<EventDetails> {
                 numOfRecords = records.length;
                 heading = "共进行";
               } else {
-                recordsOfMonth = getRecordPerMonth(records, month);
+                recordsOfMonth = recordsInMonth(records, month);
                 numOfRecords = recordsOfMonth.length;
                 heading = month.month.toString() + "月共进行";
               }
@@ -179,19 +125,19 @@ class _EventDetailsState extends State<EventDetails> {
                 children: [
                   Center(
                       child: Text(
-                    "统计数据 - " + toggleTexts[getSelected(isSelected)],
+                    "统计数据 - " + toggleTexts[selectedIndex],
                     style: chartTitleStyle,
                   )),
                   Container(
                     margin: EdgeInsets.symmetric(horizontal: 5),
                     width: double.infinity,
                     child: SingleChildScrollView(
-                      controller: _c,
+                      controller: _scrollController,
                       scrollDirection: Axis.horizontal,
                       child: HeatMapCalendar(
-                        dateRange: dataForHeatMap['range'],
-                        input: dataForHeatMap['data'],
-                        unit: toolTipUnit,
+                        dateRange: heatMapSeries.range,
+                        input: heatMapSeries.data,
+                        unit: heatMapSeries.unit,
                       ),
                     ),
                   ),
@@ -241,12 +187,13 @@ class _EventDetailsState extends State<EventDetails> {
                       ]),
                 ],
               );
-              // _c.jumpTo(value)
               var barChart;
               if (recordsOfMonth.isNotEmpty) {
-                barChart = getTimeSlotsBar(recordsOfMonth, widget.event);
+                barChart = getTimeSlotsBar(
+                    recordsOfMonth, widget.event, selectedMetric);
               } else {
-                barChart = getTimeSlotsBar(records, widget.event);
+                barChart =
+                    getTimeSlotsBar(records, widget.event, selectedMetric);
               }
               List<Widget> charts = [heatMap, barChart];
               charts = charts
@@ -358,12 +305,7 @@ class _EventDetailsState extends State<EventDetails> {
   Widget getDayRecordsWidgets(
       List<Record> records, DateTime time, BaseEventModel event) {
     List<Widget> tiles = [];
-    records = records
-        .where((element) =>
-            element.endTime!.month == time.month &&
-            element.endTime!.year == time.year &&
-            element.endTime!.day == time.day)
-        .toList(); //只保留本日的记录，
+    records = recordsOnDay(records, time);
     if (records.isEmpty) return Text("当日无记录");
     records.forEach((record) {
       if (event is TimingEventModel) {
@@ -404,55 +346,24 @@ class _EventDetailsState extends State<EventDetails> {
             }));
   }
 
-  List<Record> getRecordPerMonth(List<Record> records, DateTime month) {
-    records = records
-        .where((element) =>
-            element.endTime!.month == month.month &&
-            element.endTime!.year == month.year)
-        .toList(); //只保留本月的记录，
-    return records;
-  }
-
-  Widget getTimeSlotsBar(List<Record> records, BaseEventModel event) {
+  Widget getTimeSlotsBar(
+    List<Record> records,
+    BaseEventModel event,
+    ActivityDetailMetric metric,
+  ) {
     List<BarChartGroupData> bars = [];
-    List<double> data = List.filled(24, 0); //次数、时长（分钟）、物理量
-    if (widget.event is TimingEventModel) {
-      if (getSelected(isSelected) == 0) {
-        //得到时长统计信息
-        List<DateTimeRange> ranges = [
-          for (Record record in records)
-            DateTimeRange(start: record.startTime!, end: record.endTime!)
-        ];
-        data = getTimeSlotSumTime(ranges);
-        double maxVal = data.reduce(max);
-        //原始是秒
-        //不让y轴显示200以上的值
-        if (maxVal <= 500) {
-        } else {
-          if (maxVal <= 500 * 60) {
-            data = data.map((e) => e / 60).toList();
-          } else {
-            data = data.map((e) => e / 3600).toList();
-          }
-        }
-      } else {
-        data = getTimeSlotSumVal(records);
-      }
-    } else {
-      //plain
-      if (getSelected(isSelected) == 0) {
-        data = getTimeSlotSumNum(records);
-      } else {
-        data = getTimeSlotSumVal(records);
-      }
-    }
+    final timeSlotSeries = buildActivityTimeSlotSeries(
+      records: records,
+      activity: event,
+      metric: metric,
+    );
+    final data = timeSlotSeries.hourlyValues;
     List<double> processedData = [];
     double maxVal = 0;
     if (MediaQuery.of(context).orientation == Orientation.portrait) {
-      for (int i = 0; i < 12; i++) {
-        double val = data[i * 2] + data[i * 2 + 1];
+      processedData = combineAdjacentHourSlots(data);
+      for (final val in processedData) {
         if (val > maxVal) maxVal = val;
-        processedData.add(val);
       }
       for (int i = 0; i < 12; i++) {
         bars.add(BarChartGroupData(x: i * 2, barRods: [

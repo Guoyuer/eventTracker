@@ -60,10 +60,11 @@ Remaining:
 
 ## Phase 3: Domain Model and Aggregation
 
-Status: pending
+Status: in progress
 
 - Extract activity display models and event status logic out of generated persistence files.
-- Move heatmap and time-slot aggregation out of Widgets into pure Dart modules.
+- Moved activity detail heatmap and time-slot aggregation out of Widgets into `activity_detail_analytics.dart`.
+- Move statistics aggregation out of Widgets into pure Dart modules.
 - Replace `eventId = -1` step records with a clearer step-specific persistence model or document an ADR if retained.
 - Define invariants for timed records, plain records, values, and units.
 
@@ -108,7 +109,7 @@ Benefits: Higher locality for data bugs, better leverage for tests, and less dat
 
 ### Strong: Analytics Module
 
-Files: `lib/EventsDetails/eventDetails.dart`, `lib/EventsDetails/util.dart`, `lib/Statistics/statistics.dart`, `lib/heatmap_calendar/`.
+Files: `lib/EventsDetails/eventDetails.dart`, `lib/analytics/activity_detail_analytics.dart`, `lib/Statistics/statistics.dart`, `lib/heatmap_calendar/`.
 
 Problem: Widgets compute domain aggregates directly, so chart bugs require widget tests and UI files are hard to understand.
 
