@@ -27,15 +27,20 @@ class DBHandle {
   }
 }
 
-@DriftDatabase(tables: [Units, Events, Records, Steps, StepOffset], include: {'SQL.moor'})
+@DriftDatabase(
+    tables: [Units, Events, Records, Steps, StepOffset], include: {'SQL.moor'})
 class AppDatabase extends _$AppDatabase {
-  AppDatabase() : super(SqfliteQueryExecutor.inDatabaseFolder(path: "db.sqlite", logStatements: false));
+  AppDatabase([QueryExecutor? executor])
+      : super(executor ??
+            SqfliteQueryExecutor.inDatabaseFolder(
+                path: "db.sqlite", logStatements: false));
 
   @override
   int get schemaVersion => 2;
 
   @override
-  MigrationStrategy get migration => MigrationStrategy(beforeOpen: (details) async {
+  MigrationStrategy get migration =>
+      MigrationStrategy(beforeOpen: (details) async {
         // var offset = await getStepOffset();
         // if (offset == null) {
         //   //便于后续操作，因为不是nullable
@@ -62,10 +67,14 @@ class AppDatabase extends _$AppDatabase {
 
   Future<List<Unit>> getAllUnits() => select(units).get();
 
-  Future addUnit(UnitsCompanion unit) => into(units).insert(unit).then((value) => value).catchError((err) => throw err);
+  Future addUnit(UnitsCompanion unit) => into(units)
+      .insert(unit)
+      .then((value) => value)
+      .catchError((err) => throw err);
 
   Future deleteUnit(UnitsCompanion unit) {
-    return (delete(units)..where((tbl) => tbl.name.equals(unit.name.value))).go();
+    return (delete(units)..where((tbl) => tbl.name.equals(unit.name.value)))
+        .go();
   }
 
   //////////////////////////////////record相关///////////////////////////////////
@@ -74,21 +83,29 @@ class AppDatabase extends _$AppDatabase {
 
   ///得到recordId对应的整个record
   Future<Record> getRecordById(int id) async {
-    var record = await (select(records)..where((tbl) => tbl.id.equals(id))).getSingle();
+    var record =
+        await (select(records)..where((tbl) => tbl.id.equals(id))).getSingle();
     return record;
   }
 
   Future<List<Record>> getRecordsInRange(DateTimeRange range) {
     DateTime start = range.start;
     DateTime end = range.end;
-    return (select(records)..where((tbl) => tbl.endTime.isBetweenValues(start, end) & tbl.eventId.equals(-1).not()))
+    return (select(records)
+          ..where((tbl) =>
+              tbl.endTime.isBetweenValues(start, end) &
+              tbl.eventId.equals(-1).not()))
         .get();
   }
 
-  Future<List<Record>> getEventRecordsInRange(int eventId, DateTimeRange range) {
+  Future<List<Record>> getEventRecordsInRange(
+      int eventId, DateTimeRange range) {
     DateTime start = range.start;
     DateTime end = range.end;
-    return (select(records)..where((tbl) => tbl.endTime.isBetweenValues(start, end) & tbl.eventId.equals(eventId)))
+    return (select(records)
+          ..where((tbl) =>
+              tbl.endTime.isBetweenValues(start, end) &
+              tbl.eventId.equals(eventId)))
         .get();
   }
 
@@ -102,7 +119,9 @@ class AppDatabase extends _$AppDatabase {
 
   ///得到eventId对应事件的LastRecordId
   Future<int> getLastRecordId(int eventId) async {
-    Event event = await (select(events)..where((event) => event.id.equals(eventId))).getSingle();
+    Event event = await (select(events)
+          ..where((event) => event.id.equals(eventId)))
+        .getSingle();
     return event.lastRecordId!;
   }
 
@@ -118,29 +137,36 @@ class AppDatabase extends _$AppDatabase {
   Future addPlainRecordInDB(RecordsCompanion record) async {
     assert(record.endTime != Value.absent());
     assert(record.eventId != Value.absent());
-    int recordId = await into(records).insert(record);
     int eventId = record.eventId.value;
     return transaction(() async {
-      await customUpdate(
-          "update events set sum_time = sum_time + 1, last_record_id = $recordId where id = $eventId"); //step 1 更新Events的lastRecordId和sumTime
-      if (record.value.value != null && record.value.value != 0) {
-        double val = record.value.value!;
-        await customUpdate(
-            "update events set sum_val = sum_val + $val where id = $eventId"); //step 2 有值才更新Events的sumVal
-      }
+      int recordId = await into(records).insert(record);
+      final event = await getEventById(eventId);
+      final nextValue = event.sumVal + (record.value.value ?? 0);
+
+      await (update(events)..where((tbl) => tbl.id.equals(eventId))).write(
+        EventsCompanion(
+          lastRecordId: Value(recordId),
+          sumTime: Value(event.sumTime + const Duration(seconds: 1)),
+          sumVal: Value(nextValue),
+        ),
+      );
     });
   }
 
   Future<int> startTimingRecordInDB(RecordsCompanion record) async {
     assert(record.startTime != Value.absent());
     assert(record.eventId != Value.absent());
-    int recordId = await into(records).insert(record);
     int eventId = record.eventId.value;
-    customUpdate("update events set last_record_id = $recordId where id = $eventId");
-    return recordId;
+    return transaction(() async {
+      int recordId = await into(records).insert(record);
+      await (update(events)..where((tbl) => tbl.id.equals(eventId)))
+          .write(EventsCompanion(lastRecordId: Value(recordId)));
+      return recordId;
+    });
   }
 
-  Future stopTimingRecordInDB(Duration thisDuration, RecordsCompanion record) async {
+  Future stopTimingRecordInDB(
+      Duration thisDuration, RecordsCompanion record) async {
     assert(record.id != Value.absent());
     assert(record.eventId != Value.absent());
     assert(record.endTime != Value.absent());
@@ -148,44 +174,55 @@ class AppDatabase extends _$AppDatabase {
     int recordId = record.id.value;
     return transaction(() async {
       await (update(records)..where((record) => record.id.equals(recordId)))
-          .write(RecordsCompanion(endTime: record.endTime, value: record.value));
+          .write(
+              RecordsCompanion(endTime: record.endTime, value: record.value));
 
-      Duration sumTime = await getEventSumTime(eventId);
-      sumTime += thisDuration;
-      await (update(events)..where((event) => event.id.equals(eventId)))
-          .write(EventsCompanion(sumTime: Value(sumTime)));
+      final event = await getEventById(eventId);
+      final nextValue = event.sumVal + (record.value.value ?? 0);
 
-      if (record.value != Value.absent() && record.value.value != 0) {
-        double val = record.value.value!;
-        await customUpdate("update events set sum_val = sum_val + $val where id = $eventId");
-      }
+      await (update(events)..where((event) => event.id.equals(eventId))).write(
+        EventsCompanion(
+          sumTime: Value(event.sumTime + thisDuration),
+          sumVal: Value(nextValue),
+        ),
+      );
     });
   }
 
   Future deleteActiveTimingRecordInDB(int recordId, int eventId) async {
-    (delete(records)..where((tbl) => tbl.id.equals(recordId))).go(); //step1 删除recordId对应记录
+    return transaction(() async {
+      await (delete(records)..where((tbl) => tbl.id.equals(recordId)))
+          .go(); //step1 删除recordId对应记录
 
-    Record? formerRecord = await (select(records) //step2: 在records表里找到对应Event的当前最新记录（即之前的次新记录）
-          ..where((tbl) => tbl.eventId.equals(eventId))
-          ..orderBy([(t) => OrderingTerm(expression: t.startTime, mode: OrderingMode.desc)])
-          ..limit(1))
-        .getSingleOrNull();
-    var lastRecordId;
-    if (formerRecord == null) {
-      lastRecordId = Value(null);
-    } else {
-      lastRecordId = Value(formerRecord.id);
-    }
+      Record? formerRecord =
+          await (select(records) //step2: 在records表里找到对应Event的当前最新记录（即之前的次新记录）
+                ..where((tbl) => tbl.eventId.equals(eventId))
+                ..orderBy([
+                  (t) => OrderingTerm(
+                      expression: t.startTime, mode: OrderingMode.desc)
+                ])
+                ..limit(1))
+              .getSingleOrNull();
+      Value<int?> lastRecordId;
+      if (formerRecord == null) {
+        lastRecordId = Value(null);
+      } else {
+        lastRecordId = Value(formerRecord.id);
+      }
 
-    (update(events)..where((tbl) => tbl.id.equals(eventId))) //step3: 更新Event row的lastRecordId
-        .write(EventsCompanion(lastRecordId: lastRecordId));
+      await (update(events)
+            ..where((tbl) =>
+                tbl.id.equals(eventId))) //step3: 更新Event row的lastRecordId
+          .write(EventsCompanion(lastRecordId: lastRecordId));
+    });
   }
 
   ///////////////////////////////////////event相关///////////////////////////////////
   ///////////////////event.get类
 
   Future<Event> getEventById(int eventId) async {
-    return await (select(events)..where((tbl) => tbl.id.equals(eventId))).getSingle();
+    return await (select(events)..where((tbl) => tbl.id.equals(eventId)))
+        .getSingle();
   }
 
   Future<String?> getEventDesc(int eventId) async {
@@ -194,7 +231,8 @@ class AppDatabase extends _$AppDatabase {
   }
 
   Future<Duration> getEventSumTime(int eventId) async {
-    Event event = await (select(events)..where((tbl) => tbl.id.equals(eventId))).getSingle();
+    Event event = await (select(events)..where((tbl) => tbl.id.equals(eventId)))
+        .getSingle();
     return event.sumTime;
   }
 
@@ -204,9 +242,12 @@ class AppDatabase extends _$AppDatabase {
   //   return query.map((row) => row.read(events.sumVal)).getSingle();
   // }
   Future<DateTime> getEventStartTime(int eventId) async {
-    Event event = await (select(events)..where((tbl) => tbl.id.equals(eventId))).getSingle();
+    Event event = await (select(events)..where((tbl) => tbl.id.equals(eventId)))
+        .getSingle();
     int lastRecordId = event.lastRecordId!;
-    Record record = await (select(records)..where((tbl) => tbl.id.equals(lastRecordId))).getSingle();
+    Record record = await (select(records)
+          ..where((tbl) => tbl.id.equals(lastRecordId)))
+        .getSingle();
     return record.startTime!;
   }
 
@@ -233,20 +274,22 @@ class AppDatabase extends _$AppDatabase {
 
   ///返回成功或失败
   Future<int> addEventInDB(EventsCompanion event) async {
-    return into(events).insert(event).then((value) => value).catchError((err) => throw err);
+    return into(events)
+        .insert(event)
+        .then((value) => value)
+        .catchError((err) => throw err);
   }
 
   Future updateEventDescription(int eventId, String desc) {
-    return (update(events)..where((tbl) => tbl.id.equals(eventId))).write(EventsCompanion(description: Value(desc)));
+    return (update(events)..where((tbl) => tbl.id.equals(eventId)))
+        .write(EventsCompanion(description: Value(desc)));
   }
 
   Future deleteEvent(int eventId) async {
-    delete(events)
-      ..where((tbl) => tbl.id.equals(eventId))
-      ..go();
-    return delete(records)
-      ..where((tbl) => tbl.eventId.equals(eventId))
-      ..go();
+    return transaction(() async {
+      await (delete(records)..where((tbl) => tbl.eventId.equals(eventId))).go();
+      await (delete(events)..where((tbl) => tbl.id.equals(eventId))).go();
+    });
   }
 
   Future _eventProcessor(Event rawEvent) async {
@@ -273,13 +316,27 @@ class AppDatabase extends _$AppDatabase {
           status = EventStatus.notActive;
         }
       }
-      return TimingEventModel(rawEvent.id, rawEvent.name, rawEvent.unit, status, sumTime, startTime, sumVal,
-          rawEvent.description, rawEvent.lastRecordId);
+      return TimingEventModel(
+          rawEvent.id,
+          rawEvent.name,
+          rawEvent.unit,
+          status,
+          sumTime,
+          startTime,
+          sumVal,
+          rawEvent.description,
+          rawEvent.lastRecordId);
     }
 
     Future<PlainEventModel> plainEventProcessor(Event rawEvent) async {
-      return PlainEventModel(rawEvent.id, rawEvent.name, rawEvent.unit, rawEvent.sumTime.inSeconds, rawEvent.sumVal,
-          rawEvent.description, rawEvent.lastRecordId);
+      return PlainEventModel(
+          rawEvent.id,
+          rawEvent.name,
+          rawEvent.unit,
+          rawEvent.sumTime.inSeconds,
+          rawEvent.sumVal,
+          rawEvent.description,
+          rawEvent.lastRecordId);
     }
 
     if (rawEvent.careTime)
@@ -301,7 +358,8 @@ class AppDatabase extends _$AppDatabase {
 ///////////////////////////////////////steps相关///////////////////////////////////
 ///////////////////offset相关
   Future<StepOffsetData?> getStepOffset() {
-    return (select(stepOffset)..where((tbl) => tbl.id.equals(1))).getSingleOrNull();
+    return (select(stepOffset)..where((tbl) => tbl.id.equals(1)))
+        .getSingleOrNull();
   }
 
   Future updateStepOffset(int step, DateTime time) {
@@ -310,27 +368,28 @@ class AppDatabase extends _$AppDatabase {
   }
 
   Future writeStepOffset(int step, DateTime time) {
-    return into(stepOffset).insert(StepOffsetCompanion(id: Value(1), step: Value(step), time: Value(nilTime)));
+    return into(stepOffset).insert(StepOffsetCompanion(
+        id: Value(1), step: Value(step), time: Value(nilTime)));
   }
 
   ///////////////////step相关
   Future writeStep(int step, DateTime time) {
-    return into(steps).insert(StepsCompanion(step: Value(step), time: Value(time)));
+    return into(steps)
+        .insert(StepsCompanion(step: Value(step), time: Value(time)));
   }
 
   Future<Step?> getLatestStep() async {
-    var tmp = await customSelect("select max(id) as id from steps").getSingleOrNull();
-    if (tmp != null) {
-      int id = tmp.data['id'];
-      return (select(steps)..where((tbl) => tbl.id.equals(id))).getSingleOrNull();
-    } else {
-      return null;
-    }
+    return (select(steps)
+          ..orderBy([(tbl) => OrderingTerm.desc(tbl.id)])
+          ..limit(1))
+        .getSingleOrNull();
   }
 
 ///////////////////step相关
   Future writeDailyStep(int step, DateTime time) {
-    return into(records)
-        .insert(RecordsCompanion(eventId: Value(-1), endTime: Value(time), value: Value(step.toDouble())));
+    return into(records).insert(RecordsCompanion(
+        eventId: Value(-1),
+        endTime: Value(time),
+        value: Value(step.toDouble())));
   }
 }

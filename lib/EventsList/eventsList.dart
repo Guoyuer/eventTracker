@@ -3,12 +3,12 @@ import 'dart:async';
 import 'package:flutter/material.dart' hide DatePickerTheme;
 // import 'package:flutter_datetime_picker/flutter_datetime_picker.dart' show DatePickerTheme;
 // import 'package:drift_sqflite/drift_sqflite.dart' hide Column;
-import 'package:drift/drift.dart' hide Column;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../stateProviders.dart';
 import '../DAO/base.dart';
 import '../common/commonWidget.dart';
 import '../common/const.dart';
+import '../persistence/activity_repository.dart';
 
 part 'util.dart';
 
@@ -18,9 +18,11 @@ class EventList extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     ScrollController _c = ScrollController();
-    Future<List<BaseEventModel>> _events = DBHandle().db.getEventsProfile();
+    Future<List<BaseEventModel>> _events = activityRepository().getActivities();
     _c.addListener(() {
-      ref.read(eventListScrollDirProvider.notifier).update((state) => state = _c.position.userScrollDirection);
+      ref
+          .read(eventListScrollDirProvider.notifier)
+          .update((state) => state = _c.position.userScrollDirection);
     });
     return FutureBuilder<List<BaseEventModel>>(
         future: _events,
@@ -42,7 +44,8 @@ class EventList extends ConsumerWidget {
                   controller: _c,
                   itemCount: events.length,
                   itemBuilder: (ctx, idx) {
-                    return EventDataHolder(event: events[idx], child: EventTile());
+                    return EventDataHolder(
+                        event: events[idx], child: EventTile());
                     // return EventTile(data[idx]['id'],data[idx]['name'], true, false);
                   });
 
@@ -117,12 +120,13 @@ class EventTileButton extends StatelessWidget {
           );
         });
       case EventStatus.active:
-        return eventListButton(Icon(Icons.stop_circle_outlined), Text("停止"), () {
+        return eventListButton(Icon(Icons.stop_circle_outlined), Text("停止"),
+            () {
           stopTimingRecord(context, DateTime.now());
         }, () async {
           showToast("长按 -- 手动指定停止时间");
-          var db = DBHandle().db;
-          DateTime startTime = await db.getEventStartTime(event.id);
+          DateTime startTime =
+              await activityRepository().getActivityStartTime(event.id);
           var fiveSeconds = Duration(seconds: 5);
           Duration thisDuration = DateTime.now().difference(startTime);
           if (thisDuration.compareTo(fiveSeconds) < 0) {
@@ -150,7 +154,8 @@ class EventTileButton extends StatelessWidget {
           }
         });
       default:
-        return eventListButton(Icon(Icons.help_outline_rounded), Text("???"), () {});
+        return eventListButton(
+            Icon(Icons.help_outline_rounded), Text("???"), () {});
     }
   }
 }
@@ -158,7 +163,8 @@ class EventTileButton extends StatelessWidget {
 class EventDataHolder extends InheritedWidget {
   final BaseEventModel event;
 
-  EventDataHolder({required this.event, required Widget child}) : super(child: child);
+  EventDataHolder({required this.event, required Widget child})
+      : super(child: child);
 
   @override
   bool updateShouldNotify(EventDataHolder oldWidget) {
@@ -175,7 +181,8 @@ class EventTile extends StatefulWidget {
   _EventTileState createState() => new _EventTileState();
 }
 
-class _EventTileState extends State<EventTile> with SingleTickerProviderStateMixin {
+class _EventTileState extends State<EventTile>
+    with SingleTickerProviderStateMixin {
   late final Animation<double> animation;
   late final AnimationController _controller;
   late final int second; //渐变时长
@@ -183,7 +190,9 @@ class _EventTileState extends State<EventTile> with SingleTickerProviderStateMix
     super.initState();
     second = 1;
     _controller = new AnimationController(
-        duration: Duration(seconds: second), reverseDuration: Duration(seconds: second), vsync: this)
+        duration: Duration(seconds: second),
+        reverseDuration: Duration(seconds: second),
+        vsync: this)
       ..repeat(reverse: true);
 
     animation = CurvedAnimation(parent: _controller, curve: Curves.easeIn);
@@ -214,10 +223,12 @@ class _EventTileState extends State<EventTile> with SingleTickerProviderStateMix
           eventInfo = Column(children: [
             Align(
                 alignment: Alignment.centerLeft,
-                child: Text(sumTimeStr, style: TextStyle(color: Colors.grey[600], fontSize: 14))),
+                child: Text(sumTimeStr,
+                    style: TextStyle(color: Colors.grey[600], fontSize: 14))),
             Align(
                 alignment: Alignment.centerLeft,
-                child: Text(sumValStr, style: TextStyle(color: Colors.grey[600], fontSize: 14))),
+                child: Text(sumValStr,
+                    style: TextStyle(color: Colors.grey[600], fontSize: 14))),
           ]);
         } else {
           eventInfo = Align(
@@ -249,15 +260,18 @@ class _EventTileState extends State<EventTile> with SingleTickerProviderStateMix
         eventInfo = Column(children: [
           Align(
               alignment: Alignment.centerLeft,
-              child: Text(sumTimeStr, style: TextStyle(color: Colors.grey[600], fontSize: 14))),
+              child: Text(sumTimeStr,
+                  style: TextStyle(color: Colors.grey[600], fontSize: 14))),
           Align(
               alignment: Alignment.centerLeft,
-              child: Text(sumValStr, style: TextStyle(color: Colors.grey[600], fontSize: 14))),
+              child: Text(sumValStr,
+                  style: TextStyle(color: Colors.grey[600], fontSize: 14))),
         ]);
       } else {
         eventInfo = Align(
             alignment: Alignment.centerLeft,
-            child: Text(sumTimeStr, style: TextStyle(color: Colors.grey[600], fontSize: 14)));
+            child: Text(sumTimeStr,
+                style: TextStyle(color: Colors.grey[600], fontSize: 14)));
       }
     }
     return Card(
@@ -266,11 +280,15 @@ class _EventTileState extends State<EventTile> with SingleTickerProviderStateMix
         child: Stack(
           children: [
             Positioned.fill(
-                child: FadeTransition(opacity: animation, child: Container(color: const Color(0xaabeddf5)))),
+                child: FadeTransition(
+                    opacity: animation,
+                    child: Container(color: const Color(0xaabeddf5)))),
             InkWell(
               onTap: () async {
-                bool? deleted = await Navigator.of(context).pushNamed("EventDetails", arguments: event) as bool?;
-                if (deleted != null && deleted) ReloadEventsN().dispatch(context);
+                bool? deleted = await Navigator.of(context)
+                    .pushNamed("EventDetails", arguments: event) as bool?;
+                if (deleted != null && deleted)
+                  ReloadEventsN().dispatch(context);
               },
               child: Container(
                   margin: EdgeInsets.only(left: 10, top: 10),
@@ -293,7 +311,10 @@ class _EventTileState extends State<EventTile> with SingleTickerProviderStateMix
                     ],
                   )),
             ),
-            Positioned.fill(child: Container(alignment: Alignment.centerRight, child: EventTileButton())),
+            Positioned.fill(
+                child: Container(
+                    alignment: Alignment.centerRight,
+                    child: EventTileButton())),
           ],
         ));
   }

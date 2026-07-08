@@ -2,9 +2,8 @@ part of 'eventsList.dart';
 
 void startTimingRecord(BuildContext context, DateTime now) {
   int eventId = EventDataHolder.of(context).event.id;
-  DBHandle()
-      .db
-      .startTimingRecordInDB((RecordsCompanion(startTime: Value(now), eventId: Value(eventId))))
+  activityRepository()
+      .startTimedRecord(eventId, now)
       .then((_) => ReloadEventsN().dispatch(context));
 }
 
@@ -54,7 +53,7 @@ Future addPlainRecord(BuildContext context, DateTime time) async {
   int eventId = EventDataHolder.of(context).event.id;
   //判断是否有unit
 
-  String? unit = await DBHandle().db.getEventUnit(eventId);
+  String? unit = await activityRepository().getActivityUnit(eventId);
 
   double? val;
   if (unit != null) {
@@ -62,9 +61,8 @@ Future addPlainRecord(BuildContext context, DateTime time) async {
     val = await inputValDialog(context, unit);
     if (val == null) return; // 对话框点了取消，不记录
   }
-  DBHandle()
-      .db
-      .addPlainRecordInDB((RecordsCompanion(value: Value(val), endTime: Value(time), eventId: Value(eventId))))
+  activityRepository()
+      .addPlainRecord(eventId, time, value: val)
       .then((_) => ReloadEventsN().dispatch(context));
 }
 
@@ -72,10 +70,10 @@ Future addPlainRecord(BuildContext context, DateTime time) async {
 Future stopTimingRecord(BuildContext context, DateTime time) async {
   int eventId = EventDataHolder.of(context).event.id;
 
-  var db = DBHandle().db;
-  int recordId = await db.getLastRecordId(eventId);
+  final repository = activityRepository();
+  int recordId = await repository.getLastRecordId(eventId);
 
-  DateTime startTime = await db.getStartTime(recordId);
+  DateTime startTime = await repository.getActivityStartTime(eventId);
   var fiveSeconds = Duration(seconds: 5);
   Duration thisDuration = DateTime.now().difference(startTime);
   if (thisDuration.compareTo(fiveSeconds) < 0) {
@@ -86,13 +84,17 @@ Future stopTimingRecord(BuildContext context, DateTime time) async {
           return AlertDialog(
             title: Text("时间不足5s，删除该记录还是继续？"),
             actions: [
-              TextButton(onPressed: () => Navigator.of(context).pop(true), child: Text("删除")),
-              TextButton(onPressed: () => Navigator.of(context).pop(false), child: Text("继续"))
+              TextButton(
+                  onPressed: () => Navigator.of(context).pop(true),
+                  child: Text("删除")),
+              TextButton(
+                  onPressed: () => Navigator.of(context).pop(false),
+                  child: Text("继续"))
             ],
           );
         });
     if (delete) {
-      db.deleteActiveTimingRecordInDB(recordId, eventId).then((_) {
+      repository.deleteActiveTimedRecord(eventId, recordId).then((_) {
         ReloadEventsN().dispatch(context);
       });
       return;
@@ -102,16 +104,15 @@ Future stopTimingRecord(BuildContext context, DateTime time) async {
     }
   } else {
     //该任务距开始超过5s，进行正常停止操作
-    String? unit = await DBHandle().db.getEventUnit(eventId);
+    String? unit = await repository.getActivityUnit(eventId);
     double? val = 0;
     if (unit != null) {
       val = await inputValDialog(context, unit);
       if (val == null) return;
     }
 
-    db
-        .stopTimingRecordInDB(thisDuration,
-            RecordsCompanion(id: Value(recordId), eventId: Value(eventId), endTime: Value(time), value: Value(val)))
+    repository
+        .stopTimedRecord(eventId, recordId, time, thisDuration, value: val)
         .then((_) => ReloadEventsN().dispatch(context));
   }
 }

@@ -1,12 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
-import 'package:flutter/foundation.dart'
-    show TargetPlatform, defaultTargetPlatform, kIsWeb;
 import 'package:event_tracker/StepCount/stepStatistics.dart';
 import 'package:event_tracker/settingPage.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:share/share.dart';
 import 'EventsDetails/eventDetails.dart';
 import 'EventsList/eventsList.dart';
 import 'Statistics/statistics.dart';
@@ -14,33 +11,13 @@ import 'Statistics/statistics.dart';
 import 'UnitManager/unitsManagerPage.dart';
 import 'eventEditor.dart';
 import 'common/const.dart';
-import 'package:firebase_core/firebase_core.dart';
-import 'firebase_options.dart';
 import 'stateProviders.dart';
-import 'package:sqflite_common_ffi/sqflite_ffi.dart';
+import 'bootstrap/app_bootstrap.dart';
 
 void main() async {
-  WidgetsFlutterBinding.ensureInitialized();
-  if (_usesSqfliteFfiOnCurrentPlatform) {
-    sqfliteFfiInit();
-    databaseFactory = databaseFactoryFfi;
-  }
-
-  if (_supportsFirebaseOnCurrentPlatform) {
-    await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
-  }
+  await bootstrapApp();
   runApp(ProviderScope(child: EventTracker()));
 }
-
-bool get _supportsFirebaseOnCurrentPlatform =>
-    kIsWeb ||
-    defaultTargetPlatform == TargetPlatform.android ||
-    defaultTargetPlatform == TargetPlatform.iOS;
-
-bool get _usesSqfliteFfiOnCurrentPlatform =>
-    defaultTargetPlatform == TargetPlatform.windows ||
-    defaultTargetPlatform == TargetPlatform.linux ||
-    defaultTargetPlatform == TargetPlatform.macOS;
 
 class EventTracker extends StatelessWidget {
   @override
@@ -80,7 +57,8 @@ class FAB extends ConsumerWidget {
         child: FloatingActionButton(
             child: Icon(Icons.note_add_rounded),
             onPressed: () async {
-              var added = await Navigator.of(parentContext).pushNamed("eventEditor");
+              var added =
+                  await Navigator.of(parentContext).pushNamed("eventEditor");
               if (added != null) {
                 ReloadEventsN().dispatch(parentContext);
               }
@@ -114,7 +92,8 @@ class MainPage extends ConsumerWidget {
             if (notification is ReloadEventsN) {
               debugPrint("refresh!!!");
               Navigator.pop(context, true);
-              Navigator.push(context, MaterialPageRoute(builder: (ctx) => MainPage()));
+              Navigator.push(
+                  context, MaterialPageRoute(builder: (ctx) => MainPage()));
             }
             return true;
           }),
@@ -123,14 +102,20 @@ class MainPage extends ConsumerWidget {
           // 底部导航
           type: BottomNavigationBarType.fixed,
           items: <BottomNavigationBarItem>[
-            BottomNavigationBarItem(icon: Icon(Icons.event_note_rounded), label: bottomLabels[0]),
-            BottomNavigationBarItem(icon: Icon(Icons.pie_chart_outline_rounded), label: bottomLabels[1]),
-            BottomNavigationBarItem(icon: Icon(Icons.settings), label: bottomLabels[2]),
+            BottomNavigationBarItem(
+                icon: Icon(Icons.event_note_rounded), label: bottomLabels[0]),
+            BottomNavigationBarItem(
+                icon: Icon(Icons.pie_chart_outline_rounded),
+                label: bottomLabels[1]),
+            BottomNavigationBarItem(
+                icon: Icon(Icons.settings), label: bottomLabels[2]),
           ],
           currentIndex: selectedIdx,
           fixedColor: Colors.blue,
           onTap: (index) {
-            ref.read(selectedIndexProvider.notifier).update((state) => state = index);
+            ref
+                .read(selectedIndexProvider.notifier)
+                .update((state) => state = index);
           }),
     );
   }

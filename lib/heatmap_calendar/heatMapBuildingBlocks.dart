@@ -15,7 +15,8 @@ class HeatMapDisplay extends StatelessWidget {
     List<DateTimeRange> yearRanges = split2year(dateRange);
     List<Widget> years = [];
     yearRanges.forEach((element) {
-      years.add(YearTile(DateTimeRange(start: element.start, end: element.end)));
+      years
+          .add(YearTile(DateTimeRange(start: element.start, end: element.end)));
     });
     return Row(mainAxisSize: MainAxisSize.min, children: years);
   }
@@ -34,7 +35,8 @@ class YearTile extends StatelessWidget {
     List<DateTimeRange> monthRanges = split2month(dateRange);
     List<Widget> months = [];
     monthRanges.forEach((element) {
-      months.add(MonthTile(DateTimeRange(start: element.start, end: element.end)));
+      months.add(
+          MonthTile(DateTimeRange(start: element.start, end: element.end)));
     });
     return Container(
       // width: 500,
@@ -62,10 +64,12 @@ class MonthTile extends StatelessWidget {
     DateTime end = dateRange.end;
     List<Widget> weeks = [];
     weekdayRanges.forEach((element) {
-      weeks.add(WeekTile(DateTimeRange(start: element.start, end: element.end)));
+      weeks
+          .add(WeekTile(DateTimeRange(start: element.start, end: element.end)));
     });
     int daysInMonth = DateUtils.getDaysInMonth(end.month, end.year); //end的最后一天
-    DateTime lastDay = DateTime(end.year, end.month).add(Duration(days: daysInMonth - 1));
+    DateTime lastDay =
+        DateTime(end.year, end.month).add(Duration(days: daysInMonth - 1));
 
     if (end.weekday == DateTime.saturday && end.compareTo(lastDay) == 0) {
       weeks.add(WeekTile(DateTimeRange(start: nilTime, end: nilTime)));
@@ -79,7 +83,8 @@ class MonthTile extends StatelessWidget {
           children: [
             Container(
                 //同个Month的Tile
-                width: weeks.length * (setting.dayTileSize + setting.dayTileMargin) +
+                width: weeks.length *
+                        (setting.dayTileSize + setting.dayTileMargin) +
                     (weeks.length - 1) * setting.monthTileMargin,
                 child: Row(
                   children: weeks,
@@ -108,7 +113,8 @@ class WeekTile extends StatelessWidget {
     int skipped = 0;
     for (int i = 0; i < 7; i++) {
       if (start <= i && i <= end) {
-        days.add(DayTile(date: dateRange.start.add(Duration(days: i - skipped))));
+        days.add(
+            DayTile(date: dateRange.start.add(Duration(days: i - skipped))));
       } else {
         skipped++;
         days.add(DayTile(date: nilTime));
@@ -167,9 +173,6 @@ class DayTile extends StatelessWidget {
   Widget build(BuildContext context) {
     HeatMapSetting setting = HeatMapDataHolder.of(context).setting;
     var date2level = HeatMapDataHolder.of(context).date2level;
-    var data = HeatMapDataHolder.of(context).data;
-    String? unit = HeatMapDataHolder.of(context).unit;
-    if (unit == null) unit = "";
     int level = date2level[date]!;
     if (date == nilTime) {
       //占位格子
@@ -178,18 +181,12 @@ class DayTile extends StatelessWidget {
         height: setting.dayTileSize,
         width: setting.dayTileSize,
         margin: EdgeInsets.all(setting.dayTileMargin / 2),
-        decoration: dayDecoration(setting.dayTileSize, setting.colorMap[level]!),
+        decoration:
+            dayDecoration(setting.dayTileSize, setting.colorMap[level]!),
       );
     } else {
-      String valStr;
-      if (data.containsKey(date)) {
-        valStr = data[date]!.toInt().toString();
-      } else {
-        valStr = "0";
-      }
       return InkWell(
         onTap: () {
-          // showToast("日期: $timeStr 值: $valStr $unit");
           DayTouchedN(day: date).dispatch(context);
         },
         child: Container(
@@ -197,7 +194,8 @@ class DayTile extends StatelessWidget {
           height: setting.dayTileSize,
           width: setting.dayTileSize,
           margin: EdgeInsets.all(setting.dayTileMargin / 2),
-          decoration: dayDecoration(setting.dayTileSize, setting.colorMap[level]!),
+          decoration:
+              dayDecoration(setting.dayTileSize, setting.colorMap[level]!),
         ),
       );
     }
