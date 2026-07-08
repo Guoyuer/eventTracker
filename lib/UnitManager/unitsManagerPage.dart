@@ -2,15 +2,14 @@ import 'dart:core';
 
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
-// import 'package:drift_sqflite/drift_sqflite.dart' hide Column;
-import 'package:drift/drift.dart' hide Column;
 
 import '../DAO/base.dart';
 import '../common/commonWidget.dart';
+import '../persistence/unit_repository.dart';
 
 // ignore: must_be_immutable
 class UnitsManager extends StatefulWidget {
-  UnitsManager();
+  const UnitsManager();
 
   @override
   _UnitsManagerState createState() => _UnitsManagerState();
@@ -18,12 +17,19 @@ class UnitsManager extends StatefulWidget {
 
 class _UnitsManagerState extends State<UnitsManager> {
   late Future<List<Unit>> _units;
-  TextEditingController controller = TextEditingController();
+  final TextEditingController _unitNameController = TextEditingController();
+  final UnitRepository _repository = unitRepository();
 
   @override
   void initState() {
     super.initState();
-    _units = DBHandle().db.getAllUnits();
+    _units = _repository.getUnits();
+  }
+
+  @override
+  void dispose() {
+    _unitNameController.dispose();
+    super.dispose();
   }
 
   @override
@@ -87,22 +93,37 @@ class _UnitsManagerState extends State<UnitsManager> {
                       contentPadding: EdgeInsets.symmetric(horizontal: 20),
                       title: Center(child: Text(units[idx].name)))),
               confirmDismiss: confirmDismissFunc,
-              onDismissed: (direction) {
-                DBHandle().db.deleteUnit(UnitsCompanion(name: Value(units[idx].name)));
-                setState(() {
-                  units.removeAt(idx);
-                });
-              },
+              onDismissed: (direction) => _deleteUnit(units[idx]),
             );
           },
         ),
         Container(
             padding: EdgeInsets.symmetric(horizontal: 100),
             child: myRaisedButton(Text("添加新单位"), () {
-              displayTextInputDialog(context, "请输入单位", addUnitButton, controller);
+              displayTextInputDialog(
+                  context, "请输入单位", addUnitButton, _unitNameController);
             }))
       ],
     );
+  }
+
+  Future<void> _deleteUnit(Unit unit) async {
+    try {
+      await _repository.deleteUnit(unit.name);
+      _refreshUnits();
+    } catch (_) {
+      showToast("删除失败");
+      _refreshUnits();
+    }
+  }
+
+  void _refreshUnits() {
+    if (!mounted) {
+      return;
+    }
+    setState(() {
+      _units = _repository.getUnits();
+    });
   }
 
   Future<bool> confirmDismissFunc(DismissDirection direction) async {
@@ -112,8 +133,12 @@ class _UnitsManagerState extends State<UnitsManager> {
           return AlertDialog(
             title: Text("是否删除该单位？"),
             actions: [
-              TextButton(onPressed: () => Navigator.of(context).pop(false), child: Text("取消")),
-              TextButton(onPressed: () => Navigator.of(context).pop(true), child: Text("删除"))
+              TextButton(
+                  onPressed: () => Navigator.of(context).pop(false),
+                  child: Text("取消")),
+              TextButton(
+                  onPressed: () => Navigator.of(context).pop(true),
+                  child: Text("删除"))
             ],
           );
         });
@@ -121,29 +146,29 @@ class _UnitsManagerState extends State<UnitsManager> {
 
   TextButton addUnitButton() {
     return TextButton(
-      // color: Colors.green,
-      // textColor: Colors.white,
       child: Text('添加'),
-      onPressed: controller.text.isEmpty
-          ? null
-          : () {
-              DBHandle().db.addUnit(UnitsCompanion(name: Value(controller.text))).then((value) {
-                setState(() {
-                  _units = DBHandle().db.getAllUnits();
-                });
-                controller.clear();
-                Navigator.pop(context); // 这句肯定要在最后
-              }).catchError((msg) {
-                Fluttertoast.showToast(
-                    msg: "添加失败，可能是因为重复",
-                    toastLength: Toast.LENGTH_SHORT,
-                    gravity: ToastGravity.CENTER,
-                    timeInSecForIosWeb: 1,
-                    backgroundColor: Colors.blueAccent,
-                    textColor: Colors.white,
-                    fontSize: 16.0);
-              });
-            },
+      onPressed: _unitNameController.text.isEmpty ? null : _addUnit,
     );
+  }
+
+  Future<void> _addUnit() async {
+    try {
+      await _repository.addUnit(_unitNameController.text);
+      _refreshUnits();
+      _unitNameController.clear();
+      if (!mounted) {
+        return;
+      }
+      Navigator.pop(context);
+    } catch (_) {
+      Fluttertoast.showToast(
+          msg: "添加失败，可能是因为重复",
+          toastLength: Toast.LENGTH_SHORT,
+          gravity: ToastGravity.CENTER,
+          timeInSecForIosWeb: 1,
+          backgroundColor: Colors.blueAccent,
+          textColor: Colors.white,
+          fontSize: 16.0);
+    }
   }
 }

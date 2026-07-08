@@ -5,6 +5,13 @@ import '../DAO/base.dart';
 abstract class ActivityRepository {
   Future<List<BaseEventModel>> getActivities();
 
+  Future<int> createActivity({
+    required String name,
+    required bool careTime,
+    String? unit,
+    String? description,
+  });
+
   Future<String?> getActivityUnit(int activityId);
 
   Future<DateTime> getActivityStartTime(int activityId);
@@ -38,6 +45,23 @@ class DriftActivityRepository implements ActivityRepository {
   @override
   Future<List<BaseEventModel>> getActivities() {
     return _db.getEventsProfile();
+  }
+
+  @override
+  Future<int> createActivity({
+    required String name,
+    required bool careTime,
+    String? unit,
+    String? description,
+  }) {
+    return _db.addEventInDB(
+      EventsCompanion(
+        name: Value(name),
+        careTime: Value(careTime),
+        unit: Value(unit),
+        description: Value(description),
+      ),
+    );
   }
 
   @override

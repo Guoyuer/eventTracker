@@ -1,34 +1,31 @@
 import 'package:flutter/material.dart';
 import 'package:event_tracker/common/commonWidget.dart';
 import 'DAO/base.dart';
-import 'package:drift/drift.dart' show Value;
+import 'persistence/activity_repository.dart';
+import 'persistence/unit_repository.dart';
 
 class EventEditor extends StatefulWidget {
-  EventEditor();
+  const EventEditor();
 
   @override
-  _EventEditorState createState() => new _EventEditorState();
+  _EventEditorState createState() => _EventEditorState();
 }
 
 class _EventEditorState extends State<EventEditor> {
-  // UnitsDbProvider dbUnit = UnitsDbProvider();
-  // EventsDbProvider dbEvent = EventsDbProvider();
-
-  // TextEditingController _eventNameController = new TextEditingController();
-  // TextEditingController _eventDiscController = new TextEditingController();
   late final Future<List<Unit>> _units;
   String? selectedUnit;
   bool careTime = true;
-  final _formKey = new GlobalKey<FormState>();
+  final _formKey = GlobalKey<FormState>();
 
-  // Map<String, dynamic> data = Map();
   late String name;
-  String? desc, unit;
+  String? desc;
+  final ActivityRepository _activityRepository = activityRepository();
+  final UnitRepository _unitRepository = unitRepository();
 
   @override
   void initState() {
     super.initState();
-    _units = DBHandle().db.getAllUnits();
+    _units = _unitRepository.getUnits();
   }
 
   @override
@@ -56,17 +53,18 @@ class _EventEditorState extends State<EventEditor> {
                             onSaved: (String? value) {
                               name = value!;
                             },
-                            // controller: _eventNameController,
                             autofocus: true,
-                            decoration:
-                                InputDecoration(hintText: "项目名称", prefixIcon: Icon(Icons.sticky_note_2_rounded)),
+                            decoration: InputDecoration(
+                                hintText: "项目名称",
+                                prefixIcon: Icon(Icons.sticky_note_2_rounded)),
                           ),
                           TextFormField(
                             onSaved: (String? value) {
                               desc = value;
                             },
-                            // controller: _eventDiscController,
-                            decoration: InputDecoration(hintText: "项目说明", prefixIcon: Icon(Icons.subject_rounded)),
+                            decoration: InputDecoration(
+                                hintText: "项目说明",
+                                prefixIcon: Icon(Icons.subject_rounded)),
                           ),
                           SwitchListTile(
                               title: Text("关注时长"),
@@ -87,12 +85,15 @@ class _EventEditorState extends State<EventEditor> {
                                   List<Unit> units = snapshot.data!;
                                   List<Widget> children = [];
                                   if (units.isEmpty) {
-                                    children.add(ListTile(title: Text("暂无单位，可到单位管理页面添加")));
+                                    children.add(ListTile(
+                                        title: Text("暂无单位，可到单位管理页面添加")));
                                   } else {
-                                    children.add(ListTile(title: Text("可选择单位：")));
+                                    children
+                                        .add(ListTile(title: Text("可选择单位：")));
                                   }
                                   var unitsList = ListView.builder(
-                                      physics: const NeverScrollableScrollPhysics(),
+                                      physics:
+                                          const NeverScrollableScrollPhysics(),
                                       shrinkWrap: true,
                                       itemCount: units.length,
                                       itemBuilder: (ctx, idx) {
@@ -117,25 +118,31 @@ class _EventEditorState extends State<EventEditor> {
                               }
                             })),
                     myRaisedButton(Text("保存"), () {
-                      if (_formKey.currentState!.validate()) {
-                        _formKey.currentState!.save();
-                        EventsCompanion event = EventsCompanion(
-                            name: Value(name),
-                            unit: Value(selectedUnit),
-                            description: Value(desc),
-                            careTime: Value(careTime));
-                        DBHandle()
-                            .db
-                            .addEventInDB(event)
-                            .then((value) => Navigator.pop(context, true))
-                            .catchError((err) {
-                          showToast("添加失败，可能是因为项目名重复！");
-                        });
-
-                        // Navigator.pop(context, event);
-                      }
+                      _saveActivity();
                     })
                   ],
                 ))));
+  }
+
+  Future<void> _saveActivity() async {
+    if (!_formKey.currentState!.validate()) {
+      return;
+    }
+
+    _formKey.currentState!.save();
+    try {
+      await _activityRepository.createActivity(
+        name: name,
+        unit: selectedUnit,
+        description: desc,
+        careTime: careTime,
+      );
+      if (!mounted) {
+        return;
+      }
+      Navigator.pop(context, true);
+    } catch (_) {
+      showToast("添加失败，可能是因为项目名重复！");
+    }
   }
 }

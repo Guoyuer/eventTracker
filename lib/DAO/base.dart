@@ -12,7 +12,7 @@ part 'model/displayModel.dart';
 // 实现单例模式
 
 class DBHandle {
-  static final DBHandle _ins = new DBHandle._internal();
+  static final DBHandle _ins = DBHandle._internal();
 
   DBHandle._internal();
 
@@ -20,7 +20,7 @@ class DBHandle {
     return _ins;
   }
 
-  static AppDatabase _db = AppDatabase();
+  static final AppDatabase _db = AppDatabase();
 
   AppDatabase get db {
     return _db;
@@ -67,14 +67,10 @@ class AppDatabase extends _$AppDatabase {
 
   Future<List<Unit>> getAllUnits() => select(units).get();
 
-  Future addUnit(UnitsCompanion unit) => into(units)
-      .insert(unit)
-      .then((value) => value)
-      .catchError((err) => throw err);
+  Future<int> addUnit(UnitsCompanion unit) => into(units).insert(unit);
 
-  Future deleteUnit(UnitsCompanion unit) {
-    return (delete(units)..where((tbl) => tbl.name.equals(unit.name.value)))
-        .go();
+  Future<void> deleteUnitByName(String unitName) async {
+    await (delete(units)..where((tbl) => tbl.name.equals(unitName))).go();
   }
 
   //////////////////////////////////record相关///////////////////////////////////
@@ -273,12 +269,7 @@ class AppDatabase extends _$AppDatabase {
   }
 
   ///返回成功或失败
-  Future<int> addEventInDB(EventsCompanion event) async {
-    return into(events)
-        .insert(event)
-        .then((value) => value)
-        .catchError((err) => throw err);
-  }
+  Future<int> addEventInDB(EventsCompanion event) => into(events).insert(event);
 
   Future updateEventDescription(int eventId, String desc) {
     return (update(events)..where((tbl) => tbl.id.equals(eventId)))

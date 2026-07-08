@@ -49,6 +49,32 @@ void main() {
     expect(activity.sumVal, 3);
   });
 
+  test('repository creates an activity without exposing database companions',
+      () async {
+    final activityId = await repository.createActivity(
+      name: 'Read',
+      careTime: false,
+      unit: 'pages',
+      description: 'Books and articles',
+    );
+
+    final activity = await db.getEventById(activityId);
+
+    expect(activity.name, 'Read');
+    expect(activity.careTime, false);
+    expect(activity.unit, 'pages');
+    expect(activity.description, 'Books and articles');
+  });
+
+  test('repository keeps database uniqueness for activity names', () async {
+    await repository.createActivity(name: 'Read', careTime: false);
+
+    expect(
+      repository.createActivity(name: 'Read', careTime: true),
+      throwsA(anything),
+    );
+  });
+
   test(
       'repository completes a timed activity without exposing database companions',
       () async {

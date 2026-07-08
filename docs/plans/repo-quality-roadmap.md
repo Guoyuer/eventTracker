@@ -45,15 +45,17 @@ Status: in progress
 - Rename `DAO` to a lower-case persistence module path.
 - Replaced ad hoc string SQL updates in record lifecycle and latest-step reads with typed Drift operations.
 - Continue making record lifecycle operations transactional. Completed for plain record add, timed record start, timed record stop, active timed record delete, and event delete.
-- Introduced `ActivityRepository` and migrated the activity-list recording flow to it.
+- Introduced `ActivityRepository` and migrated activity creation plus the activity-list recording flow to it.
+- Introduced `UnitRepository` and migrated unit management plus unit-list loading to it.
 - Move desktop sqflite setup behind a database bootstrap module.
-- Added tests around record lifecycle, aggregate totals, latest step lookup, and repository activity recording.
+- Added tests around record lifecycle, aggregate totals, latest step lookup, repository activity creation, and repository activity recording.
+- Added tests for unit add/list/delete and duplicate-name protection through the repository.
 
 Remaining:
 
 - Rename `DAO` to a lower-case persistence module path.
 - Continue migrating UI callers from `AppDatabase` to repository-style modules.
-- Move event creation, unit management, details, and statistics reads behind persistence interfaces.
+- Move details and statistics reads behind persistence interfaces.
 - Decide whether debug fake-data generation should use repositories or remain a database-only developer tool.
 
 ## Phase 3: Domain Model and Aggregation
