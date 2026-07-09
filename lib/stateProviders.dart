@@ -19,6 +19,14 @@ final statisticsRepositoryProvider = Provider<StatisticsRepository>((ref) {
   return statisticsRepository();
 });
 
+final selectedStatisticsRangeProvider = StateProvider<DateTimeRange>((ref) {
+  final now = DateTime.now();
+  return DateTimeRange(
+    start: DateTime(now.year, now.month, now.day).add(Duration(days: -7)),
+    end: now,
+  );
+});
+
 final selectedIndexProvider = StateProvider<int>((ref) {
   return 0;
 });

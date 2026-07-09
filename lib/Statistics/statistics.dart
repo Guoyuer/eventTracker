@@ -10,20 +10,12 @@ import '../domain/activity_models.dart';
 import '../persistence/statistics_repository.dart' show StatisticsData;
 import '../stateProviders.dart';
 
-class StatisticPage extends StatefulWidget {
+class StatisticPage extends ConsumerWidget {
   @override
-  _StatisticPageState createState() => _StatisticPageState();
-}
-
-class _StatisticPageState extends State<StatisticPage> {
-  DateTimeRange range = DateTimeRange(
-      start: getDate(DateTime.now().add(Duration(days: -7))),
-      end: DateTime.now());
-
-  @override
-  Widget build(BuildContext context) {
-    String timeLStr = DateFormat('yyyy.MM.dd').format(range.start);
-    String timeRStr = DateFormat('yyyy.MM.dd').format(range.end);
+  Widget build(BuildContext context, WidgetRef ref) {
+    final range = ref.watch(selectedStatisticsRangeProvider);
+    final timeLStr = DateFormat('yyyy.MM.dd').format(range.start);
+    final timeRStr = DateFormat('yyyy.MM.dd').format(range.end);
     return ListView(children: [
       Card(
           elevation: 10,
@@ -46,11 +38,10 @@ class _StatisticPageState extends State<StatisticPage> {
                         firstDate: DateTime.now().add(Duration(days: -100)),
                         lastDate: DateTime.now());
                     if (tmp != null) {
-                      setState(() {
-                        range = DateTimeRange(
-                            start: tmp.start,
-                            end: tmp.end.add(Duration(days: 1)));
-                      });
+                      ref.read(selectedStatisticsRangeProvider.notifier).state =
+                          DateTimeRange(
+                              start: getDate(tmp.start),
+                              end: getDate(tmp.end).add(Duration(days: 1)));
                     }
                   }))
             ],

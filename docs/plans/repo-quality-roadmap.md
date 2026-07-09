@@ -123,6 +123,7 @@ Status: in progress
 - Moved activity description editing out of shared common widgets and behind `activityDescriptionProvider`.
 - Moved activity list mutations, activity creation, and unit management from repository factory calls to Riverpod repository providers.
 - Removed incomplete long-press manual time entry controls that opened a picker without applying the selected time.
+- Moved the statistics date range into Riverpod state and kept chart data loading behind `statisticsProvider`.
 - Removed the old settings-page DB viewer, delete-all-data button, fake-data generator, and inactive step-count route.
 
 ## Phase 5: Dependency and Platform Modernization

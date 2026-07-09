@@ -98,6 +98,18 @@ void main() {
     expect(activityList, isNot(contains('手动指定')));
   });
 
+  test('statistics page keeps selected range in Riverpod state', () {
+    final statistics =
+        File('lib/Statistics/statistics.dart').readAsStringSync();
+    final providers = File('lib/stateProviders.dart').readAsStringSync();
+
+    expect(statistics, isNot(contains('StatefulWidget')));
+    expect(statistics, isNot(contains('setState(')));
+    expect(statistics, contains('selectedStatisticsRangeProvider'));
+    expect(providers, contains('selectedStatisticsRangeProvider'));
+    expect(providers, contains('statisticsProvider'));
+  });
+
   test('database module does not expose record lifecycle convenience methods',
       () {
     final database =

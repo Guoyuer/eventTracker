@@ -152,6 +152,7 @@ Current status:
 - `ActivityDescriptionEditor` reads and writes descriptions through `activityDescriptionProvider` instead of creating repositories inside shared common widgets.
 - Activity list mutations, activity creation, and unit management now read repositories through Riverpod providers instead of calling repository factories in widgets.
 - Incomplete long-press manual time entry controls were removed because they displayed a picker without applying the selected time.
+- `StatisticPage` now keeps the selected date range in `selectedStatisticsRangeProvider` and loads chart data through `statisticsProvider`.
 
 Target shape:
 
@@ -168,8 +169,8 @@ Rules:
 Next UI state slice:
 
 1. Replace `ReloadEventsN` dispatches with direct provider invalidation where `WidgetRef` is available.
-2. Add `unitListProvider`.
-3. Add `statisticsProvider`.
+2. Extract the remaining chart adapter helpers from the statistics Widget.
+3. Make loading, empty, and error states consistent across activity, detail, and statistics views.
 
 ### 6. Keep Debug Tools Out of Release UI
 
