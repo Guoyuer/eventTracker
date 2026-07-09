@@ -164,6 +164,7 @@ Current status:
 - Incomplete long-press manual time entry controls were removed because they displayed a picker without applying the selected time.
 - `StatisticPage` now keeps the selected date range in `selectedStatisticsRangeProvider` and loads chart data through `statisticsProvider`.
 - `EventTile` is now stateless; active-timer blinking is isolated in `ActiveTimingHighlight`, and elapsed-time text is driven by `elapsedDurationProvider`.
+- Activity recording actions now live in `ActivityRecordingActions`, so add/start/stop/cancel and value-prompt decisions can be tested without widget plumbing.
 
 Target shape:
 
@@ -216,8 +217,8 @@ Rule:
 
 Recommended order from here:
 
-1. Extract the activity recording action flow from `EventsList/util.dart` into a testable module.
-2. Split broad feature providers out of `stateProviders.dart`.
+1. Split broad feature providers out of `stateProviders.dart`.
+2. Standardize async loading, empty, error, and retry states across list/detail/statistics views.
 3. Dependency cleanup and upgrade batches.
 
 ## Definition of Done for Each Slice

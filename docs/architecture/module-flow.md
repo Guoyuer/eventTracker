@@ -15,9 +15,10 @@ flowchart LR
     Settings["SettingPage"]
   end
 
-  subgraph Analytics["Pure analytics modules"]
+  subgraph Logic["Pure logic modules"]
     ActivityDetailAnalytics["activity_detail_analytics.dart"]
     StatisticsAnalytics["statistics_analytics.dart"]
+    ActivityRecordingActions["ActivityRecordingActions"]
   end
 
   subgraph State["Riverpod state"]
@@ -41,6 +42,8 @@ flowchart LR
   end
 
   EventList --> ActivityListProvider
+  EventList --> ActivityRecordingActions
+  ActivityRecordingActions --> ActivityRepository
   ActivityListProvider --> ActivityRepositoryProvider
   EventDetails --> ActivityRecordsProvider
   ActivityRecordsProvider --> ActivityRepositoryProvider
@@ -118,10 +121,10 @@ The direction is to keep record and activity rules in pure modules or repositori
 
 ```mermaid
 flowchart LR
-  RecordingFlow["Shallow activity recording flow"]
-  RecordingFlow --> Persistence["Keep product actions behind testable modules"]
+  ProviderModule["Broad stateProviders.dart module"]
+  ProviderModule --> State["Split feature providers by ownership"]
 
   Next["Next deepening candidates"]
-  Next --> Recording["Extract activity recording actions from EventsList util"]
   Next --> Providers["Split broad feature providers out of stateProviders.dart"]
+  Next --> AsyncState["Standardize loading, empty, error, and retry states"]
 ```

@@ -1,19 +1,34 @@
 part of 'eventsList.dart';
 
-const accidentalTimedRecordThreshold = Duration(seconds: 5);
-
 void refreshActivityList(WidgetRef ref) {
   ref.invalidate(activityListProvider);
 }
 
-Future<void> startTimingRecord(
+Future<void> recordActivity(
   BuildContext context,
   WidgetRef ref,
-  DateTime now,
+  DateTime recordedAt,
 ) async {
-  int eventId = EventDataHolder.of(context).event.id;
-  await ref.read(activityRepositoryProvider).startTimedRecord(eventId, now);
-  refreshActivityList(ref);
+  final event = EventDataHolder.of(context).event;
+  final recorder =
+      ActivityRecordingActions(ref.read(activityRepositoryProvider));
+  final outcome = await recorder.record(
+    event,
+    recordedAt,
+    requestValue: (unit) => inputValDialog(context, unit),
+  );
+
+  switch (outcome) {
+    case ActivityRecordingOutcome.changed:
+      refreshActivityList(ref);
+      break;
+    case ActivityRecordingOutcome.canceledAccidentalTimedRecord:
+      refreshActivityList(ref);
+      showToast("已取消本次计时");
+      break;
+    case ActivityRecordingOutcome.unchanged:
+      break;
+  }
 }
 
 Future<double?> inputValDialog(BuildContext ctx, String unit) async {
@@ -58,53 +73,6 @@ Future<double?> inputValDialog(BuildContext ctx, String unit) async {
   } finally {
     controller.dispose();
   }
-}
-
-Future<void> addPlainRecord(
-  BuildContext context,
-  WidgetRef ref,
-  DateTime time,
-) async {
-  int eventId = EventDataHolder.of(context).event.id;
-
-  final repository = ref.read(activityRepositoryProvider);
-  String? unit = await repository.getActivityUnit(eventId);
-
-  double? val;
-  if (unit != null) {
-    val = await inputValDialog(context, unit);
-    if (val == null) return;
-  }
-  await repository.addPlainRecord(eventId, time, value: val);
-  refreshActivityList(ref);
-}
-
-Future<void> stopTimingRecord(
-  BuildContext context,
-  WidgetRef ref,
-  DateTime time,
-) async {
-  final event = EventDataHolder.of(context).event as TimingEventModel;
-  final eventId = event.id;
-
-  final repository = ref.read(activityRepositoryProvider);
-  final duration = time.difference(event.startTime!);
-  if (duration < accidentalTimedRecordThreshold) {
-    await repository.cancelActiveTimedRecord(eventId);
-    refreshActivityList(ref);
-    showToast("已取消本次计时");
-    return;
-  }
-
-  String? unit = await repository.getActivityUnit(eventId);
-  double? val = 0;
-  if (unit != null) {
-    val = await inputValDialog(context, unit);
-    if (val == null) return;
-  }
-
-  await repository.stopActiveTimedRecord(eventId, time, value: val);
-  refreshActivityList(ref);
 }
 
 EventStatus getEventStatus(BaseEventModel event) {

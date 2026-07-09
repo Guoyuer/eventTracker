@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart' hide DatePickerTheme;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../application/activity_recording_actions.dart';
 import '../stateProviders.dart';
 import '../common/commonWidget.dart';
 import '../domain/activity_models.dart';
@@ -68,18 +69,16 @@ class EventTileButton extends ConsumerWidget {
     switch (status) {
       case EventStatus.plain:
         return eventListButton(Icon(Icons.add_rounded), Text("新记录"), () {
-          DateTime now = DateTime.now();
-          addPlainRecord(context, ref, now);
+          recordActivity(context, ref, DateTime.now());
         });
       case EventStatus.notActive:
         return eventListButton(Icon(Icons.play_arrow_outlined), Text("开始"), () {
-          DateTime now = DateTime.now();
-          startTimingRecord(context, ref, now);
+          recordActivity(context, ref, DateTime.now());
         });
       case EventStatus.active:
         return eventListButton(Icon(Icons.stop_circle_outlined), Text("停止"),
             () {
-          stopTimingRecord(context, ref, DateTime.now());
+          recordActivity(context, ref, DateTime.now());
         });
       default:
         return eventListButton(

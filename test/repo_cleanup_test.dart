@@ -198,6 +198,27 @@ void main() {
     }
   });
 
+  test('activity list delegates recording actions to a testable module', () {
+    final eventsList =
+        File('lib/EventsList/eventsList.dart').readAsStringSync();
+    final listUtil = File('lib/EventsList/util.dart').readAsStringSync();
+    final actions = File('lib/application/activity_recording_actions.dart')
+        .readAsStringSync();
+    final repository =
+        File('lib/persistence/activity_repository.dart').readAsStringSync();
+
+    expect(
+        eventsList, contains('recordActivity(context, ref, DateTime.now())'));
+    expect(listUtil, contains('ActivityRecordingActions'));
+    expect(listUtil, isNot(contains('addPlainRecord(')));
+    expect(listUtil, isNot(contains('startTimedRecord(')));
+    expect(listUtil, isNot(contains('stopActiveTimedRecord(')));
+    expect(listUtil, isNot(contains('cancelActiveTimedRecord(')));
+    expect(actions, contains('ActivityRecordingOutcome'));
+    expect(actions, contains('accidentalTimedRecordThreshold'));
+    expect(repository, isNot(contains('getActivityUnit')));
+  });
+
   test('activity list does not expose incomplete manual time entry controls',
       () {
     final activityList =

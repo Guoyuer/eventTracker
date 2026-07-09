@@ -78,11 +78,6 @@ class _FakeActivityRepository implements ActivityRepository {
   }
 
   @override
-  Future<String?> getActivityUnit(int activityId) {
-    throw UnimplementedError();
-  }
-
-  @override
   Future<void> addPlainRecord(
     int activityId,
     DateTime endTime, {

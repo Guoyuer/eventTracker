@@ -20,8 +20,6 @@ abstract class ActivityRepository {
 
   Future<void> updateActivityDescription(int activityId, String description);
 
-  Future<String?> getActivityUnit(int activityId);
-
   Future<void> addPlainRecord(
     int activityId,
     DateTime endTime, {
@@ -90,15 +88,6 @@ class DriftActivityRepository implements ActivityRepository {
             description: Value(description),
           ),
         );
-  }
-
-  @override
-  Future<String?> getActivityUnit(int activityId) async {
-    final query = _db.selectOnly(_db.events)
-      ..addColumns([_db.events.unit])
-      ..where(_db.events.id.equals(activityId));
-
-    return query.map((row) => row.read(_db.events.unit)).getSingleOrNull();
   }
 
   @override

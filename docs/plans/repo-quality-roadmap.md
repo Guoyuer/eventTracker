@@ -137,6 +137,7 @@ Status: in progress
 - Moved active-timer ticking state out of the whole activity tile and behind `elapsedDurationProvider`.
 - Replaced shared text-input dialog `StatefulBuilder` state with controller-driven rebuilds.
 - Moved the statistics date range into Riverpod state and kept chart data loading behind `statisticsProvider`.
+- Moved activity recording actions out of `EventsList/util.dart` and into a testable `ActivityRecordingActions` module.
 - Removed the old settings-page DB viewer, delete-all-data button, fake-data generator, and inactive step-count route.
 
 ## Phase 5: Dependency and Platform Modernization
