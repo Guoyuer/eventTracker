@@ -1,5 +1,3 @@
-import 'dart:async';
-
 import 'package:flutter/material.dart' hide DatePickerTheme;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../stateProviders.dart';
@@ -107,108 +105,19 @@ class EventDataHolder extends InheritedWidget {
   }
 }
 
-class EventTile extends ConsumerStatefulWidget {
+class EventTile extends ConsumerWidget {
   @override
-  ConsumerState<EventTile> createState() => _EventTileState();
-}
-
-class _EventTileState extends ConsumerState<EventTile>
-    with SingleTickerProviderStateMixin {
-  late final Animation<double> animation;
-  late final AnimationController _controller;
-  late final int second; //渐变时长
-  initState() {
-    super.initState();
-    second = 1;
-    _controller = AnimationController(
-        duration: Duration(seconds: second),
-        reverseDuration: Duration(seconds: second),
-        vsync: this)
-      ..repeat(reverse: true);
-
-    animation = CurvedAnimation(parent: _controller, curve: Curves.easeIn);
-  }
-
-  @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     BaseEventModel event = EventDataHolder.of(context).event;
-    Widget eventInfo;
-    if (event is TimingEventModel) {
-      String sumValStr;
-      var data = event;
-      if (data.status == EventStatus.notActive) {
-        _controller.reset();
-        String sumTimeStr = "尚未开始";
-        if (data.sumDuration.inMicroseconds != 0) {
-          sumTimeStr = formatDuration(data.sumDuration);
-          sumTimeStr = "共进行$sumTimeStr";
-        }
+    final eventInfo = EventTileInfo(event);
+    final isActive =
+        event is TimingEventModel && event.status == EventStatus.active;
 
-        String? unit = data.unit;
-        if (data.unit != null && data.sumVal != 0) {
-          int val = data.sumVal!.toInt();
-          sumValStr = "累计：$val $unit";
-          eventInfo = Column(children: [
-            Align(
-                alignment: Alignment.centerLeft,
-                child: Text(sumTimeStr,
-                    style: TextStyle(color: Colors.grey[600], fontSize: 14))),
-            Align(
-                alignment: Alignment.centerLeft,
-                child: Text(sumValStr,
-                    style: TextStyle(color: Colors.grey[600], fontSize: 14))),
-          ]);
-        } else {
-          eventInfo = Align(
-              alignment: Alignment.centerLeft,
-              child: Text(
-                sumTimeStr,
-                style: TextStyle(color: Colors.grey[600], fontSize: 14),
-              ));
-        }
-      } else {
-        eventInfo = LapsedTimeStr(startTime: data.startTime!);
-      }
-    } else {
-      _controller.reset();
-      var data = (event as PlainEventModel);
-      int time = data.time;
-
-      String sumTimeStr;
-      if (time == 0) {
-        sumTimeStr = "尚未开始";
-      } else {
-        sumTimeStr = "已进行 $time 次";
-      }
-      String? unit = data.unit;
-      if (data.unit != null && data.sumVal != 0) {
-        int val = data.sumVal!.toInt();
-        String sumValStr = "累计：$val $unit";
-        eventInfo = Column(children: [
-          Align(
-              alignment: Alignment.centerLeft,
-              child: Text(sumTimeStr,
-                  style: TextStyle(color: Colors.grey[600], fontSize: 14))),
-          Align(
-              alignment: Alignment.centerLeft,
-              child: Text(sumValStr,
-                  style: TextStyle(color: Colors.grey[600], fontSize: 14))),
-        ]);
-      } else {
-        eventInfo = Align(
-            alignment: Alignment.centerLeft,
-            child: Text(sumTimeStr,
-                style: TextStyle(color: Colors.grey[600], fontSize: 14)));
-      }
-    }
     return Card(
         elevation: 8,
         child: Stack(
           children: [
-            Positioned.fill(
-                child: FadeTransition(
-                    opacity: animation,
-                    child: Container(color: const Color(0xaabeddf5)))),
+            if (isActive) Positioned.fill(child: ActiveTimingHighlight()),
             InkWell(
               onTap: () async {
                 bool? deleted = await Navigator.of(context)
@@ -244,55 +153,116 @@ class _EventTileState extends ConsumerState<EventTile>
           ],
         ));
   }
+}
 
+class ActiveTimingHighlight extends StatefulWidget {
+  @override
+  State<ActiveTimingHighlight> createState() => _ActiveTimingHighlightState();
+}
+
+class _ActiveTimingHighlightState extends State<ActiveTimingHighlight>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _controller;
+  late final Animation<double> _animation;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      duration: Duration(seconds: 1),
+      reverseDuration: Duration(seconds: 1),
+      vsync: this,
+    )..repeat(reverse: true);
+    _animation = CurvedAnimation(parent: _controller, curve: Curves.easeIn);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return FadeTransition(
+      opacity: _animation,
+      child: Container(color: const Color(0xaabeddf5)),
+    );
+  }
+
+  @override
   void dispose() {
     _controller.dispose();
     super.dispose();
   }
 }
 
-class LapsedTimeStr extends StatefulWidget {
+class EventTileInfo extends StatelessWidget {
+  final BaseEventModel event;
+
+  EventTileInfo(this.event);
+
+  @override
+  Widget build(BuildContext context) {
+    if (event is TimingEventModel) {
+      return _timingInfo(event as TimingEventModel);
+    }
+
+    return _plainInfo(event as PlainEventModel);
+  }
+
+  Widget _timingInfo(TimingEventModel event) {
+    if (event.status == EventStatus.active) {
+      return LapsedTimeStr(startTime: event.startTime!);
+    }
+
+    var summary = "尚未开始";
+    if (event.sumDuration.inMicroseconds != 0) {
+      summary = "共进行${formatDuration(event.sumDuration)}";
+    }
+
+    return _summaryInfo(summary, event.unit, event.sumVal);
+  }
+
+  Widget _plainInfo(PlainEventModel event) {
+    final summary = event.time == 0 ? "尚未开始" : "已进行 ${event.time} 次";
+    return _summaryInfo(summary, event.unit, event.sumVal);
+  }
+
+  Widget _summaryInfo(String summary, String? unit, double? value) {
+    final summaryText = _mutedText(summary);
+    if (unit == null || value == null || value == 0) {
+      return Align(alignment: Alignment.centerLeft, child: summaryText);
+    }
+
+    return Column(children: [
+      Align(alignment: Alignment.centerLeft, child: summaryText),
+      Align(
+        alignment: Alignment.centerLeft,
+        child: _mutedText("累计：${value.toInt()} $unit"),
+      ),
+    ]);
+  }
+
+  Widget _mutedText(String text) {
+    return Text(
+      text,
+      style: TextStyle(color: Colors.grey[600], fontSize: 14),
+    );
+  }
+}
+
+class LapsedTimeStr extends ConsumerWidget {
   final DateTime startTime;
 
   LapsedTimeStr({Key? key, required this.startTime}) : super(key: key);
 
   @override
-  _LapsedTimeStrState createState() => _LapsedTimeStrState();
-}
-
-class _LapsedTimeStrState extends State<LapsedTimeStr> {
-  late String str;
-  late final Timer timer;
-
-  @override
-  void initState() {
-    _updateStr();
-    timer = Timer.periodic(Duration(seconds: 1), (t) {
-      _updateStr();
-    });
-    super.initState();
-  }
-
-  @override
-  void dispose() {
-    timer.cancel();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext ctx) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final duration = ref.watch(elapsedDurationProvider(startTime));
+    final text = duration.maybeWhen(
+      data: (timePassed) => "已进行${formatDuration(timePassed)}",
+      orElse: () => "已进行",
+    );
     return Align(
         alignment: Alignment.centerLeft,
         child: Text(
-          str,
+          text,
           style: TextStyle(color: Colors.grey),
         ));
-  }
-
-  void _updateStr() {
-    Duration timePassed = DateTime.now().difference(widget.startTime);
-    setState(() {
-      str = "已进行" + formatDuration(timePassed);
-    });
   }
 }

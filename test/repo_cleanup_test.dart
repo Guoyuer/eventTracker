@@ -98,6 +98,21 @@ void main() {
     expect(activityList, isNot(contains('手动指定')));
   });
 
+  test('activity tiles keep ticking state outside the whole tile widget', () {
+    final activityList =
+        File('lib/EventsList/eventsList.dart').readAsStringSync();
+    final providers = File('lib/stateProviders.dart').readAsStringSync();
+
+    expect(activityList,
+        isNot(contains('class EventTile extends ConsumerStatefulWidget')));
+    expect(activityList, isNot(contains('Timer.periodic')));
+    expect(activityList, isNot(contains('class _LapsedTimeStrState')));
+    expect(activityList, contains('class ActiveTimingHighlight'));
+    expect(
+        activityList, contains('class LapsedTimeStr extends ConsumerWidget'));
+    expect(providers, contains('elapsedDurationProvider'));
+  });
+
   test('statistics page keeps selected range in Riverpod state', () {
     final statistics =
         File('lib/Statistics/statistics.dart').readAsStringSync();

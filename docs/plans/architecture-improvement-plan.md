@@ -154,6 +154,7 @@ Current status:
 - Activity list mutations, activity creation, and unit management now read repositories through Riverpod providers instead of calling repository factories in widgets.
 - Incomplete long-press manual time entry controls were removed because they displayed a picker without applying the selected time.
 - `StatisticPage` now keeps the selected date range in `selectedStatisticsRangeProvider` and loads chart data through `statisticsProvider`.
+- `EventTile` is now stateless; active-timer blinking is isolated in `ActiveTimingHighlight`, and elapsed-time text is driven by `elapsedDurationProvider`.
 
 Target shape:
 
