@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:event_tracker/common/const.dart';
 
 import 'heatMap.dart';
 import 'util.dart';
@@ -74,9 +73,10 @@ class MonthTile extends StatelessWidget {
     if (end.weekday == DateTime.saturday && end.compareTo(lastDay) == 0) {
       weeks.add(WeekTile(DateTimeRange(start: nilTime, end: nilTime)));
     }
+    final dataHolder = HeatMapDataHolder.of(context);
     return InkWell(
         onLongPress: () {
-          MonthTouchedN(month: lastDay).dispatch(context);
+          dataHolder.onMonthTouched?.call(lastDay);
         },
         child: Column(
           mainAxisSize: MainAxisSize.min,
@@ -172,7 +172,8 @@ class DayTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     HeatMapSetting setting = HeatMapDataHolder.of(context).setting;
-    var date2level = HeatMapDataHolder.of(context).date2level;
+    var dataHolder = HeatMapDataHolder.of(context);
+    var date2level = dataHolder.date2level;
     int level = date2level[date]!;
     if (date == nilTime) {
       //占位格子
@@ -187,7 +188,7 @@ class DayTile extends StatelessWidget {
     } else {
       return InkWell(
         onTap: () {
-          DayTouchedN(day: date).dispatch(context);
+          dataHolder.onDayTouched?.call(date);
         },
         child: Container(
           alignment: Alignment.center,

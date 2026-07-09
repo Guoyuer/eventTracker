@@ -139,6 +139,12 @@ class _EventDetailsState extends ConsumerState<EventDetails> {
               dateRange: heatMapSeries.range,
               input: heatMapSeries.data,
               unit: heatMapSeries.unit,
+              onMonthTouched: (selectedMonth) {
+                setState(() {
+                  month = selectedMonth;
+                });
+              },
+              onDayTouched: _showDayRecordsDialog,
             ),
           ),
         ),
@@ -247,55 +253,44 @@ class _EventDetailsState extends ConsumerState<EventDetails> {
           ],
           title: Text(sprintf("%s - 项目详细", [widget.event.name])),
         ),
-        body: NotificationListener(
-            onNotification: (Notification notification) {
-              if (notification is MonthTouchedN) {
-                setState(() {
-                  month = notification.month;
-                });
-              }
-              if (notification is DayTouchedN) {
-                showGeneralDialog(
-                    context: context,
-                    barrierDismissible: true,
-                    barrierLabel: "dismiss",
-                    transitionDuration: Duration(milliseconds: 500),
-                    transitionBuilder: (ctx, animation, animation2, child) {
-                      var fadeTween = CurveTween(curve: Curves.easeInOut);
-                      var fadeAnimation = fadeTween.animate(animation);
-                      return FadeTransition(
-                          opacity: fadeAnimation, child: child);
-                    },
-                    pageBuilder: (BuildContext context,
-                        Animation<double> animation,
-                        Animation<double> secondaryAnimation) {
-                      DateTime day = notification.day;
-                      String timeStr = DateFormat('yyyy.MM.dd').format(day);
-                      return AlertDialog(
-                        title: Text(timeStr + "的记录"),
-                        content: Consumer(
-                          builder: (context, ref, child) {
-                            return ref
-                                .watch(
-                                  activityRecordsProvider(widget.event.id),
-                                )
-                                .when(
-                                  data: (records) => getDayRecordsWidgets(
-                                    records,
-                                    day,
-                                    widget.event,
-                                  ),
-                                  error: (error, stackTrace) => Text("加载记录失败"),
-                                  loading: loadingScreen,
-                                );
-                          },
-                        ),
-                      );
-                    });
-              }
-              return true;
-            },
-            child: ListView(children: listChildren)));
+        body: ListView(children: listChildren));
+  }
+
+  void _showDayRecordsDialog(DateTime day) {
+    showGeneralDialog(
+        context: context,
+        barrierDismissible: true,
+        barrierLabel: "dismiss",
+        transitionDuration: Duration(milliseconds: 500),
+        transitionBuilder: (ctx, animation, animation2, child) {
+          var fadeTween = CurveTween(curve: Curves.easeInOut);
+          var fadeAnimation = fadeTween.animate(animation);
+          return FadeTransition(opacity: fadeAnimation, child: child);
+        },
+        pageBuilder: (BuildContext context, Animation<double> animation,
+            Animation<double> secondaryAnimation) {
+          String timeStr = DateFormat('yyyy.MM.dd').format(day);
+          return AlertDialog(
+            title: Text(timeStr + "的记录"),
+            content: Consumer(
+              builder: (context, ref, child) {
+                return ref
+                    .watch(
+                      activityRecordsProvider(widget.event.id),
+                    )
+                    .when(
+                      data: (records) => getDayRecordsWidgets(
+                        records,
+                        day,
+                        widget.event,
+                      ),
+                      error: (error, stackTrace) => Text("加载记录失败"),
+                      loading: loadingScreen,
+                    );
+              },
+            ),
+          );
+        });
   }
 
   Widget getDayRecordsWidgets(

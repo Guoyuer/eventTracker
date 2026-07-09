@@ -9,18 +9,6 @@ enum EventStatus {
   notActive, //不在进行
 }
 
-class MonthTouchedN extends Notification {
-  final DateTime month;
-
-  MonthTouchedN({required this.month});
-}
-
-class DayTouchedN extends Notification {
-  final DateTime day;
-
-  DayTouchedN({required this.day});
-}
-
 var chartTitleStyle = TextStyle(fontSize: 20.0, fontWeight: FontWeight.bold);
 const Map<int, Color> heatmapColorMap = {
   -1: Color.fromARGB(0, 255, 255, 255), //透明，用于占位

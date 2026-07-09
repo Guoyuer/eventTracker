@@ -25,6 +25,8 @@ class HeatMapDataHolder extends InheritedWidget {
   final Map<DateTime, int> date2level;
   final Map<DateTime, double> data; // 用于toolTip
   final DateTimeRange dateRange; //因为map无序
+  final ValueChanged<DateTime>? onMonthTouched;
+  final ValueChanged<DateTime>? onDayTouched;
   late final String? unit;
 
   HeatMapDataHolder(
@@ -33,6 +35,8 @@ class HeatMapDataHolder extends InheritedWidget {
       required this.date2level,
       required this.dateRange,
       this.unit,
+      this.onMonthTouched,
+      this.onDayTouched,
       required Widget child})
       : super(child: child);
 
@@ -51,6 +55,8 @@ class HeatMapCalendar extends StatefulWidget {
   final HeatMapSetting setting;
   final Map<DateTime, double> data = {};
   final DateTimeRange dateRange;
+  final ValueChanged<DateTime>? onMonthTouched;
+  final ValueChanged<DateTime>? onDayTouched;
   final String unit; //Tooltip显示的单位
   late double maxVal = 0;
 
@@ -59,7 +65,9 @@ class HeatMapCalendar extends StatefulWidget {
       this.setting = const HeatMapSetting(),
       required Map<DateTime, double> input,
       required this.dateRange,
-      required this.unit})
+      required this.unit,
+      this.onMonthTouched,
+      this.onDayTouched})
       : super(key: key) {
     input.forEach((key, value) {
       if (value > maxVal) maxVal = value;
@@ -104,6 +112,8 @@ class HeatMapCalendarState extends State<HeatMapCalendar> {
         data: widget.data,
         dateRange: widget.dateRange,
         unit: widget.unit,
+        onMonthTouched: widget.onMonthTouched,
+        onDayTouched: widget.onDayTouched,
         child: Container(
           child: HeatMapDisplay(),
         ));
