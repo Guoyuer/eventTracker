@@ -144,7 +144,3 @@ class DriftActivityRepository implements ActivityRepository {
     return _db.deleteEvent(activityId);
   }
 }
-
-ActivityRepository activityRepository() {
-  return DriftActivityRepository(DBHandle().db);
-}

@@ -21,6 +21,10 @@ flowchart LR
   end
 
   subgraph State["Riverpod state"]
+    AppDatabaseProvider["appDatabaseProvider"]
+    ActivityRepositoryProvider["activityRepositoryProvider"]
+    UnitRepositoryProvider["unitRepositoryProvider"]
+    StatisticsRepositoryProvider["statisticsRepositoryProvider"]
     ActivityListProvider["activityListProvider"]
     ActivityRecordsProvider["activityRecordsProvider"]
     UnitListProvider["unitListProvider"]
@@ -35,21 +39,25 @@ flowchart LR
   end
 
   EventList --> ActivityListProvider
-  ActivityListProvider --> ActivityRepository
+  ActivityListProvider --> ActivityRepositoryProvider
   EventDetails --> ActivityRecordsProvider
-  ActivityRecordsProvider --> ActivityRepository
+  ActivityRecordsProvider --> ActivityRepositoryProvider
   EventEditor --> UnitListProvider
   UnitManager --> UnitListProvider
-  UnitListProvider --> UnitRepository
+  UnitListProvider --> UnitRepositoryProvider
   Statistics --> StatisticsProvider
-  StatisticsProvider --> StatisticsRepository
-  EventEditor --> ActivityRepository
+  StatisticsProvider --> StatisticsRepositoryProvider
+  EventEditor --> ActivityRepositoryProvider
   EventDetails --> ActivityDetailAnalytics
-  EventDetails --> ActivityRepository
+  EventDetails --> ActivityRepositoryProvider
   Statistics --> StatisticsAnalytics
-  ActivityRepository --> AppDatabase
-  UnitRepository --> AppDatabase
-  StatisticsRepository --> AppDatabase
+  ActivityRepositoryProvider --> ActivityRepository
+  UnitRepositoryProvider --> UnitRepository
+  StatisticsRepositoryProvider --> StatisticsRepository
+  ActivityRepositoryProvider --> AppDatabaseProvider
+  UnitRepositoryProvider --> AppDatabaseProvider
+  StatisticsRepositoryProvider --> AppDatabaseProvider
+  AppDatabaseProvider --> AppDatabase
 ```
 
 ## What Changed
@@ -105,10 +113,10 @@ The direction is to keep record and activity rules in pure modules or repositori
 
 ```mermaid
 flowchart LR
-  DirectDB["Remaining direct DB reads"]
-  DirectDB --> Settings["No active product route should call DBHandle directly"]
+  DirectDB["Remaining broad AppDatabase surface"]
+  DirectDB --> Persistence["Keep active product routes behind repository providers"]
 
   Next["Next deepening candidates"]
-  Next --> ReadModels["Move generated Drift types out of UI"]
-  Next --> Lifecycle["Extract record lifecycle rules"]
+  Next --> Bootstrap["Move platform executor setup out of AppDatabase"]
+  Next --> Queries["Shrink AppDatabase toward low-level Drift queries"]
 ```

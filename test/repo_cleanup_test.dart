@@ -66,6 +66,37 @@ void main() {
     }
   });
 
+  test('persistence providers own database adapter wiring', () {
+    final providers =
+        File('lib/persistence/persistence_providers.dart').readAsStringSync();
+    final stateProviders = File('lib/stateProviders.dart').readAsStringSync();
+
+    expect(providers, contains('appDatabaseProvider'));
+    expect(providers, contains('Provider<AppDatabase>'));
+    expect(providers, contains('DriftActivityRepository'));
+    expect(providers, contains('DriftUnitRepository'));
+    expect(providers, contains('DriftStatisticsRepository'));
+    expect(stateProviders,
+        contains("export 'persistence/persistence_providers.dart';"));
+    expect(stateProviders, isNot(contains('Provider<AppDatabase>')));
+  });
+
+  test('repositories do not create the production database singleton', () {
+    for (final path in [
+      'lib/persistence/activity_repository.dart',
+      'lib/persistence/unit_repository.dart',
+      'lib/persistence/statistics_repository.dart',
+    ]) {
+      final source = File(path).readAsStringSync();
+
+      expect(source, isNot(contains('DBHandle')));
+      expect(source, isNot(contains('AppDatabase()')));
+      expect(source, isNot(contains('activityRepository()')));
+      expect(source, isNot(contains('unitRepository()')));
+      expect(source, isNot(contains('statisticsRepository()')));
+    }
+  });
+
   test('shared common widgets do not create persistence repositories', () {
     final source = File('lib/common/commonWidget.dart').readAsStringSync();
 
@@ -196,6 +227,10 @@ void main() {
       () {
     final database =
         File('lib/persistence/database/app_database.dart').readAsStringSync();
+
+    expect(database, isNot(contains('class DBHandle')));
+    expect(database, isNot(contains('factory DBHandle')));
+    expect(database, isNot(contains('static final AppDatabase _db')));
 
     for (final oldMethodName in [
       'addPlainRecordInDB',

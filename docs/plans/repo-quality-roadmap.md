@@ -90,7 +90,8 @@ Status: in progress
 - Introduced `UnitRepository` and migrated unit management plus unit-list loading to it.
 - Mapped unit UI data through a domain `ActivityUnit` read model so unit screens no longer import the Drift database module.
 - Introduced `StatisticsRepository` and migrated statistics range reads to it.
-- Move desktop sqflite setup behind a database bootstrap module.
+- Moved production `AppDatabase` construction and repository adapter wiring behind Riverpod persistence providers.
+- Move platform-specific sqflite executor setup out of `app_database.dart` and into a database bootstrap module.
 - Added tests around record lifecycle, aggregate totals, latest step lookup, repository activity creation, and repository activity recording.
 - Added tests for unit add/list/delete and duplicate-name protection through the repository.
 - Removed inactive step-count and debug/fake-data database methods from the active persistence API.
@@ -99,7 +100,7 @@ Status: in progress
 Remaining:
 
 - Continue migrating UI callers from `AppDatabase` to repository-style modules.
-- Move details and statistics reads behind persistence interfaces.
+- Continue shrinking `AppDatabase` toward low-level Drift queries only.
 
 ## Phase 3: Domain Model and Aggregation
 

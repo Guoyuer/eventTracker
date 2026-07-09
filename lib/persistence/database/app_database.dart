@@ -11,23 +11,6 @@ import '../../domain/activity_models.dart';
 import 'tables.dart';
 
 part 'app_database.g.dart';
-// 实现单例模式
-
-class DBHandle {
-  static final DBHandle _ins = DBHandle._internal();
-
-  DBHandle._internal();
-
-  factory DBHandle() {
-    return _ins;
-  }
-
-  static final AppDatabase _db = AppDatabase();
-
-  AppDatabase get db {
-    return _db;
-  }
-}
 
 @DriftDatabase(tables: [Units, Events, Records], include: {'sql.moor'})
 class AppDatabase extends _$AppDatabase {

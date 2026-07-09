@@ -30,7 +30,7 @@ Target shape:
 Rules:
 
 - UI modules should not create `RecordsCompanion` or `EventsCompanion`.
-- UI modules should not call `DBHandle().db` directly once a repository seam exists.
+- UI modules should not create or access `AppDatabase` directly once a repository seam exists.
 - Record lifecycle changes must be transactional.
 - Cached aggregate totals must be updated in one place.
 
@@ -41,7 +41,7 @@ Completed slice:
 - Mapped unit UI data through a domain `ActivityUnit` read model instead of generated Drift rows.
 - Added tests for add/delete/list unit behavior and duplicate-name protection.
 - Moved activity creation behind `ActivityRepository`.
-- Migrated `EventEditor` so it no longer creates `EventsCompanion` or calls `DBHandle().db.addEventInDB`.
+- Migrated `EventEditor` so it no longer creates `EventsCompanion` or writes through `AppDatabase` directly.
 - Added tests for activity creation and duplicate-name protection through the repository.
 - Removed inactive step-count UI, fake-data generation, debug DB viewer, and their direct database helper methods.
 - Removed unused/discontinued dependencies `share` and `moor_db_viewer`.
@@ -108,6 +108,7 @@ Current status:
 - Moved statistics range-record and activity-map reads behind `StatisticsRepository`.
 - Moved activity display models plus analytics record/activity read models into `lib/domain/`, with repositories mapping from Drift rows.
 - Extracted statistics chart rendering and `fl_chart` adapters into `Statistics/statistics_charts.dart`.
+- Moved production `AppDatabase` construction and repository adapter wiring into Riverpod persistence providers, removing the old `DBHandle` singleton and no-argument repository factories.
 
 Target modules:
 
@@ -211,8 +212,8 @@ Rule:
 
 Recommended order from here:
 
-1. Continue moving generated Drift types out of UI and analytics call sites.
-2. Extract record lifecycle and aggregate total rules out of broad `AppDatabase`.
+1. Continue shrinking `AppDatabase` to generated Drift access plus low-level queries.
+2. Split platform database executor/bootstrap decisions out of `app_database.dart`.
 3. Dependency cleanup and upgrade batches.
 
 ## Definition of Done for Each Slice

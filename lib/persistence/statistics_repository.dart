@@ -48,7 +48,3 @@ class DriftStatisticsRepository implements StatisticsRepository {
     );
   }
 }
-
-StatisticsRepository statisticsRepository() {
-  return DriftStatisticsRepository(DBHandle().db);
-}

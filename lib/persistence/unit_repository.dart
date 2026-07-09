@@ -34,7 +34,3 @@ class DriftUnitRepository implements UnitRepository {
     return _db.deleteUnitByName(name);
   }
 }
-
-UnitRepository unitRepository() {
-  return DriftUnitRepository(DBHandle().db);
-}

@@ -5,21 +5,10 @@ import 'package:flutter/rendering.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'domain/activity_models.dart';
-import 'persistence/activity_repository.dart';
+import 'persistence/persistence_providers.dart';
 import 'persistence/statistics_repository.dart';
-import 'persistence/unit_repository.dart';
 
-final activityRepositoryProvider = Provider<ActivityRepository>((ref) {
-  return activityRepository();
-});
-
-final unitRepositoryProvider = Provider<UnitRepository>((ref) {
-  return unitRepository();
-});
-
-final statisticsRepositoryProvider = Provider<StatisticsRepository>((ref) {
-  return statisticsRepository();
-});
+export 'persistence/persistence_providers.dart';
 
 final selectedStatisticsRangeProvider = StateProvider<DateTimeRange>((ref) {
   final now = DateTime.now();
