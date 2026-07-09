@@ -47,7 +47,7 @@ class EventDetails extends ConsumerWidget {
           IconButton(
             onPressed: () async {
               await ActivityDetailController(
-                repository: ref.read(activityRepositoryProvider),
+                repository: ref.read(activityWriterProvider),
               ).deleteActivityAndExit(
                 event.id,
                 confirmDelete: () async =>

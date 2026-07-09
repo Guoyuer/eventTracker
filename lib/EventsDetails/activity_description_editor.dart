@@ -59,7 +59,7 @@ class ActivityDescriptionEditor extends ConsumerWidget {
 
   Future<void> _saveDescription(WidgetRef ref, String newValue) async {
     await ActivityDetailController(
-      repository: ref.read(activityRepositoryProvider),
+      repository: ref.read(activityWriterProvider),
     ).saveDescription(
       activityId,
       newValue,

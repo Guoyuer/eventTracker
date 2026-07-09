@@ -1,4 +1,4 @@
-import '../persistence/activity_repository.dart';
+import '../domain/activity_repository.dart';
 
 typedef ActivityDeleteConfirmation = Future<bool> Function();
 typedef ActivityDetailExit = void Function(bool deleted);
@@ -6,12 +6,12 @@ typedef ActivityDescriptionRefresh = void Function();
 typedef ActivityDescriptionEditingExit = void Function();
 
 class ActivityDetailController {
-  ActivityDetailController({required ActivityRepository repository})
+  ActivityDetailController({required ActivityWriter repository})
     : this._(repository);
 
   ActivityDetailController._(this._repository);
 
-  final ActivityRepository _repository;
+  final ActivityWriter _repository;
 
   Future<bool> deleteActivity(
     int activityId, {

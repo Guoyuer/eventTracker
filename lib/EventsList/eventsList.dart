@@ -122,7 +122,7 @@ class EventTileButton extends ConsumerWidget {
     DateTime recordedAt,
   ) {
     final controller = ActivityListController(
-      repository: ref.read(activityRepositoryProvider),
+      recordLifecycle: ref.read(recordLifecycleProvider),
       refresh: () => ref.invalidate(activityListProvider),
       notify: showToast,
     );
@@ -155,7 +155,7 @@ class EventTile extends ConsumerWidget {
           InkWell(
             onTap: () async {
               final controller = ActivityListController(
-                repository: ref.read(activityRepositoryProvider),
+                recordLifecycle: ref.read(recordLifecycleProvider),
                 refresh: () => ref.invalidate(activityListProvider),
                 notify: showToast,
               );

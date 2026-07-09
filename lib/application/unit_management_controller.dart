@@ -1,4 +1,4 @@
-import '../persistence/unit_repository.dart';
+import '../domain/unit_repository.dart';
 
 typedef UnitListRefresh = void Function();
 typedef UnitNotification = void Function(String message);

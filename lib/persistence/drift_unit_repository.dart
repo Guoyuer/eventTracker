@@ -1,15 +1,8 @@
 import 'package:drift/drift.dart';
 
 import '../domain/activity_models.dart';
+import '../domain/unit_repository.dart';
 import 'database/app_database.dart';
-
-abstract class UnitRepository {
-  Future<List<ActivityUnit>> getUnits();
-
-  Future<int> addUnit(String name);
-
-  Future<void> deleteUnit(String name);
-}
 
 class DriftUnitRepository implements UnitRepository {
   DriftUnitRepository(this._db);

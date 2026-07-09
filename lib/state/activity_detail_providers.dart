@@ -6,18 +6,14 @@ import 'mutable_state.dart';
 
 final activityRecordsProvider =
     FutureProvider.family<List<ActivityRecord>, int>((ref, activityId) {
-      return ref
-          .watch(activityRepositoryProvider)
-          .getActivityRecords(activityId);
+      return ref.watch(activityReaderProvider).getActivityRecords(activityId);
     });
 
 final activityDescriptionProvider = FutureProvider.family<String?, int>((
   ref,
   activityId,
 ) {
-  return ref
-      .watch(activityRepositoryProvider)
-      .getActivityDescription(activityId);
+  return ref.watch(activityReaderProvider).getActivityDescription(activityId);
 });
 
 final activityDescriptionEditingProvider = NotifierProvider.autoDispose

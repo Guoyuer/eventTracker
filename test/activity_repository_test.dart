@@ -1,7 +1,8 @@
 import 'package:drift/drift.dart' hide isNull;
 import 'package:event_tracker/domain/activity_models.dart';
+import 'package:event_tracker/domain/activity_repository.dart';
 import 'package:event_tracker/persistence/database/app_database.dart';
-import 'package:event_tracker/persistence/activity_repository.dart';
+import 'package:event_tracker/persistence/drift_activity_repository.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'support/database_test_helpers.dart';

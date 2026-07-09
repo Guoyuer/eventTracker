@@ -1,17 +1,17 @@
-import '../persistence/activity_repository.dart';
+import '../domain/activity_repository.dart';
 
 typedef ActivityEditorNotification = void Function(String message);
 typedef ActivityEditorExit = void Function(bool created);
 
 class ActivityEditorController {
   ActivityEditorController({
-    required ActivityRepository repository,
+    required ActivityWriter repository,
     required ActivityEditorNotification notify,
   }) : this._(repository, notify);
 
   ActivityEditorController._(this._repository, this._notify);
 
-  final ActivityRepository _repository;
+  final ActivityWriter _repository;
   final ActivityEditorNotification _notify;
 
   Future<bool> createActivity({

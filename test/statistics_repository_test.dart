@@ -1,7 +1,8 @@
 import 'package:event_tracker/domain/date_range.dart';
+import 'package:event_tracker/domain/statistics_repository.dart';
 import 'package:event_tracker/persistence/database/app_database.dart';
+import 'package:event_tracker/persistence/drift_statistics_repository.dart';
 import 'package:event_tracker/persistence/record_lifecycle_store.dart';
-import 'package:event_tracker/persistence/statistics_repository.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'support/database_test_helpers.dart';

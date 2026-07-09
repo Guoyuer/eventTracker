@@ -100,6 +100,7 @@ Status: in progress
 - Mapped unit UI data through a domain `ActivityUnit` read model so unit screens no longer import the Drift database module.
 - Introduced `StatisticsRepository` and migrated statistics range reads to it.
 - Moved production `AppDatabase` construction and repository adapter wiring behind Riverpod persistence providers.
+- Moved Activity, Unit, and Statistics Repository Interfaces into `lib/domain/`, renamed concrete persistence Adapters to `drift_*_repository.dart`, and exposed narrow Activity read/write/Record Lifecycle providers instead of the broad repository Interface.
 - Moved platform-specific sqflite executor setup out of `app_database.dart` and into a database bootstrap module.
 - Moved activity display-model shaping out of `AppDatabase` and into `ActivityRepository`.
 - Moved unit and statistics table-specific query helpers out of `AppDatabase` and into their repositories.
@@ -151,8 +152,8 @@ Status: in progress
 - Moved active-timer ticking state out of the whole activity tile and behind `elapsedDurationProvider`.
 - Replaced shared text-input dialog `StatefulBuilder` state with controller-driven rebuilds.
 - Moved the statistics date range into Riverpod state and kept chart data loading behind `statisticsProvider`.
-- Moved activity recording decisions out of `EventsList/util.dart` and into the testable `ActivityRecordingActions` module.
-- Moved route-level recording outcome handling behind `ActivityRecordingController`, leaving the activity-list Widget as a thin UI Adapter for prompts, refresh, and toast notifications.
+- Moved activity recording decisions out of `EventsList/util.dart` and into a tested application Module.
+- Folded the shallow `ActivityRecordingController` and `ActivityRecordingActions` chain into `ActivityListController`, removing the internal outcome protocol while preserving prompts, refresh, short-start cancellation, and notifications behind one Interface.
 - Split broad Riverpod state ownership out of `stateProviders.dart` into focused modules under `lib/state/`, then removed the compatibility facade after active imports were migrated.
 - Made activity detail deletion return a route result so `EventList` is the single owner of activity-list refresh after deletion.
 - Migrated small mutable UI state from legacy Riverpod `StateProvider` to Riverpod 3 `NotifierProvider` through `MutableState`.
@@ -167,6 +168,7 @@ Status: in progress
 - Moved add-activity create-and-exit policy behind `ActivityEditorController`, leaving `EventEditor` to provide form validation, draft values, notifications, and the navigation adapter.
 - Replaced the heatmap calendar's global empty-date sentinel with typed placeholder cells produced by the calendar model.
 - Removed the old settings-page DB viewer, delete-all-data button, fake-data generator, and inactive step-count route.
+- Replaced broad Activity Repository test fakes with narrow `ActivityReader`, `ActivityWriter`, and `RecordLifecycle` Adapters; recording behavior tests now cover the exact five-second cancellation threshold.
 
 ## Phase 5: Dependency and Platform Modernization
 

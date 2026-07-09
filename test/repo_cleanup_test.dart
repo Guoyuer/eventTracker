@@ -177,11 +177,58 @@ void main() {
     expect(providers, contains('DriftStatisticsRepository'));
   });
 
+  test(
+    'repository interfaces live in domain and adapters stay persistence-only',
+    () {
+      final activityContract = File(
+        'lib/domain/activity_repository.dart',
+      ).readAsStringSync();
+      final providers = File(
+        'lib/persistence/persistence_providers.dart',
+      ).readAsStringSync();
+
+      expect(
+        activityContract,
+        contains('abstract interface class ActivityReader'),
+      );
+      expect(
+        activityContract,
+        contains('abstract interface class ActivityWriter'),
+      );
+      expect(
+        activityContract,
+        contains('abstract interface class RecordLifecycle'),
+      );
+      expect(providers, contains('activityReaderProvider'));
+      expect(providers, contains('activityWriterProvider'));
+      expect(providers, contains('recordLifecycleProvider'));
+      expect(providers, isNot(contains('final activityRepositoryProvider')));
+
+      for (final file in Directory('lib/application').listSync()) {
+        if (file is! File || !file.path.endsWith('.dart')) {
+          continue;
+        }
+        expect(file.readAsStringSync(), isNot(contains('../persistence/')));
+      }
+
+      for (final path in [
+        'lib/persistence/drift_activity_repository.dart',
+        'lib/persistence/drift_unit_repository.dart',
+        'lib/persistence/drift_statistics_repository.dart',
+      ]) {
+        expect(
+          File(path).readAsStringSync(),
+          isNot(contains('abstract interface class')),
+        );
+      }
+    },
+  );
+
   test('repositories do not create the production database singleton', () {
     for (final path in [
-      'lib/persistence/activity_repository.dart',
-      'lib/persistence/unit_repository.dart',
-      'lib/persistence/statistics_repository.dart',
+      'lib/persistence/drift_activity_repository.dart',
+      'lib/persistence/drift_unit_repository.dart',
+      'lib/persistence/drift_statistics_repository.dart',
     ]) {
       final source = File(path).readAsStringSync();
 
@@ -216,7 +263,7 @@ void main() {
       'lib/persistence/database/app_database.dart',
     ).readAsStringSync();
     final repository = File(
-      'lib/persistence/activity_repository.dart',
+      'lib/persistence/drift_activity_repository.dart',
     ).readAsStringSync();
 
     expect(database, isNot(contains('activity_models.dart')));
@@ -236,10 +283,10 @@ void main() {
       'lib/persistence/database/app_database.dart',
     ).readAsStringSync();
     final unitRepository = File(
-      'lib/persistence/unit_repository.dart',
+      'lib/persistence/drift_unit_repository.dart',
     ).readAsStringSync();
     final statisticsRepository = File(
-      'lib/persistence/statistics_repository.dart',
+      'lib/persistence/drift_statistics_repository.dart',
     ).readAsStringSync();
     final detailAnalytics = File(
       'lib/analytics/activity_detail_analytics.dart',
@@ -335,44 +382,32 @@ void main() {
     },
   );
 
-  test('activity list delegates recording actions to a testable module', () {
+  test('activity recording policy has one application module owner', () {
     final eventsList = File(
       'lib/EventsList/eventsList.dart',
     ).readAsStringSync();
     final listHelpers = File(
       'lib/EventsList/events_list_helpers.dart',
     ).readAsStringSync();
-    final controller = File(
-      'lib/application/activity_recording_controller.dart',
-    ).readAsStringSync();
     final listController = File(
       'lib/application/activity_list_controller.dart',
     ).readAsStringSync();
-    final actions = File(
-      'lib/application/activity_recording_actions.dart',
-    ).readAsStringSync();
-    final repository = File(
-      'lib/persistence/activity_repository.dart',
-    ).readAsStringSync();
 
     expect(eventsList, contains('ActivityListController'));
-    expect(eventsList, isNot(contains('ActivityRecordingActions')));
-    expect(eventsList, isNot(contains('recordActivity(context')));
-    expect(eventsList, isNot(contains('switch (outcome)')));
     expect(listHelpers, isNot(contains('WidgetRef')));
-    expect(listController, contains('ActivityRecordingController'));
-    expect(listController, contains('ActivityRecordingActions'));
+    expect(listController, contains('RecordLifecycle'));
     expect(listController, contains('recordActivity'));
-    expect(controller, contains('ActivityRecordingActions'));
-    expect(controller, isNot(contains('BuildContext')));
-    expect(controller, isNot(contains('WidgetRef')));
-    expect(controller, isNot(contains('addPlainRecord(')));
-    expect(controller, isNot(contains('startTimedRecord(')));
-    expect(controller, isNot(contains('stopActiveTimedRecord(')));
-    expect(controller, isNot(contains('cancelActiveTimedRecord(')));
-    expect(actions, contains('ActivityRecordingOutcome'));
-    expect(actions, contains('accidentalTimedRecordThreshold'));
-    expect(repository, isNot(contains('getActivityUnit')));
+    expect(listController, contains('accidentalTimedRecordThreshold'));
+    expect(listController, isNot(contains('BuildContext')));
+    expect(listController, isNot(contains('WidgetRef')));
+    expect(
+      File('lib/application/activity_recording_controller.dart').existsSync(),
+      isFalse,
+    );
+    expect(
+      File('lib/application/activity_recording_actions.dart').existsSync(),
+      isFalse,
+    );
   });
 
   test('activity detail deletion has a single activity-list refresh owner', () {
@@ -418,7 +453,7 @@ void main() {
     expect(editorController, contains('ActivityEditorExit'));
     expect(
       editor,
-      isNot(contains('.read(activityRepositoryProvider).createActivity')),
+      isNot(contains('.read(activityWriterProvider).createActivity')),
     );
     expect(unitManager, contains('UnitManagementController'));
     expect(
@@ -437,7 +472,7 @@ void main() {
     expect(detailController, contains('ActivityDetailExit'));
     expect(
       details,
-      isNot(contains('.read(activityRepositoryProvider).deleteActivity')),
+      isNot(contains('.read(activityWriterProvider).deleteActivity')),
     );
     final descriptionEditor = File(
       'lib/EventsDetails/activity_description_editor.dart',
@@ -446,7 +481,7 @@ void main() {
     expect(
       descriptionEditor,
       isNot(
-        contains('.read(activityRepositoryProvider).updateActivityDescription'),
+        contains('.read(activityWriterProvider).updateActivityDescription'),
       ),
     );
 
@@ -710,7 +745,7 @@ void main() {
       'lib/domain/activity_aggregate_totals.dart',
     ).readAsStringSync();
     final repository = File(
-      'lib/persistence/activity_repository.dart',
+      'lib/persistence/drift_activity_repository.dart',
     ).readAsStringSync();
 
     expect(lifecycle, contains('ActivityAggregateStore'));

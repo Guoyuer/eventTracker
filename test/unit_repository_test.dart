@@ -1,5 +1,6 @@
+import 'package:event_tracker/domain/unit_repository.dart';
 import 'package:event_tracker/persistence/database/app_database.dart';
-import 'package:event_tracker/persistence/unit_repository.dart';
+import 'package:event_tracker/persistence/drift_unit_repository.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'support/database_test_harness.dart';

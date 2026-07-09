@@ -119,6 +119,8 @@ Current status:
 - Moved platform-specific sqflite executor setup into `database_bootstrap.dart`, leaving `AppDatabase` focused on Drift schema, migrations, and low-level queries.
 - Moved unit and statistics table-specific query helpers into `UnitRepository` and `StatisticsRepository`.
 - Moved remaining activity-specific table helpers into `ActivityRepository` and `RecordLifecycleStore`, leaving `AppDatabase` to expose generated Drift access, schema, migrations, and bootstrap wiring.
+- Moved Repository Interfaces to `lib/domain/` and kept concrete Drift Adapters in explicitly named `lib/persistence/drift_*_repository.dart` files.
+- Split the broad Activity Repository seam into `ActivityReader`, `ActivityWriter`, and `RecordLifecycle` Interfaces for application/state callers while retaining one composite production Adapter internally.
 
 Target modules:
 
@@ -170,8 +172,8 @@ Current status:
 - Incomplete long-press manual time entry controls were removed because they displayed a picker without applying the selected time.
 - `StatisticPage` now keeps the selected date range in `selectedStatisticsRangeProvider` and loads chart data through `statisticsProvider`.
 - `EventTile` is now stateless; active-timer blinking is isolated in `ActiveTimingHighlight`, and elapsed-time text is driven by `elapsedDurationProvider`.
-- Activity recording actions now live in `ActivityRecordingActions`, so add/start/stop/cancel and value-prompt decisions can be tested without widget plumbing.
-- `ActivityRecordingController` now owns the route-level recording outcome policy, so changed, unchanged, and accidental short-timer cancellation results are handled behind a small tested Interface.
+- Activity recording, value prompts, the five-second accidental-start rule, refresh, and notification policy now live behind `ActivityListController`.
+- Deleted the shallow `ActivityRecordingController` and `ActivityRecordingActions` Modules plus their private outcome protocol after behavior tests moved to the deeper activity-list Interface.
 - Activity detail deletion now returns a route result; `EventList` owns the single `activityListProvider` invalidation after deletion.
 - Feature state providers now live under `lib/state/`, and the old `stateProviders.dart` compatibility facade has been removed.
 - Small mutable UI state now uses Riverpod 3 `NotifierProvider` through `MutableState` instead of legacy `StateProvider`.
@@ -244,9 +246,10 @@ Rule:
 
 Recommended order from here:
 
-1. Continue hardening Aggregate Totals invariants around malformed record histories and any remaining direct cached-field reads.
-2. Continue shrinking remaining Widget/controller construction only when the route still owns behavior beyond UI adapters.
-3. Audit platform support after Android SDK installation or CI coverage is available.
+1. Replace the Activity list N+1 read with one consistent Activity Snapshot query and make invalid Timed Activity states unrepresentable.
+2. Define Statistics date ranges as half-open intervals and test next-day-midnight exclusion plus consistent reads.
+3. Continue hardening Aggregate Totals invariants around malformed record histories and any remaining direct cached-field reads.
+4. Audit platform support after Android SDK installation or CI coverage is available.
 
 ## Definition of Done for Each Slice
 

@@ -19,7 +19,10 @@
 ## Current Architecture
 
 - Flutter app entrypoint: `lib/main.dart`
+- Repository Interfaces and read models: `lib/domain/`
+- Application interaction policy: `lib/application/`
 - Local persistence: Drift over sqflite in `lib/persistence/database/`
+- Drift repository Adapters: `lib/persistence/drift_*_repository.dart`
 - Activity list and recording flow: `lib/EventsList/`
 - Activity detail analytics: `lib/EventsDetails/`
 - Cross-activity statistics: `lib/Statistics/`
@@ -27,4 +30,4 @@
 
 ## Quality Direction
 
-Prefer explicit domain names at new seams. Keep persistence concerns behind a small module interface, keep UI widgets focused on rendering and interaction, and move record aggregation into testable modules.
+Prefer explicit domain names at new seams. Keep Repository Interfaces in the domain Module and Drift Adapters in persistence, keep UI widgets focused on rendering and interaction, and move record aggregation into testable modules.

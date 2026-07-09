@@ -1,6 +1,6 @@
 import 'package:event_tracker/EventsDetails/activity_description_editor.dart';
 import 'package:event_tracker/domain/activity_models.dart';
-import 'package:event_tracker/persistence/activity_repository.dart';
+import 'package:event_tracker/domain/activity_repository.dart';
 import 'package:event_tracker/persistence/persistence_providers.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -14,7 +14,10 @@ void main() {
 
       await tester.pumpWidget(
         ProviderScope(
-          overrides: [activityRepositoryProvider.overrideWithValue(repository)],
+          overrides: [
+            activityReaderProvider.overrideWithValue(repository),
+            activityWriterProvider.overrideWithValue(repository),
+          ],
           child: MaterialApp(
             home: Scaffold(body: ActivityDescriptionEditor(activityId: 7)),
           ),
@@ -38,7 +41,7 @@ void main() {
   );
 }
 
-class _FakeActivityRepository implements ActivityRepository {
+class _FakeActivityRepository implements ActivityReader, ActivityWriter {
   _FakeActivityRepository({String? description}) : this._(description);
 
   _FakeActivityRepository._(this._description);
@@ -77,40 +80,7 @@ class _FakeActivityRepository implements ActivityRepository {
   }
 
   @override
-  Future<void> addPlainRecord(
-    int activityId,
-    DateTime endTime, {
-    double? value,
-  }) {
-    throw UnimplementedError();
-  }
-
-  @override
-  Future<int> startTimedRecord(int activityId, DateTime startTime) {
-    throw UnimplementedError();
-  }
-
-  @override
-  Future<void> stopActiveTimedRecord(
-    int activityId,
-    DateTime stoppedAt, {
-    double? value,
-  }) {
-    throw UnimplementedError();
-  }
-
-  @override
-  Future<void> cancelActiveTimedRecord(int activityId) {
-    throw UnimplementedError();
-  }
-
-  @override
   Future<void> deleteActivity(int activityId) {
-    throw UnimplementedError();
-  }
-
-  @override
-  Future<void> repairAggregateTotals() {
     throw UnimplementedError();
   }
 }

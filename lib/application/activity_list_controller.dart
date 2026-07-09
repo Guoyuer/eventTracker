@@ -1,31 +1,59 @@
 import '../domain/activity_models.dart';
-import '../persistence/activity_repository.dart';
-import 'activity_recording_actions.dart';
-import 'activity_recording_controller.dart';
+import '../domain/activity_repository.dart';
 
 typedef ActivityListRefresh = void Function();
+typedef ActivityNotification = void Function(String message);
 typedef ActivityDetailRoute = Future<bool?> Function(BaseEventModel activity);
+typedef ActivityValuePrompt = Future<double?> Function(String unit);
 
 class ActivityListController {
-  ActivityListController({
-    required ActivityRepository repository,
-    required this.refresh,
+  factory ActivityListController({
+    required RecordLifecycle recordLifecycle,
+    required ActivityListRefresh refresh,
     required ActivityNotification notify,
-  }) : _recording = ActivityRecordingController(
-         actions: ActivityRecordingActions(repository),
-         refresh: refresh,
-         notify: notify,
-       );
+    Duration accidentalTimedRecordThreshold = const Duration(seconds: 5),
+  }) {
+    return ActivityListController._(
+      recordLifecycle,
+      refresh,
+      notify,
+      accidentalTimedRecordThreshold,
+    );
+  }
 
-  final ActivityListRefresh refresh;
-  final ActivityRecordingController _recording;
+  ActivityListController._(
+    this._recordLifecycle,
+    this._refresh,
+    this._notify,
+    this.accidentalTimedRecordThreshold,
+  );
+
+  final RecordLifecycle _recordLifecycle;
+  final ActivityListRefresh _refresh;
+  final ActivityNotification _notify;
+  final Duration accidentalTimedRecordThreshold;
 
   Future<void> recordActivity(
     BaseEventModel activity,
     DateTime recordedAt, {
     required ActivityValuePrompt requestValue,
-  }) {
-    return _recording.record(activity, recordedAt, requestValue: requestValue);
+  }) async {
+    if (activity is PlainEventModel) {
+      await _addPlainRecord(activity, recordedAt, requestValue);
+      return;
+    }
+
+    if (activity is! TimingEventModel) {
+      return;
+    }
+
+    if (activity.status == EventStatus.active) {
+      await _stopTimedRecord(activity, recordedAt, requestValue);
+      return;
+    }
+
+    await _recordLifecycle.startTimedRecord(activity.id, recordedAt);
+    _refresh();
   }
 
   Future<void> showActivityDetail(
@@ -34,7 +62,58 @@ class ActivityListController {
   }) async {
     final deleted = await showDetail(activity);
     if (deleted == true) {
-      refresh();
+      _refresh();
     }
+  }
+
+  Future<void> _addPlainRecord(
+    PlainEventModel activity,
+    DateTime recordedAt,
+    ActivityValuePrompt requestValue,
+  ) async {
+    final value = await _requestValue(activity.unit, requestValue);
+    if (activity.unit != null && value == null) {
+      return;
+    }
+
+    await _recordLifecycle.addPlainRecord(
+      activity.id,
+      recordedAt,
+      value: value,
+    );
+    _refresh();
+  }
+
+  Future<void> _stopTimedRecord(
+    TimingEventModel activity,
+    DateTime stoppedAt,
+    ActivityValuePrompt requestValue,
+  ) async {
+    final duration = stoppedAt.difference(activity.startTime!);
+    if (duration < accidentalTimedRecordThreshold) {
+      await _recordLifecycle.cancelActiveTimedRecord(activity.id);
+      _refresh();
+      _notify('已取消本次计时');
+      return;
+    }
+
+    final value = await _requestValue(activity.unit, requestValue);
+    if (activity.unit != null && value == null) {
+      return;
+    }
+
+    await _recordLifecycle.stopActiveTimedRecord(
+      activity.id,
+      stoppedAt,
+      value: value,
+    );
+    _refresh();
+  }
+
+  Future<double?> _requestValue(
+    String? unit,
+    ActivityValuePrompt requestValue,
+  ) {
+    return unit == null ? Future.value() : requestValue(unit);
   }
 }

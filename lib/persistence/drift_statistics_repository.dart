@@ -2,18 +2,8 @@ import 'package:drift/drift.dart';
 
 import '../domain/activity_models.dart';
 import '../domain/date_range.dart';
+import '../domain/statistics_repository.dart';
 import 'database/app_database.dart';
-
-class StatisticsData {
-  StatisticsData({required this.records, required this.activitiesById});
-
-  final List<ActivityRecord> records;
-  final Map<int, StatisticsActivity> activitiesById;
-}
-
-abstract class StatisticsRepository {
-  Future<StatisticsData> getStatisticsData(DateRange range);
-}
 
 class DriftStatisticsRepository implements StatisticsRepository {
   DriftStatisticsRepository(this._db);

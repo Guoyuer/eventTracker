@@ -28,7 +28,7 @@ class EventEditor extends ConsumerWidget {
 
       _formKey.currentState!.save();
       await ActivityEditorController(
-        repository: ref.read(activityRepositoryProvider),
+        repository: ref.read(activityWriterProvider),
         notify: showToast,
       ).createActivityAndExit(
         name: name!,

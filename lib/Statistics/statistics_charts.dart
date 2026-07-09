@@ -1,5 +1,5 @@
 import 'package:event_tracker/analytics/statistics_chart_models.dart';
-import 'package:event_tracker/persistence/statistics_repository.dart'
+import 'package:event_tracker/domain/statistics_repository.dart'
     show StatisticsData;
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';

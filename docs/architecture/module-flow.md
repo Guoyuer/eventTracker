@@ -2,7 +2,7 @@
 
 This document keeps the current architecture visible while the repo is being refactored. It should change when module ownership changes.
 
-## Current Target Shape
+## Current Shape
 
 ```mermaid
 flowchart LR
@@ -12,176 +12,133 @@ flowchart LR
     Statistics["Statistics"]
     EventEditor["EventEditor"]
     UnitManager["UnitManager"]
-    Settings["SettingPage"]
   end
 
-  subgraph Logic["Pure logic modules"]
-    ActivityDetailAnalytics["activity_detail_analytics.dart"]
-    StatisticsAnalytics["statistics_analytics.dart"]
-    ActivityDetailChartModels["activity_detail_chart_models.dart"]
-    StatisticsChartModels["statistics_chart_models.dart"]
-    DateRange["DateRange"]
-    ActivityRecordingController["ActivityRecordingController"]
-    ActivityRecordingActions["ActivityRecordingActions"]
+  subgraph Application["Application modules"]
+    ActivityListController["ActivityListController"]
     ActivityEditorController["ActivityEditorController"]
     ActivityDetailController["ActivityDetailController"]
     UnitManagementController["UnitManagementController"]
-    ActivityAggregateSnapshot["ActivityAggregateSnapshot"]
-    AsyncStateView["AsyncStateView"]
   end
 
-  subgraph State["Riverpod state"]
-    AppNavigationProviders["app_navigation_providers.dart"]
-    ActivityListProviders["activity_list_providers.dart"]
-    ActivityDetailProviders["activity_detail_providers.dart"]
-    ActivityEditorProviders["activity_editor_providers.dart"]
-    UnitProviders["unit_providers.dart"]
-    StatisticsProviders["statistics_providers.dart"]
-    MutableState["MutableState"]
-    AppDatabaseProvider["appDatabaseProvider"]
-    ActivityRepositoryProvider["activityRepositoryProvider"]
-    UnitRepositoryProvider["unitRepositoryProvider"]
-    StatisticsRepositoryProvider["statisticsRepositoryProvider"]
-    ActivityListProvider["activityListProvider"]
-    ActivityRecordsProvider["activityRecordsProvider"]
-    UnitListProvider["unitListProvider"]
-    StatisticsProvider["statisticsProvider"]
-  end
-
-  subgraph Persistence["Persistence module"]
-    DatabaseBootstrap["DatabaseBootstrap"]
-    ActivityRepository["ActivityRepository"]
-    RecordLifecycleStore["RecordLifecycleStore"]
+  subgraph Domain["Domain interfaces and rules"]
+    ActivityReader["ActivityReader"]
+    ActivityWriter["ActivityWriter"]
+    RecordLifecycle["RecordLifecycle"]
     UnitRepository["UnitRepository"]
     StatisticsRepository["StatisticsRepository"]
+    AggregateRules["ActivityAggregateSnapshot"]
+    DateRange["DateRange"]
+  end
+
+  subgraph State["Riverpod state and adapter wiring"]
+    ActivityListProvider["activityListProvider"]
+    ActivityRecordsProvider["activityRecordsProvider"]
+    ActivityReaderProvider["activityReaderProvider"]
+    ActivityWriterProvider["activityWriterProvider"]
+    RecordLifecycleProvider["recordLifecycleProvider"]
+    UnitListProvider["unitListProvider"]
+    StatisticsProvider["statisticsProvider"]
+    AppDatabaseProvider["appDatabaseProvider"]
+  end
+
+  subgraph Persistence["Persistence implementation"]
+    DriftActivityRepository["DriftActivityRepository"]
+    DriftUnitRepository["DriftUnitRepository"]
+    DriftStatisticsRepository["DriftStatisticsRepository"]
+    RecordLifecycleStore["RecordLifecycleStore"]
+    AggregateStore["ActivityAggregateStore"]
     AppDatabase["AppDatabase / Drift"]
+    DatabaseBootstrap["DatabaseBootstrap"]
   end
 
   EventList --> ActivityListProvider
-  EventList --> ActivityRecordingController
-  EventList --> AsyncStateView
+  EventList --> ActivityListController
   EventEditor --> ActivityEditorController
   EventDetails --> ActivityDetailController
-  ActivityDescriptionEditor["ActivityDescriptionEditor"] --> ActivityDetailController
   UnitManager --> UnitManagementController
-  ActivityListProviders --> MutableState
-  ActivityDetailProviders --> MutableState
-  ActivityEditorProviders --> MutableState
-  AppNavigationProviders --> MutableState
-  StatisticsProviders --> MutableState
-  ActivityRecordingController --> ActivityRecordingActions
-  ActivityRecordingActions --> ActivityRepository
-  ActivityEditorController --> ActivityRepository
-  ActivityDetailController --> ActivityRepository
-  UnitManagementController --> UnitRepository
-  RecordLifecycleStore --> ActivityAggregateSnapshot
-  ActivityListProvider --> ActivityRepositoryProvider
-  EventDetails --> ActivityRecordsProvider
-  EventDetails --> AsyncStateView
-  ActivityRecordsProvider --> ActivityRepositoryProvider
-  EventEditor --> UnitListProvider
-  UnitManager --> UnitListProvider
-  UnitListProvider --> UnitRepositoryProvider
   Statistics --> StatisticsProvider
-  Statistics --> AsyncStateView
-  Statistics --> DateRange
-  StatisticsProvider --> StatisticsRepositoryProvider
+
+  ActivityListController --> RecordLifecycle
+  ActivityEditorController --> ActivityWriter
+  ActivityDetailController --> ActivityWriter
+  UnitManagementController --> UnitRepository
+
+  ActivityListProvider --> ActivityReaderProvider
+  ActivityRecordsProvider --> ActivityReaderProvider
+  ActivityReaderProvider --> ActivityReader
+  ActivityWriterProvider --> ActivityWriter
+  RecordLifecycleProvider --> RecordLifecycle
+  UnitListProvider --> UnitRepository
+  StatisticsProvider --> StatisticsRepository
   StatisticsProvider --> DateRange
-  EventEditor --> ActivityRepositoryProvider
-  EventDetails --> ActivityDetailAnalytics
-  EventDetails --> ActivityDetailChartModels
-  EventDetails --> ActivityRepositoryProvider
-  Statistics --> StatisticsAnalytics
-  Statistics --> StatisticsChartModels
-  ActivityRepositoryProvider --> ActivityRepository
-  ActivityRepository --> RecordLifecycleStore
-  RecordLifecycleStore --> AppDatabase
-  UnitRepositoryProvider --> UnitRepository
-  StatisticsRepositoryProvider --> StatisticsRepository
-  ActivityRepositoryProvider --> AppDatabaseProvider
-  UnitRepositoryProvider --> AppDatabaseProvider
-  StatisticsRepositoryProvider --> AppDatabaseProvider
+
+  ActivityReader --> DriftActivityRepository
+  ActivityWriter --> DriftActivityRepository
+  RecordLifecycle --> DriftActivityRepository
+  UnitRepository --> DriftUnitRepository
+  StatisticsRepository --> DriftStatisticsRepository
+  DriftActivityRepository --> RecordLifecycleStore
+  RecordLifecycleStore --> AggregateStore
+  AggregateStore --> AggregateRules
+  DriftActivityRepository --> AppDatabase
+  DriftUnitRepository --> AppDatabase
+  DriftStatisticsRepository --> AppDatabase
   AppDatabaseProvider --> AppDatabase
   AppDatabase --> DatabaseBootstrap
 ```
 
-## What Changed
+## Deepened Activity Recording
 
-### Statistics
+```mermaid
+flowchart LR
+  subgraph Before["Before: shallow call chain"]
+    B1["EventTile"] --> B2["ActivityListController"]
+    B2 --> B3["ActivityRecordingController"]
+    B3 --> B4["ActivityRecordingActions"]
+    B4 --> B5["broad ActivityRepository"]
+  end
+
+  subgraph After["After: one application interface"]
+    A1["EventTile UI Adapter"] --> A2["ActivityListController"]
+    A2 --> A3["RecordLifecycle"]
+    A3 --> A4["DriftActivityRepository"]
+  end
+```
+
+`ActivityListController` now owns type dispatch, optional value prompts, the five-second accidental-start rule, refresh, and notification policy. The deleted outcome enum and pass-through controller no longer form part of the Interface.
+
+## Repository Seams
 
 ```mermaid
 flowchart TB
-  Before["Before: Statistics widget"]
-  Before --> B1["Fetch records and activities"]
-  Before --> B2["Count records per activity"]
-  Before --> B3["Build hourly time-slot buckets"]
-  Before --> B4["Create pie chart sections"]
-  Before --> B5["Create stacked bar rods"]
+  Broad["Before: every caller learns 11 methods"]
+  Broad --> Fake1["recording fake: 7 unused methods"]
+  Broad --> Fake2["detail fake: 8 unused methods"]
+  Broad --> Fake3["description fake: 5 unused methods"]
 
-  After["After: split responsibilities"]
-  After --> A1["StatisticsRepository fetches records and activities"]
-  A1 --> A2["statistics_analytics.dart builds summary"]
-  A2 --> A3["Statistics widget adapts summary to fl_chart"]
+  Narrow["After: domain-owned interfaces"]
+  Narrow --> Reader["ActivityReader: 3 methods"]
+  Narrow --> Writer["ActivityWriter: 3 methods"]
+  Narrow --> Lifecycle["RecordLifecycle: 4 methods"]
+  Reader --> Drift["one Drift adapter"]
+  Writer --> Drift
+  Lifecycle --> Drift
 ```
 
-### Activity List Refresh
+Production wiring projects one `DriftActivityRepository` Adapter through three narrow Interfaces. Tests use purpose-built in-memory Adapters without unrelated `UnimplementedError` methods.
+
+## Next Deepening
 
 ```mermaid
 flowchart LR
-  Before["Before"]
-  Before --> B1["ReloadEventsN"]
-  B1 --> B2["Navigator.pop(MainPage)"]
-  B2 --> B3["Navigator.push(MainPage)"]
+  ActivityRead["Activity list read"] --> N1["N+1 last-record queries"]
+  ActivityRead --> Stale["detail receives stale list snapshot"]
+  N1 --> Snapshot["one consistent Activity Snapshot query"]
+  Stale --> Snapshot
 
-  After["After"]
-  After --> A1["ref.invalidate(activityListProvider)"]
-  A1 --> A2["EventList reloads activity list"]
+  StatisticsRange["Statistics date selection"] --> Inclusive["inclusive next-day midnight"]
+  Inclusive --> HalfOpen["half-open DateRange"]
 ```
 
-### Activity Recording Interaction
-
-```mermaid
-flowchart LR
-  Before["Before"]
-  Before --> B1["EventTileButton"]
-  B1 --> B2["Prompt for value"]
-  B1 --> B3["Call repository mutation policy"]
-  B1 --> B4["Switch on changed/canceled/unchanged outcome"]
-  B1 --> B5["Refresh list and show toast"]
-
-  After["After"]
-  After --> A1["EventTileButton UI Adapter"]
-  A1 --> A2["ActivityRecordingController"]
-  A2 --> A3["ActivityRecordingActions"]
-  A2 --> A4["Refresh and notify outcome policy"]
-```
-
-### Activity Details Heatmap
-
-```mermaid
-flowchart LR
-  Before["Before"]
-  Before --> B1["MonthTouchedN / DayTouchedN"]
-  B1 --> B2["NotificationListener in EventDetails"]
-
-  After["After"]
-  After --> A1["HeatMapCalendar callbacks"]
-  A1 --> A2["EventDetails handles month/day directly"]
-  EventDetails["EventDetails"] --> Records["activityRecordsProvider"]
-  HeatMapModel["HeatMapCalendarModel"]
-  HeatMapModel --> Calendar["HeatMapCalendar render widgets"]
-```
-
-The direction is to keep record and activity rules in pure modules or repositories, and keep widgets focused on rendering and interaction.
-
-## Still To Improve
-
-```mermaid
-flowchart LR
-  HeatmapCalendar["Heatmap calendar render widgets"]
-  HeatmapCalendar --> Logic["Consume pure HeatMapCalendarModel"]
-
-  Next["Next deepening candidates"]
-  Next --> DependencyBatches["Modernize dependencies in focused batches"]
-  Next --> RouteCoordinators["Extract remaining route interaction coordinators"]
-```
+The next slice should deepen the Activity Snapshot read first, then make Statistics interval semantics explicit.

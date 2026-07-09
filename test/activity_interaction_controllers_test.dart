@@ -3,13 +3,13 @@ import 'package:event_tracker/application/activity_detail_controller.dart';
 import 'package:event_tracker/application/activity_editor_controller.dart';
 import 'package:event_tracker/application/unit_management_controller.dart';
 import 'package:event_tracker/domain/activity_models.dart';
-import 'package:event_tracker/persistence/activity_repository.dart';
-import 'package:event_tracker/persistence/unit_repository.dart';
+import 'package:event_tracker/domain/activity_repository.dart';
+import 'package:event_tracker/domain/unit_repository.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
   test('activity editor creates an activity and reports success', () async {
-    final repository = _FakeActivityRepository();
+    final repository = _FakeActivityWriter();
     final notifications = <String>[];
     final controller = ActivityEditorController(
       repository: repository,
@@ -36,7 +36,7 @@ void main() {
   });
 
   test('activity editor reports duplicate-name failures', () async {
-    final repository = _FakeActivityRepository()
+    final repository = _FakeActivityWriter()
       ..createActivityError = StateError('duplicate');
     final notifications = <String>[];
     final controller = ActivityEditorController(
@@ -54,7 +54,7 @@ void main() {
   });
 
   test('activity editor exits only after create succeeds', () async {
-    final repository = _FakeActivityRepository();
+    final repository = _FakeActivityWriter();
     final exits = <bool>[];
     final controller = ActivityEditorController(
       repository: repository,
@@ -81,7 +81,7 @@ void main() {
   });
 
   test('activity editor stays open when create fails', () async {
-    final repository = _FakeActivityRepository()
+    final repository = _FakeActivityWriter()
       ..createActivityError = StateError('duplicate');
     final notifications = <String>[];
     final exits = <bool>[];
@@ -103,7 +103,7 @@ void main() {
   test(
     'activity detail deletion returns success after repository delete',
     () async {
-      final repository = _FakeActivityRepository();
+      final repository = _FakeActivityWriter();
       final controller = ActivityDetailController(repository: repository);
 
       final deleted = await controller.deleteActivity(
@@ -117,7 +117,7 @@ void main() {
   );
 
   test('activity detail deletion skips repository when unconfirmed', () async {
-    final repository = _FakeActivityRepository();
+    final repository = _FakeActivityWriter();
     final controller = ActivityDetailController(repository: repository);
 
     final deleted = await controller.deleteActivity(
@@ -132,7 +132,7 @@ void main() {
   test(
     'activity detail exits only after a confirmed delete succeeds',
     () async {
-      final repository = _FakeActivityRepository();
+      final repository = _FakeActivityWriter();
       final exits = <bool>[];
       final controller = ActivityDetailController(repository: repository);
 
@@ -148,7 +148,7 @@ void main() {
   );
 
   test('activity detail stays open when delete is unconfirmed', () async {
-    final repository = _FakeActivityRepository();
+    final repository = _FakeActivityWriter();
     final exits = <bool>[];
     final controller = ActivityDetailController(repository: repository);
 
@@ -165,7 +165,7 @@ void main() {
   test(
     'activity detail saves descriptions before refreshing edit state',
     () async {
-      final repository = _FakeActivityRepository();
+      final repository = _FakeActivityWriter();
       final controller = ActivityDetailController(repository: repository);
       var refreshCount = 0;
       var exitEditingCount = 0;
@@ -190,7 +190,7 @@ void main() {
       var refreshCount = 0;
       final shownActivities = <BaseEventModel>[];
       final controller = ActivityListController(
-        repository: _FakeActivityRepository(),
+        recordLifecycle: _UnusedRecordLifecycle(),
         refresh: () => refreshCount++,
         notify: (_) {},
       );
@@ -212,7 +212,7 @@ void main() {
     final activity = PlainEventModel(7, 'Read', null, 0);
     var refreshCount = 0;
     final controller = ActivityListController(
-      repository: _FakeActivityRepository(),
+      recordLifecycle: _UnusedRecordLifecycle(),
       refresh: () => refreshCount++,
       notify: (_) {},
     );
@@ -316,21 +316,11 @@ class _UnitControllerHarness {
   final notifications = <String>[];
 }
 
-class _FakeActivityRepository implements ActivityRepository {
+class _FakeActivityWriter implements ActivityWriter {
   final createdActivities = <_CreatedActivity>[];
   final deletedActivityIds = <int>[];
   final updatedDescriptions = <int, String>{};
   Object? createActivityError;
-
-  @override
-  Future<List<BaseEventModel>> getActivities() {
-    throw UnimplementedError();
-  }
-
-  @override
-  Future<List<ActivityRecord>> getActivityRecords(int activityId) {
-    throw UnimplementedError();
-  }
 
   @override
   Future<int> createActivity({
@@ -355,11 +345,6 @@ class _FakeActivityRepository implements ActivityRepository {
   }
 
   @override
-  Future<String?> getActivityDescription(int activityId) {
-    throw UnimplementedError();
-  }
-
-  @override
   Future<void> updateActivityDescription(
     int activityId,
     String description,
@@ -368,42 +353,34 @@ class _FakeActivityRepository implements ActivityRepository {
   }
 
   @override
+  Future<void> deleteActivity(int activityId) async {
+    deletedActivityIds.add(activityId);
+  }
+}
+
+class _UnusedRecordLifecycle implements RecordLifecycle {
+  Never _unexpected() => throw StateError('record lifecycle should not run');
+
+  @override
   Future<void> addPlainRecord(
     int activityId,
     DateTime endTime, {
     double? value,
-  }) {
-    throw UnimplementedError();
-  }
+  }) => _unexpected();
 
   @override
-  Future<int> startTimedRecord(int activityId, DateTime startTime) {
-    throw UnimplementedError();
-  }
+  Future<void> cancelActiveTimedRecord(int activityId) => _unexpected();
+
+  @override
+  Future<int> startTimedRecord(int activityId, DateTime startTime) =>
+      _unexpected();
 
   @override
   Future<void> stopActiveTimedRecord(
     int activityId,
     DateTime stoppedAt, {
     double? value,
-  }) {
-    throw UnimplementedError();
-  }
-
-  @override
-  Future<void> cancelActiveTimedRecord(int activityId) {
-    throw UnimplementedError();
-  }
-
-  @override
-  Future<void> deleteActivity(int activityId) async {
-    deletedActivityIds.add(activityId);
-  }
-
-  @override
-  Future<void> repairAggregateTotals() {
-    throw UnimplementedError();
-  }
+  }) => _unexpected();
 }
 
 class _FakeUnitRepository implements UnitRepository {

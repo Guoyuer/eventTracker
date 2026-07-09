@@ -7,7 +7,7 @@ import 'package:intl/intl.dart';
 
 import 'statistics_charts.dart';
 import '../domain/date_range.dart';
-import '../persistence/statistics_repository.dart' show StatisticsData;
+import '../domain/statistics_repository.dart' show StatisticsData;
 import '../state/statistics_providers.dart';
 
 class StatisticPage extends ConsumerWidget {

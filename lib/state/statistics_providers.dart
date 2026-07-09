@@ -1,8 +1,8 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../domain/date_range.dart';
+import '../domain/statistics_repository.dart';
 import '../persistence/persistence_providers.dart';
-import '../persistence/statistics_repository.dart';
 import 'mutable_state.dart';
 
 final selectedStatisticsRangeProvider =

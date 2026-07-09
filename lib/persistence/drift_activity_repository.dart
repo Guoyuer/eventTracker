@@ -1,46 +1,10 @@
 import 'package:drift/drift.dart';
 
 import '../domain/activity_models.dart';
+import '../domain/activity_repository.dart';
 import 'activity_aggregate_store.dart';
 import 'database/app_database.dart';
 import 'record_lifecycle_store.dart';
-
-abstract class ActivityRepository {
-  Future<List<BaseEventModel>> getActivities();
-
-  Future<List<ActivityRecord>> getActivityRecords(int activityId);
-
-  Future<int> createActivity({
-    required String name,
-    required bool careTime,
-    String? unit,
-    String? description,
-  });
-
-  Future<String?> getActivityDescription(int activityId);
-
-  Future<void> updateActivityDescription(int activityId, String description);
-
-  Future<void> addPlainRecord(
-    int activityId,
-    DateTime endTime, {
-    double? value,
-  });
-
-  Future<int> startTimedRecord(int activityId, DateTime startTime);
-
-  Future<void> stopActiveTimedRecord(
-    int activityId,
-    DateTime stoppedAt, {
-    double? value,
-  });
-
-  Future<void> cancelActiveTimedRecord(int activityId);
-
-  Future<void> deleteActivity(int activityId);
-
-  Future<void> repairAggregateTotals();
-}
 
 class DriftActivityRepository implements ActivityRepository {
   DriftActivityRepository(AppDatabase db)
