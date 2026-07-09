@@ -1,12 +1,5 @@
 import 'package:flutter/material.dart';
 
-enum EventStatus {
-  plain, // 不care时间
-  active, //正在进行
-  paused, //暂停中，这个暂时不做，会让逻辑复杂。
-  notActive, //不在进行
-}
-
 var chartTitleStyle = TextStyle(fontSize: 20.0, fontWeight: FontWeight.bold);
 const Map<int, Color> heatmapColorMap = {
   -1: Color.fromARGB(0, 255, 255, 255), //透明，用于占位

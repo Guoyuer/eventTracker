@@ -1,4 +1,9 @@
-import '../common/const.dart';
+enum EventStatus {
+  plain,
+  active,
+  paused,
+  notActive,
+}
 
 class BaseEventModel {
   int id;

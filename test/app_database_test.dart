@@ -1,5 +1,6 @@
 import 'package:drift/drift.dart' hide isNotNull, isNull;
 import 'package:event_tracker/persistence/database/app_database.dart';
+import 'package:event_tracker/persistence/database/database_bootstrap.dart';
 import 'package:event_tracker/persistence/record_lifecycle_store.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';

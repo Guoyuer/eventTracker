@@ -1,5 +1,4 @@
 import 'package:event_tracker/analytics/activity_detail_analytics.dart';
-import 'package:event_tracker/common/const.dart';
 import 'package:event_tracker/domain/activity_models.dart';
 import 'package:flutter_test/flutter_test.dart';
 

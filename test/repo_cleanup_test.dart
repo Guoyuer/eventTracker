@@ -51,6 +51,15 @@ void main() {
     }
   });
 
+  test('domain models do not depend on UI constants', () {
+    final models = File('lib/domain/activity_models.dart').readAsStringSync();
+    final constants = File('lib/common/const.dart').readAsStringSync();
+
+    expect(models, isNot(contains('common/const.dart')));
+    expect(models, contains('enum EventStatus'));
+    expect(constants, isNot(contains('enum EventStatus')));
+  });
+
   test('ui state does not import the Drift database module directly', () {
     for (final path in [
       'lib/stateProviders.dart',
@@ -95,6 +104,22 @@ void main() {
       expect(source, isNot(contains('unitRepository()')));
       expect(source, isNot(contains('statisticsRepository()')));
     }
+  });
+
+  test('app database does not own platform bootstrap details', () {
+    final database =
+        File('lib/persistence/database/app_database.dart').readAsStringSync();
+    final bootstrap = File('lib/persistence/database/database_bootstrap.dart')
+        .readAsStringSync();
+
+    expect(database, isNot(contains('path_provider')));
+    expect(database, isNot(contains('drift_sqflite')));
+    expect(database, isNot(contains('defaultTargetPlatform')));
+    expect(database, isNot(contains('getApplicationSupportDirectory')));
+    expect(database, isNot(contains('usesExplicitDatabasePathOnPlatform')));
+    expect(database, contains('database_bootstrap.dart'));
+    expect(bootstrap, contains('defaultDatabaseExecutor'));
+    expect(bootstrap, contains('usesExplicitDatabasePathOnPlatform'));
   });
 
   test('shared common widgets do not create persistence repositories', () {

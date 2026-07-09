@@ -1,13 +1,8 @@
-import 'package:flutter/foundation.dart'
-    show TargetPlatform, defaultTargetPlatform, kIsWeb, visibleForTesting;
-import 'package:flutter/material.dart';
-import 'package:event_tracker/common/const.dart';
-import 'package:drift_sqflite/drift_sqflite.dart';
 import 'package:drift/drift.dart';
-import 'package:path/path.dart' as p;
-import 'package:path_provider/path_provider.dart';
+import 'package:flutter/material.dart';
 
 import '../../domain/activity_models.dart';
+import 'database_bootstrap.dart';
 import 'tables.dart';
 
 part 'app_database.g.dart';
@@ -185,32 +180,4 @@ class AppDatabase extends _$AppDatabase {
 
     return events;
   }
-}
-
-QueryExecutor defaultDatabaseExecutor() {
-  return LazyDatabase(() async {
-    if (usesExplicitDatabasePathOnPlatform(defaultTargetPlatform,
-        isWeb: kIsWeb)) {
-      final directory = await getApplicationSupportDirectory();
-      await directory.create(recursive: true);
-      return SqfliteQueryExecutor(
-        path: p.join(directory.path, 'db.sqlite'),
-        logStatements: false,
-      );
-    }
-
-    return SqfliteQueryExecutor.inDatabaseFolder(
-      path: 'db.sqlite',
-      logStatements: false,
-    );
-  });
-}
-
-@visibleForTesting
-bool usesExplicitDatabasePathOnPlatform(TargetPlatform platform,
-    {required bool isWeb}) {
-  return !isWeb &&
-      (platform == TargetPlatform.windows ||
-          platform == TargetPlatform.linux ||
-          platform == TargetPlatform.macOS);
 }

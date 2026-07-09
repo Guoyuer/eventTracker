@@ -1,5 +1,4 @@
 import 'package:drift/drift.dart' hide isNotNull, isNull;
-import 'package:event_tracker/common/const.dart';
 import 'package:event_tracker/domain/activity_models.dart';
 import 'package:event_tracker/persistence/database/app_database.dart';
 import 'package:event_tracker/persistence/activity_repository.dart';

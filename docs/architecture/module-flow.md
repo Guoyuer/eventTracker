@@ -32,6 +32,7 @@ flowchart LR
   end
 
   subgraph Persistence["Persistence module"]
+    DatabaseBootstrap["DatabaseBootstrap"]
     ActivityRepository["ActivityRepository"]
     UnitRepository["UnitRepository"]
     StatisticsRepository["StatisticsRepository"]
@@ -58,6 +59,7 @@ flowchart LR
   UnitRepositoryProvider --> AppDatabaseProvider
   StatisticsRepositoryProvider --> AppDatabaseProvider
   AppDatabaseProvider --> AppDatabase
+  AppDatabase --> DatabaseBootstrap
 ```
 
 ## What Changed
@@ -117,6 +119,6 @@ flowchart LR
   DirectDB --> Persistence["Keep active product routes behind repository providers"]
 
   Next["Next deepening candidates"]
-  Next --> Bootstrap["Move platform executor setup out of AppDatabase"]
+  Next --> Mapping["Move activity display-model shaping out of AppDatabase"]
   Next --> Queries["Shrink AppDatabase toward low-level Drift queries"]
 ```

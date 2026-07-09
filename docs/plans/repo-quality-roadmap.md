@@ -91,7 +91,7 @@ Status: in progress
 - Mapped unit UI data through a domain `ActivityUnit` read model so unit screens no longer import the Drift database module.
 - Introduced `StatisticsRepository` and migrated statistics range reads to it.
 - Moved production `AppDatabase` construction and repository adapter wiring behind Riverpod persistence providers.
-- Move platform-specific sqflite executor setup out of `app_database.dart` and into a database bootstrap module.
+- Moved platform-specific sqflite executor setup out of `app_database.dart` and into a database bootstrap module.
 - Added tests around record lifecycle, aggregate totals, latest step lookup, repository activity creation, and repository activity recording.
 - Added tests for unit add/list/delete and duplicate-name protection through the repository.
 - Removed inactive step-count and debug/fake-data database methods from the active persistence API.
@@ -112,6 +112,7 @@ Status: in progress
 - Moved statistics activity-count and time-slot aggregation out of Widgets into `statistics_analytics.dart`.
 - Dropped legacy step tables and record sentinel assumptions from the active schema through a tested v3 migration.
 - Moved activity display models and analytics read models into `lib/domain/` so analytics no longer imports Drift generated row types.
+- Moved `EventStatus` into `lib/domain/activity_models.dart` so domain models no longer depend on UI constants.
 - Extracted statistics chart rendering and `fl_chart` adapters out of the statistics page route.
 - Added explicit `ActivityAggregateTotals` invariants for plain and timed record accumulation.
 - Define invariants for timed records, plain records, values, and units.

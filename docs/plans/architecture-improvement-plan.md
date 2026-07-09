@@ -109,6 +109,7 @@ Current status:
 - Moved activity display models plus analytics record/activity read models into `lib/domain/`, with repositories mapping from Drift rows.
 - Extracted statistics chart rendering and `fl_chart` adapters into `Statistics/statistics_charts.dart`.
 - Moved production `AppDatabase` construction and repository adapter wiring into Riverpod persistence providers, removing the old `DBHandle` singleton and no-argument repository factories.
+- Moved platform-specific sqflite executor setup into `database_bootstrap.dart`, leaving `AppDatabase` focused on Drift schema, migrations, and low-level queries.
 
 Target modules:
 
@@ -213,7 +214,7 @@ Rule:
 Recommended order from here:
 
 1. Continue shrinking `AppDatabase` to generated Drift access plus low-level queries.
-2. Split platform database executor/bootstrap decisions out of `app_database.dart`.
+2. Move activity display-model shaping out of `AppDatabase` and into repository/domain mapping.
 3. Dependency cleanup and upgrade batches.
 
 ## Definition of Done for Each Slice
