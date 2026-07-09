@@ -1,7 +1,6 @@
 import 'package:drift/drift.dart';
 import 'package:flutter/material.dart';
 
-import '../../domain/activity_models.dart';
 import 'database_bootstrap.dart';
 import 'tables.dart';
 
@@ -116,68 +115,5 @@ class AppDatabase extends _$AppDatabase {
       await (delete(records)..where((tbl) => tbl.eventId.equals(eventId))).go();
       await (delete(events)..where((tbl) => tbl.id.equals(eventId))).go();
     });
-  }
-
-  Future _eventProcessor(Event rawEvent) async {
-    Future<TimingEventModel> timingEventProcessor(Event rawEvent) async {
-      EventStatus status;
-      Duration? sumTime;
-      DateTime? startTime;
-      double? sumVal;
-      if (rawEvent.lastRecordId == null) {
-        // 当前还无记录（新创建且未开始的的event）
-        status = EventStatus.notActive;
-        sumTime = Duration(seconds: 0);
-        startTime = null;
-        sumVal = 0;
-      } else {
-        //当前已有记录
-        var record = await getRecordById(rawEvent.lastRecordId!);
-        startTime = record.startTime;
-        sumVal = rawEvent.sumVal;
-        sumTime = rawEvent.sumTime;
-        if (record.endTime == null) {
-          status = EventStatus.active;
-        } else {
-          status = EventStatus.notActive;
-        }
-      }
-      return TimingEventModel(
-          rawEvent.id,
-          rawEvent.name,
-          rawEvent.unit,
-          status,
-          sumTime,
-          startTime,
-          sumVal,
-          rawEvent.description,
-          rawEvent.lastRecordId);
-    }
-
-    Future<PlainEventModel> plainEventProcessor(Event rawEvent) async {
-      return PlainEventModel(
-          rawEvent.id,
-          rawEvent.name,
-          rawEvent.unit,
-          rawEvent.sumTime.inSeconds,
-          rawEvent.sumVal,
-          rawEvent.description,
-          rawEvent.lastRecordId);
-    }
-
-    if (rawEvent.careTime)
-      return timingEventProcessor(rawEvent);
-    else
-      return plainEventProcessor(rawEvent);
-  }
-
-  Future<List<BaseEventModel>> getEventsProfile() async {
-    var rawEvents = await getRawEvents();
-    List<BaseEventModel> events = [];
-    for (var event in rawEvents) {
-      events.add(await _eventProcessor(event));
-    }
-
-    return events;
   }
 }

@@ -119,6 +119,6 @@ flowchart LR
   DirectDB --> Persistence["Keep active product routes behind repository providers"]
 
   Next["Next deepening candidates"]
-  Next --> Mapping["Move activity display-model shaping out of AppDatabase"]
+  Next --> Helpers["Move table-specific query helpers behind repositories"]
   Next --> Queries["Shrink AppDatabase toward low-level Drift queries"]
 ```

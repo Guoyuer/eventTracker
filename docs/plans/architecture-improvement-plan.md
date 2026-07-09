@@ -107,6 +107,7 @@ Current status:
 - Added `docs/architecture/module-flow.md` with Mermaid diagrams for the active module flow and remaining seams.
 - Moved statistics range-record and activity-map reads behind `StatisticsRepository`.
 - Moved activity display models plus analytics record/activity read models into `lib/domain/`, with repositories mapping from Drift rows.
+- Moved activity display-model shaping out of `AppDatabase` and into `ActivityRepository`.
 - Extracted statistics chart rendering and `fl_chart` adapters into `Statistics/statistics_charts.dart`.
 - Moved production `AppDatabase` construction and repository adapter wiring into Riverpod persistence providers, removing the old `DBHandle` singleton and no-argument repository factories.
 - Moved platform-specific sqflite executor setup into `database_bootstrap.dart`, leaving `AppDatabase` focused on Drift schema, migrations, and low-level queries.
@@ -214,7 +215,7 @@ Rule:
 Recommended order from here:
 
 1. Continue shrinking `AppDatabase` to generated Drift access plus low-level queries.
-2. Move activity display-model shaping out of `AppDatabase` and into repository/domain mapping.
+2. Move remaining table-specific query helpers out of `AppDatabase` when a repository has enough context to own them.
 3. Dependency cleanup and upgrade batches.
 
 ## Definition of Done for Each Slice

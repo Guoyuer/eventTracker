@@ -122,6 +122,24 @@ void main() {
     expect(bootstrap, contains('usesExplicitDatabasePathOnPlatform'));
   });
 
+  test('app database does not shape activity display models', () {
+    final database =
+        File('lib/persistence/database/app_database.dart').readAsStringSync();
+    final repository =
+        File('lib/persistence/activity_repository.dart').readAsStringSync();
+
+    expect(database, isNot(contains('activity_models.dart')));
+    expect(database, isNot(contains('BaseEventModel')));
+    expect(database, isNot(contains('TimingEventModel')));
+    expect(database, isNot(contains('PlainEventModel')));
+    expect(database, isNot(contains('EventStatus')));
+    expect(database, isNot(contains('getEventsProfile')));
+    expect(database, isNot(contains('_eventProcessor')));
+    expect(repository, contains('BaseEventModel'));
+    expect(repository, contains('TimingEventModel'));
+    expect(repository, contains('PlainEventModel'));
+  });
+
   test('shared common widgets do not create persistence repositories', () {
     final source = File('lib/common/commonWidget.dart').readAsStringSync();
 

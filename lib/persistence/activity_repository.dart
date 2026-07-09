@@ -49,8 +49,11 @@ class DriftActivityRepository implements ActivityRepository {
   final RecordLifecycleStore _recordLifecycle;
 
   @override
-  Future<List<BaseEventModel>> getActivities() {
-    return _db.getEventsProfile();
+  Future<List<BaseEventModel>> getActivities() async {
+    final events = await _db.getRawEvents();
+    return [
+      for (final event in events) await _toActivityModel(event),
+    ];
   }
 
   @override
@@ -142,5 +145,57 @@ class DriftActivityRepository implements ActivityRepository {
   @override
   Future<void> deleteActivity(int activityId) {
     return _db.deleteEvent(activityId);
+  }
+
+  Future<BaseEventModel> _toActivityModel(Event event) {
+    if (event.careTime) {
+      return _toTimedActivity(event);
+    }
+
+    return Future.value(_toPlainActivity(event));
+  }
+
+  PlainEventModel _toPlainActivity(Event event) {
+    return PlainEventModel(
+      event.id,
+      event.name,
+      event.unit,
+      event.sumTime.inSeconds,
+      event.sumVal,
+      event.description,
+      event.lastRecordId,
+    );
+  }
+
+  Future<TimingEventModel> _toTimedActivity(Event event) async {
+    if (event.lastRecordId == null) {
+      return TimingEventModel(
+        event.id,
+        event.name,
+        event.unit,
+        EventStatus.notActive,
+        Duration.zero,
+        null,
+        0,
+        event.description,
+        event.lastRecordId,
+      );
+    }
+
+    final record = await _db.getRecordById(event.lastRecordId!);
+    final status =
+        record.endTime == null ? EventStatus.active : EventStatus.notActive;
+
+    return TimingEventModel(
+      event.id,
+      event.name,
+      event.unit,
+      status,
+      event.sumTime,
+      record.startTime,
+      event.sumVal,
+      event.description,
+      event.lastRecordId,
+    );
   }
 }

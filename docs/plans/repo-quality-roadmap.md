@@ -92,6 +92,7 @@ Status: in progress
 - Introduced `StatisticsRepository` and migrated statistics range reads to it.
 - Moved production `AppDatabase` construction and repository adapter wiring behind Riverpod persistence providers.
 - Moved platform-specific sqflite executor setup out of `app_database.dart` and into a database bootstrap module.
+- Moved activity display-model shaping out of `AppDatabase` and into `ActivityRepository`.
 - Added tests around record lifecycle, aggregate totals, latest step lookup, repository activity creation, and repository activity recording.
 - Added tests for unit add/list/delete and duplicate-name protection through the repository.
 - Removed inactive step-count and debug/fake-data database methods from the active persistence API.
@@ -107,6 +108,7 @@ Remaining:
 Status: in progress
 
 - Extract activity display models and event status logic out of generated persistence files.
+- Moved activity display-model shaping from `AppDatabase` into `ActivityRepository`.
 - Moved activity detail heatmap and time-slot aggregation out of Widgets into `activity_detail_analytics.dart`.
 - Extracted activity detail chart rendering and heatmap adapters out of the detail route.
 - Moved statistics activity-count and time-slot aggregation out of Widgets into `statistics_analytics.dart`.
