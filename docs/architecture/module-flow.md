@@ -127,6 +127,8 @@ flowchart LR
   After --> A1["HeatMapCalendar callbacks"]
   A1 --> A2["EventDetails handles month/day directly"]
   EventDetails["EventDetails"] --> Records["activityRecordsProvider"]
+  HeatMapModel["HeatMapCalendarModel"]
+  HeatMapModel --> Calendar["HeatMapCalendar render widgets"]
 ```
 
 The direction is to keep record and activity rules in pure modules or repositories, and keep widgets focused on rendering and interaction.
@@ -135,10 +137,10 @@ The direction is to keep record and activity rules in pure modules or repositori
 
 ```mermaid
 flowchart LR
-  HeatmapCalendar["Heatmap calendar owns geometry and level mapping"]
-  HeatmapCalendar --> Logic["Move geometry and level mapping into pure modules"]
+  HeatmapCalendar["Heatmap calendar render widgets"]
+  HeatmapCalendar --> Logic["Consume pure HeatMapCalendarModel"]
 
   Next["Next deepening candidates"]
-  Next --> HeatmapGeometry["Extract heatmap geometry and level mapping"]
   Next --> DependencyBatches["Modernize dependencies in focused batches"]
+  Next --> RouteCoordinators["Extract remaining route interaction coordinators"]
 ```

@@ -119,6 +119,7 @@ Status: in progress
 - Moved `EventStatus` into `lib/domain/activity_models.dart` so domain models no longer depend on UI constants.
 - Extracted statistics chart rendering and `fl_chart` adapters out of the statistics page route.
 - Moved activity-detail and statistics chart view-model construction out of chart adapters and into tested analytics modules.
+- Moved heatmap calendar date geometry, placeholder cells, month spacer weeks, and value-to-level mapping out of Widgets into `heatmap_calendar_model.dart`.
 - Added explicit `ActivityAggregateTotals` invariants for plain and timed record accumulation.
 - Define invariants for timed records, plain records, values, and units.
 
@@ -141,6 +142,7 @@ Status: in progress
 - Moved activity recording actions out of `EventsList/util.dart` and into a testable `ActivityRecordingActions` module.
 - Split broad Riverpod state ownership out of `stateProviders.dart` into focused modules under `lib/state/`.
 - Standardized async loading, empty, error, and retry states behind `AsyncStateView`.
+- Replaced the heatmap calendar's global empty-date sentinel with typed placeholder cells produced by the calendar model.
 - Removed the old settings-page DB viewer, delete-all-data button, fake-data generator, and inactive step-count route.
 
 ## Phase 5: Dependency and Platform Modernization

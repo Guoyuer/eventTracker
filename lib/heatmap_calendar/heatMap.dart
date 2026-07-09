@@ -1,9 +1,8 @@
 import 'package:flutter/material.dart';
-import 'util.dart';
-import 'heatMapBuildingBlocks.dart';
-import '../common/const.dart';
 
-var nilTime = DateTime.fromMicrosecondsSinceEpoch(0);
+import 'heatMapBuildingBlocks.dart';
+import 'heatmap_calendar_model.dart';
+import '../common/const.dart';
 
 class HeatMapSetting {
   final Map<int, Color> colorMap; //int indicates level
@@ -22,18 +21,14 @@ class HeatMapSetting {
 
 class HeatMapDataHolder extends InheritedWidget {
   final HeatMapSetting setting;
-  final Map<DateTime, int> date2level;
-  final Map<DateTime, double> data; // 用于toolTip
-  final DateTimeRange dateRange; //因为map无序
+  final HeatMapCalendarModel model;
   final ValueChanged<DateTime>? onMonthTouched;
   final ValueChanged<DateTime>? onDayTouched;
   final String? unit;
 
   HeatMapDataHolder(
       {required this.setting,
-      required this.data,
-      required this.date2level,
-      required this.dateRange,
+      required this.model,
       this.unit,
       this.onMonthTouched,
       this.onDayTouched,
@@ -42,7 +37,7 @@ class HeatMapDataHolder extends InheritedWidget {
 
   @override
   bool updateShouldNotify(HeatMapDataHolder oldWidget) {
-    return setting != oldWidget.setting;
+    return setting != oldWidget.setting || model != oldWidget.model;
   }
 
   static HeatMapDataHolder of(BuildContext context) {
@@ -50,14 +45,13 @@ class HeatMapDataHolder extends InheritedWidget {
   }
 }
 
-class HeatMapCalendar extends StatefulWidget {
+class HeatMapCalendar extends StatelessWidget {
   final HeatMapSetting setting;
-  final Map<DateTime, double> data;
+  final HeatMapCalendarModel model;
   final DateTimeRange dateRange;
   final ValueChanged<DateTime>? onMonthTouched;
   final ValueChanged<DateTime>? onDayTouched;
   final String unit; //Tooltip显示的单位
-  final double maxVal;
 
   HeatMapCalendar(
       {Key? key,
@@ -67,66 +61,28 @@ class HeatMapCalendar extends StatefulWidget {
       required this.unit,
       this.onMonthTouched,
       this.onDayTouched})
-      : data = _normalizeInput(input),
-        maxVal = _maxInputValue(input),
+      : model = buildHeatMapCalendarModel(
+          start: dateRange.start,
+          end: dateRange.end,
+          input: input,
+          maxLevel: _maxColorLevel(setting.colorMap),
+        ),
         super(key: key);
 
-  static Map<DateTime, double> _normalizeInput(Map<DateTime, double> input) {
-    return {
-      for (final entry in input.entries) getDate(entry.key): entry.value,
-    };
-  }
-
-  static double _maxInputValue(Map<DateTime, double> input) {
-    if (input.isEmpty) {
-      return 0;
-    }
-    return input.values.reduce((maxValue, value) {
-      return value > maxValue ? value : maxValue;
-    });
-  }
-
-  @override
-  HeatMapCalendarState createState() {
-    return HeatMapCalendarState();
-  }
-}
-
-class HeatMapCalendarState extends State<HeatMapCalendar> {
   @override
   Widget build(BuildContext context) {
-    //把date:double转化为date:level
-    List<double> threshold = [0];
-    int colorNum = widget.setting.colorMap.length - 1; //还有一个是透明
-    for (int i = 0; i < colorNum - 1; i++) {
-      threshold.add(i * widget.maxVal / colorNum);
-    }
-    Map<DateTime, int> date2level = Map<DateTime, int>();
-    date2level[nilTime] = -1; //用于留白
-    for (DateTime i = widget.dateRange.start;
-        i.compareTo(widget.dateRange.end) <= 0;
-        i = i.add(Duration(days: 1))) {
-      if (widget.data.containsKey(i)) {
-        int level = 0;
-        for (int j = 0; j < threshold.length; j++) {
-          if (widget.data[i]! > threshold[j]) level = j;
-        }
-        date2level[i] = level;
-        //可能并不是所有日期都有数据，要允许这样的留白;
-      } else {
-        date2level[i] = 0;
-      }
-    }
     return HeatMapDataHolder(
-        setting: widget.setting,
-        date2level: date2level,
-        data: widget.data,
-        dateRange: widget.dateRange,
-        unit: widget.unit,
-        onMonthTouched: widget.onMonthTouched,
-        onDayTouched: widget.onDayTouched,
-        child: Container(
-          child: HeatMapDisplay(),
-        ));
+        setting: setting,
+        model: model,
+        unit: unit,
+        onMonthTouched: onMonthTouched,
+        onDayTouched: onDayTouched,
+        child: HeatMapDisplay());
+  }
+
+  static int _maxColorLevel(Map<int, Color> colorMap) {
+    return colorMap.keys
+        .where((level) => level >= 0)
+        .fold(0, (max, level) => max > level ? max : level);
   }
 }

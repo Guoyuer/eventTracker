@@ -356,6 +356,26 @@ void main() {
     expect(statisticsModel, isNot(contains('fl_chart')));
   });
 
+  test('heatmap calendar delegates geometry and level mapping to pure model',
+      () {
+    final calendar =
+        File('lib/heatmap_calendar/heatMap.dart').readAsStringSync();
+    final blocks = File('lib/heatmap_calendar/heatMapBuildingBlocks.dart')
+        .readAsStringSync();
+    final model = File('lib/heatmap_calendar/heatmap_calendar_model.dart')
+        .readAsStringSync();
+
+    expect(calendar, contains('buildHeatMapCalendarModel'));
+    expect(calendar, isNot(contains('class HeatMapCalendarState')));
+    expect(calendar, isNot(contains('date2level')));
+    expect(calendar, isNot(contains('nilTime')));
+    expect(blocks, contains('HeatMapDayCell'));
+    expect(blocks, isNot(contains('split2weeks')));
+    expect(blocks, isNot(contains('DateTimeRange')));
+    expect(model, isNot(contains("package:flutter")));
+    expect(model, contains('class HeatMapCalendarModel'));
+  });
+
   test('activity description editing state stays in Riverpod', () {
     final editor = File('lib/EventsDetails/activity_description_editor.dart')
         .readAsStringSync();

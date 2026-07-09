@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 import 'heatMap.dart';
-import 'util.dart';
+import 'heatmap_calendar_model.dart';
 
 //最上层组件，只需给日期区间即可
 class HeatMapDisplay extends StatelessWidget {
@@ -10,33 +10,23 @@ class HeatMapDisplay extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     HeatMapDataHolder dataHolder = HeatMapDataHolder.of(context);
-    DateTimeRange dateRange = dataHolder.dateRange;
-    List<DateTimeRange> yearRanges = split2year(dateRange);
-    List<Widget> years = [];
-    yearRanges.forEach((element) {
-      years
-          .add(YearTile(DateTimeRange(start: element.start, end: element.end)));
-    });
+    List<Widget> years =
+        dataHolder.model.years.map((year) => YearTile(year)).toList();
     return Row(mainAxisSize: MainAxisSize.min, children: years);
   }
 }
 
 //父组件只需要给它日期区间，需保证在同年内
 class YearTile extends StatelessWidget {
-  final DateTimeRange dateRange;
+  final HeatMapYearBlock year;
 
-  YearTile(this.dateRange) {
-    assert(dateRange.start.year == dateRange.end.year);
+  YearTile(this.year) {
+    assert(year.start.year == year.end.year);
   }
 
   @override
   Widget build(BuildContext context) {
-    List<DateTimeRange> monthRanges = split2month(dateRange);
-    List<Widget> months = [];
-    monthRanges.forEach((element) {
-      months.add(
-          MonthTile(DateTimeRange(start: element.start, end: element.end)));
-    });
+    List<Widget> months = year.months.map((month) => MonthTile(month)).toList();
     return Container(
       // width: 500,
       child: Row(
@@ -50,42 +40,30 @@ class YearTile extends StatelessWidget {
 class MonthTile extends StatelessWidget {
   //已经可以自行决定长宽了。小修正：如果end是月的最后一天且恰是周六，那便再补一列空白的。为了视觉效果。论文提一下
 
-  final DateTimeRange dateRange; // 2021-4-1 ~ 2021-4-13
-  MonthTile(this.dateRange) {
-    assert(dateRange.start.month == dateRange.end.month);
+  final HeatMapMonthBlock monthBlock; // 2021-4-1 ~ 2021-4-13
+  MonthTile(this.monthBlock) {
+    assert(monthBlock.start.month == monthBlock.end.month);
   }
 
   @override
   Widget build(BuildContext context) {
-    List<DateTimeRange> weekdayRanges = split2weeks(dateRange);
     var setting = HeatMapDataHolder.of(context).setting;
-    int month = dateRange.start.month;
-    DateTime end = dateRange.end;
-    List<Widget> weeks = [];
-    weekdayRanges.forEach((element) {
-      weeks
-          .add(WeekTile(DateTimeRange(start: element.start, end: element.end)));
-    });
-    int daysInMonth = DateUtils.getDaysInMonth(end.month, end.year); //end的最后一天
-    DateTime lastDay =
-        DateTime(end.year, end.month).add(Duration(days: daysInMonth - 1));
-
-    if (end.weekday == DateTime.saturday && end.compareTo(lastDay) == 0) {
-      weeks.add(WeekTile(DateTimeRange(start: nilTime, end: nilTime)));
-    }
+    int month = monthBlock.month;
+    List<Widget> weeks =
+        monthBlock.weeks.map((week) => WeekTile(week)).toList();
     final dataHolder = HeatMapDataHolder.of(context);
     return InkWell(
         onLongPress: () {
-          dataHolder.onMonthTouched?.call(lastDay);
+          dataHolder.onMonthTouched?.call(monthBlock.calendarMonthEnd);
         },
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             Container(
                 //同个Month的Tile
-                width: weeks.length *
+                width: monthBlock.widthInWeeks *
                         (setting.dayTileSize + setting.dayTileMargin) +
-                    (weeks.length - 1) * setting.monthTileMargin,
+                    (monthBlock.widthInWeeks - 1) * setting.monthTileMargin,
                 child: Row(
                   children: weeks,
                 )),
@@ -97,29 +75,14 @@ class MonthTile extends StatelessWidget {
 
 //父组件只需要给它日期区间，需保证在同周内。
 class WeekTile extends StatelessWidget {
-  final DateTimeRange dateRange;
+  final HeatMapWeekColumn week;
 
-  WeekTile(this.dateRange);
+  WeekTile(this.week);
 
   @override
   Widget build(BuildContext context) {
-    // Map<int, Color> colorMap = HeatMapDataHolder.of(context).setting.colorMap;
     var setting = HeatMapDataHolder.of(context).setting;
-    // double tileSize = HeatMapDataHolder.of(context).setting.dayTileSize;
-
-    List<Widget> days = []; //要给DayTile的颜色
-    int start = dateRange.start.weekday % 7;
-    int end = dateRange.end.weekday % 7;
-    int skipped = 0;
-    for (int i = 0; i < 7; i++) {
-      if (start <= i && i <= end) {
-        days.add(
-            DayTile(date: dateRange.start.add(Duration(days: i - skipped))));
-      } else {
-        skipped++;
-        days.add(DayTile(date: nilTime));
-      }
-    }
+    List<Widget> days = week.days.map((day) => DayTile(cell: day)).toList();
     return Container(
         height: setting.dayTileSize * 7 + setting.dayTileMargin * 7,
         child: Column(
@@ -128,54 +91,18 @@ class WeekTile extends StatelessWidget {
   }
 }
 
-Widget weekdayStrTile(BuildContext context, double size) {
-  HeatMapSetting setting = HeatMapDataHolder.of(context).setting;
-  List<String> weekdays = ["日", "一", "二", "三", "四", "五", "六"];
-  List<Widget> weekdayStrTiles = [];
-  weekdays.forEach((str) {
-    weekdayStrTiles.add(textTile(context, str, setting.dayTileSize));
-  });
-  return Align(
-      alignment: Alignment.topCenter,
-      child: Container(
-          height: setting.dayTileSize * 7 + setting.dayTileMargin * 7,
-          child: Column(
-            children: weekdayStrTiles,
-          )));
-}
-
-Widget textTile(BuildContext context, String text, double size) {
-  HeatMapSetting setting = HeatMapDataHolder.of(context).setting;
-  return Container(
-    child: Text(text),
-    width: size,
-    height: size,
-    margin: EdgeInsets.all(setting.dayTileMargin / 2),
-  );
-}
-
-Widget emptyDayTile(BuildContext context, double size) {
-  HeatMapSetting setting = HeatMapDataHolder.of(context).setting;
-  return Container(
-    width: size,
-    height: size,
-    margin: EdgeInsets.all(setting.dayTileMargin / 2),
-  );
-}
-
 //父组件只需要给它日期
 class DayTile extends StatelessWidget {
-  final DateTime date;
+  final HeatMapDayCell cell;
 
-  DayTile({Key? key, required this.date}) : super(key: key);
+  DayTile({Key? key, required this.cell}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     HeatMapSetting setting = HeatMapDataHolder.of(context).setting;
     var dataHolder = HeatMapDataHolder.of(context);
-    var date2level = dataHolder.date2level;
-    int level = date2level[date]!;
-    if (date == nilTime) {
+    int level = cell.level;
+    if (cell.isPlaceholder) {
       //占位格子
       return Container(
         alignment: Alignment.center,
@@ -188,7 +115,7 @@ class DayTile extends StatelessWidget {
     } else {
       return InkWell(
         onTap: () {
-          dataHolder.onDayTouched?.call(date);
+          dataHolder.onDayTouched?.call(cell.date!);
         },
         child: Container(
           alignment: Alignment.center,
