@@ -655,4 +655,24 @@ void main() {
       }
     },
   );
+
+  test('record lifecycle rebuilds aggregate snapshots from records', () {
+    final lifecycle = File(
+      'lib/persistence/record_lifecycle_store.dart',
+    ).readAsStringSync();
+    final aggregate = File(
+      'lib/domain/activity_aggregate_totals.dart',
+    ).readAsStringSync();
+
+    expect(lifecycle, contains('_rebuildAggregateSnapshot'));
+    expect(
+      lifecycle,
+      contains('ActivityAggregateSnapshot.fromCompletedRecords'),
+    );
+    expect(lifecycle, isNot(contains('activity.sumTime')));
+    expect(lifecycle, isNot(contains('activity.sumVal')));
+    expect(aggregate, contains('class ActivityAggregateRecord'));
+    expect(aggregate, contains('class ActivityAggregateSnapshot'));
+    expect(aggregate, contains('fromCompletedRecords'));
+  });
 }

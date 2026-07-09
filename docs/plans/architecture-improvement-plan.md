@@ -67,6 +67,7 @@ Current status:
 
 - `RecordLifecycleStore` owns plain record add, timed record start, timed record stop, and active timed record cancel writes.
 - `ActivityAggregateTotals` owns plain and timed accumulation rules and fails fast on negative timed durations.
+- `ActivityAggregateSnapshot` rebuilds cached `lastRecordId`, `sumTime`, and `sumVal` from completed records after lifecycle writes, so the next write repairs drifted cached totals instead of compounding them.
 - Accidental timed starts under five seconds now cancel directly instead of asking the user to delete or continue.
 
 Target shape:

@@ -31,4 +31,51 @@ void main() {
       throwsArgumentError,
     );
   });
+
+  test('snapshot rebuilds aggregate totals from completed records', () {
+    final snapshot = ActivityAggregateSnapshot.fromCompletedRecords([
+      ActivityAggregateRecord(
+        id: 1,
+        endTime: DateTime(2026, 1, 1, 8),
+        value: 3,
+      ),
+      ActivityAggregateRecord(
+        id: 2,
+        startTime: DateTime(2026, 1, 1, 9),
+        endTime: DateTime(2026, 1, 1, 9, 20),
+        value: 4,
+      ),
+    ]);
+
+    expect(snapshot.lastRecordId, 2);
+    expect(snapshot.sumTime, const Duration(minutes: 20, seconds: 1));
+    expect(snapshot.sumValue, 7);
+  });
+
+  test('snapshot uses latest end time for last record', () {
+    final snapshot = ActivityAggregateSnapshot.fromCompletedRecords([
+      ActivityAggregateRecord(
+        id: 1,
+        startTime: DateTime(2026, 1, 1, 8),
+        endTime: DateTime(2026, 1, 1, 10),
+      ),
+      ActivityAggregateRecord(
+        id: 2,
+        startTime: DateTime(2026, 1, 1, 9),
+        endTime: DateTime(2026, 1, 1, 9, 30),
+      ),
+    ]);
+
+    expect(snapshot.lastRecordId, 1);
+  });
+
+  test('completed record duration fails fast when negative', () {
+    final record = ActivityAggregateRecord(
+      id: 1,
+      startTime: DateTime(2026, 1, 1, 9),
+      endTime: DateTime(2026, 1, 1, 8),
+    );
+
+    expect(() => record.contribution, throwsArgumentError);
+  });
 }

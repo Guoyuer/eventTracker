@@ -14,7 +14,8 @@ class RecordLifecycleStore {
     double? value,
   }) {
     return _db.transaction(() async {
-      final recordId = await _db
+      await _activityById(activityId);
+      await _db
           .into(_db.records)
           .insert(
             RecordsCompanion(
@@ -23,21 +24,7 @@ class RecordLifecycleStore {
               value: Value(value),
             ),
           );
-      final activity = await _activityById(activityId);
-      final nextTotals = ActivityAggregateTotals(
-        sumTime: activity.sumTime,
-        sumValue: activity.sumVal,
-      ).addPlainRecord(value: value);
-
-      await (_db.update(
-        _db.events,
-      )..where((event) => event.id.equals(activityId))).write(
-        EventsCompanion(
-          lastRecordId: Value(recordId),
-          sumTime: Value(nextTotals.sumTime),
-          sumVal: Value(nextTotals.sumValue),
-        ),
-      );
+      await _rebuildAggregateSnapshot(activityId);
     });
   }
 
@@ -66,15 +53,14 @@ class RecordLifecycleStore {
     double? value,
   }) {
     return _db.transaction(() async {
-      final activity = await _activityById(activityId);
       final activeRecord = await _getActiveTimedRecord(activityId);
       final activeRecordId = activeRecord.id;
 
-      final duration = stoppedAt.difference(activeRecord.startTime!);
-      final nextTotals = ActivityAggregateTotals(
-        sumTime: activity.sumTime,
-        sumValue: activity.sumVal,
-      ).addTimedRecord(duration: duration, value: value);
+      _validateCompletedRecord(
+        activeRecord,
+        completedAt: stoppedAt,
+        value: value,
+      );
 
       await (_db.update(
         _db.records,
@@ -82,14 +68,7 @@ class RecordLifecycleStore {
         RecordsCompanion(endTime: Value(stoppedAt), value: Value(value)),
       );
 
-      await (_db.update(
-        _db.events,
-      )..where((event) => event.id.equals(activityId))).write(
-        EventsCompanion(
-          sumTime: Value(nextTotals.sumTime),
-          sumVal: Value(nextTotals.sumValue),
-        ),
-      );
+      await _rebuildAggregateSnapshot(activityId);
     });
   }
 
@@ -101,22 +80,50 @@ class RecordLifecycleStore {
         _db.records,
       )..where((record) => record.id.equals(activeRecord.id))).go();
 
-      final previousRecord =
-          await (_db.select(_db.records)
-                ..where((record) => record.eventId.equals(activityId))
-                ..orderBy([
-                  (record) => OrderingTerm(
-                    expression: record.startTime,
-                    mode: OrderingMode.desc,
-                  ),
-                ])
-                ..limit(1))
-              .getSingleOrNull();
-
-      await (_db.update(_db.events)
-            ..where((event) => event.id.equals(activityId)))
-          .write(EventsCompanion(lastRecordId: Value(previousRecord?.id)));
+      await _rebuildAggregateSnapshot(activityId);
     });
+  }
+
+  Future<void> _rebuildAggregateSnapshot(int activityId) async {
+    final completedRecords =
+        await (_db.select(_db.records)..where(
+              (record) =>
+                  record.eventId.equals(activityId) &
+                  record.endTime.isNotNull(),
+            ))
+            .get();
+    final snapshot = ActivityAggregateSnapshot.fromCompletedRecords([
+      for (final record in completedRecords)
+        ActivityAggregateRecord(
+          id: record.id,
+          startTime: record.startTime,
+          endTime: record.endTime!,
+          value: record.value,
+        ),
+    ]);
+
+    await (_db.update(
+      _db.events,
+    )..where((event) => event.id.equals(activityId))).write(
+      EventsCompanion(
+        lastRecordId: Value(snapshot.lastRecordId),
+        sumTime: Value(snapshot.sumTime),
+        sumVal: Value(snapshot.sumValue),
+      ),
+    );
+  }
+
+  void _validateCompletedRecord(
+    Record record, {
+    required DateTime completedAt,
+    double? value,
+  }) {
+    ActivityAggregateRecord(
+      id: record.id,
+      startTime: record.startTime,
+      endTime: completedAt,
+      value: value,
+    ).contribution;
   }
 
   Future<Record> _getActiveTimedRecord(int activityId) async {

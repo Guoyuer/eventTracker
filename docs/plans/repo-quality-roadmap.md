@@ -90,6 +90,7 @@ Status: in progress
 - Replaced ad hoc string SQL updates in record lifecycle and latest-step reads with typed Drift operations.
 - Continue making record lifecycle operations transactional. Completed for plain record add, timed record start, timed record stop, active timed record cancel, and event delete.
 - Moved record lifecycle writes and Aggregate Totals updates out of `AppDatabase` into `RecordLifecycleStore` plus the pure `ActivityAggregateTotals` rule object.
+- Made Record Lifecycle writes rebuild Aggregate Totals snapshots from completed records after plain add, timed stop, and active timed-record cancel, so drifted cached totals self-heal on the next lifecycle write.
 - Replaced the short timed-record delete prompt with a cancel policy for accidental starts under five seconds.
 - Introduced `ActivityRepository` and migrated activity creation plus the activity-list recording flow to it.
 - Migrated activity detail record reads, deletion, and description edits to `ActivityRepository`.
@@ -128,6 +129,7 @@ Status: in progress
 - Moved activity-detail and statistics chart view-model construction out of chart adapters and into tested analytics modules.
 - Moved heatmap calendar date geometry, placeholder cells, month spacer weeks, and value-to-level mapping out of Widgets into `heatmap_calendar_model.dart`.
 - Added explicit `ActivityAggregateTotals` invariants for plain and timed record accumulation.
+- Added `ActivityAggregateSnapshot` rebuild rules for cached `lastRecordId`, `sumTime`, and `sumVal`.
 - Define invariants for timed records, plain records, values, and units.
 
 ## Phase 4: UI Composition

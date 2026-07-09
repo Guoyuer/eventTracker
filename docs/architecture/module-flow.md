@@ -26,6 +26,7 @@ flowchart LR
     ActivityEditorController["ActivityEditorController"]
     ActivityDetailController["ActivityDetailController"]
     UnitManagementController["UnitManagementController"]
+    ActivityAggregateSnapshot["ActivityAggregateSnapshot"]
     AsyncStateView["AsyncStateView"]
   end
 
@@ -73,6 +74,7 @@ flowchart LR
   ActivityEditorController --> ActivityRepository
   ActivityDetailController --> ActivityRepository
   UnitManagementController --> UnitRepository
+  RecordLifecycleStore --> ActivityAggregateSnapshot
   ActivityListProvider --> ActivityRepositoryProvider
   EventDetails --> ActivityRecordsProvider
   EventDetails --> AsyncStateView

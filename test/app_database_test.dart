@@ -1,6 +1,7 @@
 import 'package:event_tracker/persistence/database/app_database.dart';
 import 'package:event_tracker/persistence/database/database_bootstrap.dart';
 import 'package:event_tracker/persistence/record_lifecycle_store.dart';
+import 'package:drift/drift.dart' hide isNull;
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -70,6 +71,37 @@ void main() {
     expect(event.sumVal, 20);
   });
 
+  test('plain record add rebuilds drifted aggregate totals', () async {
+    final eventId = await insertTestActivity(
+      db,
+      name: 'Pages',
+      careTime: false,
+      unit: 'pages',
+    );
+
+    await lifecycle.addPlainRecord(eventId, DateTime(2026, 1, 1, 8), value: 12);
+    await _corruptAggregateTotals(db, eventId);
+    await lifecycle.addPlainRecord(eventId, DateTime(2026, 1, 2, 8), value: 8);
+
+    final event = await getTestActivity(db, eventId);
+    final records = await getCompletedTestRecordsForActivity(db, eventId);
+
+    expect(records, hasLength(2));
+    expect(event.lastRecordId, records.last.id);
+    expect(event.sumTime.inSeconds, 2);
+    expect(event.sumVal, 20);
+  });
+
+  test('plain record add fails before writing orphan records', () async {
+    expect(
+      lifecycle.addPlainRecord(404, DateTime(2026, 1, 1, 8)),
+      throwsA(anything),
+    );
+
+    final records = await db.select(db.records).get();
+    expect(records, isEmpty);
+  });
+
   test('timed record start and stop update active state and totals', () async {
     final eventId = await insertTestActivity(
       db,
@@ -126,6 +158,35 @@ void main() {
     expect(event.sumVal, 8);
   });
 
+  test('timed record stop rebuilds drifted aggregate totals', () async {
+    final eventId = await insertTestActivity(
+      db,
+      name: 'Running',
+      careTime: true,
+      unit: 'km',
+    );
+
+    await lifecycle.startTimedRecord(eventId, DateTime(2026, 1, 1, 8));
+    await lifecycle.stopActiveTimedRecord(
+      eventId,
+      DateTime(2026, 1, 1, 8, 20),
+      value: 3,
+    );
+    await _corruptAggregateTotals(db, eventId);
+
+    await lifecycle.startTimedRecord(eventId, DateTime(2026, 1, 2, 8));
+    await lifecycle.stopActiveTimedRecord(
+      eventId,
+      DateTime(2026, 1, 2, 8, 30),
+      value: 5,
+    );
+
+    final event = await getTestActivity(db, eventId);
+
+    expect(event.sumTime, const Duration(minutes: 50));
+    expect(event.sumVal, 8);
+  });
+
   test(
     'canceling an active timed record restores previous last record',
     () async {
@@ -158,6 +219,36 @@ void main() {
 
       expect(deletedRecord, isNull);
       expect(event.lastRecordId, firstRecordId);
+      expect(event.sumTime, const Duration(minutes: 10));
+    },
+  );
+
+  test(
+    'canceling the only active timed record clears aggregate snapshot',
+    () async {
+      final eventId = await insertTestActivity(
+        db,
+        name: 'Practice',
+        careTime: true,
+      );
+
+      final activeRecordId = await lifecycle.startTimedRecord(
+        eventId,
+        DateTime(2026, 1, 1, 9),
+      );
+      await _corruptAggregateTotals(db, eventId);
+
+      await lifecycle.cancelActiveTimedRecord(eventId);
+
+      final event = await getTestActivity(db, eventId);
+      final deletedRecord = await (db.select(
+        db.records,
+      )..where((record) => record.id.equals(activeRecordId))).getSingleOrNull();
+
+      expect(deletedRecord, isNull);
+      expect(event.lastRecordId, isNull);
+      expect(event.sumTime, Duration.zero);
+      expect(event.sumVal, 0);
     },
   );
 
@@ -183,4 +274,15 @@ void main() {
       isFalse,
     );
   });
+}
+
+Future<void> _corruptAggregateTotals(AppDatabase db, int eventId) async {
+  await (db.update(
+    db.events,
+  )..where((event) => event.id.equals(eventId))).write(
+    EventsCompanion(
+      sumTime: Value(const Duration(days: 99)),
+      sumVal: const Value(999),
+    ),
+  );
 }
