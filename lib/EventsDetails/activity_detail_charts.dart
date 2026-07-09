@@ -1,4 +1,4 @@
-import 'package:event_tracker/analytics/activity_detail_analytics.dart';
+import 'package:event_tracker/analytics/activity_detail_chart_models.dart';
 import 'package:event_tracker/common/const.dart';
 import 'package:event_tracker/domain/activity_models.dart';
 import 'package:event_tracker/heatmap_calendar/heatMap.dart';
@@ -22,18 +22,8 @@ class ActivityDetailCharts extends StatefulWidget {
 
 class _ActivityDetailChartsState extends State<ActivityDetailCharts> {
   final ScrollController _scrollController = ScrollController();
-  late final List<String> _metricLabels;
   int _selectedMetricIndex = 0;
   DateTime? _selectedMonth;
-
-  @override
-  void initState() {
-    super.initState();
-    _metricLabels = [
-      if (widget.activity is TimingEventModel) "时长" else "次数",
-      if (widget.activity.unit != null) widget.activity.unit!,
-    ];
-  }
 
   @override
   void dispose() {
@@ -43,18 +33,15 @@ class _ActivityDetailChartsState extends State<ActivityDetailCharts> {
 
   @override
   Widget build(BuildContext context) {
-    final metric =
-        metricForActivitySelection(widget.activity, _selectedMetricIndex);
-    final heatMapSeries = buildActivityHeatmapSeries(
+    final model = buildActivityDetailChartModel(
       records: widget.records,
       activity: widget.activity,
-      metric: metric,
+      selectedMetricIndex: _selectedMetricIndex,
+      selectedMonth: _selectedMonth,
       now: DateTime.now(),
+      combineHourSlots:
+          MediaQuery.of(context).orientation == Orientation.portrait,
     );
-    final visibleRecords = _selectedMonth == null
-        ? widget.records
-        : recordsInMonth(widget.records, _selectedMonth!);
-    final barRecords = visibleRecords.isEmpty ? widget.records : visibleRecords;
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _scrollToEnd();
@@ -62,8 +49,8 @@ class _ActivityDetailChartsState extends State<ActivityDetailCharts> {
 
     return Column(
       children: [
-        _chartCard(_buildHeatmap(heatMapSeries, visibleRecords.length)),
-        _chartCard(_buildTimeSlotChart(barRecords, metric)),
+        _chartCard(_buildHeatmap(model)),
+        _chartCard(_buildTimeSlotChart(model)),
       ],
     );
   }
@@ -75,15 +62,12 @@ class _ActivityDetailChartsState extends State<ActivityDetailCharts> {
     );
   }
 
-  Widget _buildHeatmap(
-    ActivityHeatmapSeries heatMapSeries,
-    int visibleRecordCount,
-  ) {
+  Widget _buildHeatmap(ActivityDetailChartModel model) {
     return Column(
       children: [
         Center(
           child: Text(
-            "统计数据 - ${_metricLabels[_selectedMetricIndex]}",
+            "统计数据 - ${model.selectedMetricLabel}",
             style: chartTitleStyle,
           ),
         ),
@@ -94,9 +78,9 @@ class _ActivityDetailChartsState extends State<ActivityDetailCharts> {
             controller: _scrollController,
             scrollDirection: Axis.horizontal,
             child: HeatMapCalendar(
-              dateRange: heatMapSeries.range,
-              input: heatMapSeries.data,
-              unit: heatMapSeries.unit,
+              dateRange: model.heatmapSeries.range,
+              input: model.heatmapSeries.data,
+              unit: model.heatmapSeries.unit,
               onMonthTouched: (selectedMonth) {
                 setState(() {
                   _selectedMonth = selectedMonth;
@@ -113,9 +97,9 @@ class _ActivityDetailChartsState extends State<ActivityDetailCharts> {
               text: TextSpan(
                 style: TextStyle(fontSize: 16, color: Colors.black),
                 children: [
-                  TextSpan(text: _recordCountHeading()),
+                  TextSpan(text: model.recordCountHeading),
                   TextSpan(
-                    text: '$visibleRecordCount',
+                    text: '${model.visibleRecordCount}',
                     style: TextStyle(fontWeight: FontWeight.bold),
                   ),
                   TextSpan(text: " 次")
@@ -127,12 +111,12 @@ class _ActivityDetailChartsState extends State<ActivityDetailCharts> {
             height: 35,
             margin: EdgeInsets.all(10),
             child: ToggleButtons(
-              children: _metricLabels.map((label) => Text(label)).toList(),
+              children: model.metricLabels.map((label) => Text(label)).toList(),
               borderRadius: BorderRadius.all(Radius.circular(10)),
               borderWidth: 2,
               selectedBorderColor: Colors.blueAccent,
               isSelected: [
-                for (var index = 0; index < _metricLabels.length; index++)
+                for (var index = 0; index < model.metricLabels.length; index++)
                   index == _selectedMetricIndex,
               ],
               onPressed: (index) {
@@ -150,26 +134,7 @@ class _ActivityDetailChartsState extends State<ActivityDetailCharts> {
     );
   }
 
-  String _recordCountHeading() {
-    final month = _selectedMonth;
-    if (month == null) {
-      return "共进行";
-    }
-    return "${month.month}月共进行";
-  }
-
-  Widget _buildTimeSlotChart(
-    List<ActivityRecord> records,
-    ActivityDetailMetric metric,
-  ) {
-    final timeSlotSeries = buildActivityTimeSlotSeries(
-      records: records,
-      activity: widget.activity,
-      metric: metric,
-    );
-    final bars = _barGroupsForOrientation(timeSlotSeries.hourlyValues);
-    final maxValue = _maxValueForOrientation(timeSlotSeries.hourlyValues);
-
+  Widget _buildTimeSlotChart(ActivityDetailChartModel model) {
     return Column(children: [
       Text(
         "时段活跃度",
@@ -199,29 +164,20 @@ class _ActivityDetailChartsState extends State<ActivityDetailCharts> {
                 getTitlesWidget: (double val, TitleMeta meta) {
                   return Text(val.floor().toString());
                 },
-                interval: maxValue / 6,
+                interval: _axisInterval(model.maxTimeSlotValue),
               ),
             ),
           ),
           borderData: FlBorderData(show: false),
-          barGroups: bars,
+          barGroups: _barGroups(model.timeSlotBars),
         )),
       )
     ]);
   }
 
-  List<BarChartGroupData> _barGroupsForOrientation(List<double> hourlyValues) {
-    if (MediaQuery.of(context).orientation == Orientation.portrait) {
-      final values = combineAdjacentHourSlots(hourlyValues);
-      return [
-        for (var index = 0; index < 12; index++)
-          _barGroup(index * 2, values[index])
-      ];
-    }
-
+  List<BarChartGroupData> _barGroups(List<ActivityTimeSlotBar> bars) {
     return [
-      for (var index = 0; index < 24; index++)
-        _barGroup(index, hourlyValues[index])
+      for (final bar in bars) _barGroup(bar.x, bar.value),
     ];
   }
 
@@ -231,13 +187,8 @@ class _ActivityDetailChartsState extends State<ActivityDetailCharts> {
     ]);
   }
 
-  double _maxValueForOrientation(List<double> hourlyValues) {
-    final values = MediaQuery.of(context).orientation == Orientation.portrait
-        ? combineAdjacentHourSlots(hourlyValues)
-        : hourlyValues;
-    return values.fold<double>(0, (maxValue, value) {
-      return value > maxValue ? value : maxValue;
-    });
+  double _axisInterval(double maxValue) {
+    return maxValue <= 0 ? 1 : maxValue / 6;
   }
 
   void _scrollToEnd() {
@@ -276,8 +227,12 @@ class _ActivityDetailChartsState extends State<ActivityDetailCharts> {
   }
 
   Widget _buildDayRecords(List<ActivityRecord> records, DateTime day) {
-    final dayRecords = recordsOnDay(records, day);
-    if (dayRecords.isEmpty) {
+    final labels = activityRecordLabelsForDay(
+      activity: widget.activity,
+      records: records,
+      day: day,
+    );
+    if (labels.isEmpty) {
       return Text("当日无记录");
     }
 
@@ -285,28 +240,11 @@ class _ActivityDetailChartsState extends State<ActivityDetailCharts> {
       width: 300,
       child: ListView.builder(
         shrinkWrap: true,
-        itemCount: dayRecords.length,
+        itemCount: labels.length,
         itemBuilder: (ctx, index) {
-          return Text(_recordLabel(dayRecords[index]));
+          return Text(labels[index]);
         },
       ),
     );
-  }
-
-  String _recordLabel(ActivityRecord record) {
-    if (widget.activity is TimingEventModel) {
-      final startTimeStr = DateFormat('MM-dd kk:mm').format(record.startTime!);
-      final endTimeStr = DateFormat('MM-dd kk:mm').format(record.endTime);
-      if (widget.activity.unit != null) {
-        return "$startTimeStr ~ $endTimeStr, ${record.value!.toInt()}${widget.activity.unit!}  ";
-      }
-      return "$startTimeStr ~ $endTimeStr  ";
-    }
-
-    final endTimeStr = DateFormat('kk:mm').format(record.endTime);
-    if (widget.activity.unit != null) {
-      return "$endTimeStr, ${record.value!.toInt()}${widget.activity.unit!}  ";
-    }
-    return "$endTimeStr  ";
   }
 }

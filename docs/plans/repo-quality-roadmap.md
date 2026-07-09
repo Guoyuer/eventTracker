@@ -118,6 +118,7 @@ Status: in progress
 - Moved activity display models and analytics read models into `lib/domain/` so analytics no longer imports Drift generated row types.
 - Moved `EventStatus` into `lib/domain/activity_models.dart` so domain models no longer depend on UI constants.
 - Extracted statistics chart rendering and `fl_chart` adapters out of the statistics page route.
+- Moved activity-detail and statistics chart view-model construction out of chart adapters and into tested analytics modules.
 - Added explicit `ActivityAggregateTotals` invariants for plain and timed record accumulation.
 - Define invariants for timed records, plain records, values, and units.
 

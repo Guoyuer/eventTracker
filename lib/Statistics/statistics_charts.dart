@@ -1,5 +1,4 @@
-import 'package:event_tracker/analytics/statistics_analytics.dart';
-import 'package:event_tracker/domain/activity_models.dart';
+import 'package:event_tracker/analytics/statistics_chart_models.dart';
 import 'package:event_tracker/persistence/statistics_repository.dart'
     show StatisticsData;
 import 'package:fl_chart/fl_chart.dart';
@@ -12,26 +11,20 @@ class StatisticsCharts extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final records = statisticsData.records;
-    final activitiesById = statisticsData.activitiesById;
+    final model = buildStatisticsChartModel(
+      records: statisticsData.records,
+      activitiesById: statisticsData.activitiesById,
+      colorCount: Colors.primaries.length,
+    );
 
-    if (records.isEmpty || activitiesById.isEmpty) {
+    if (model.isEmpty) {
       return Card(elevation: 10, child: Text("暂无记录"));
     }
 
-    final activityColors = _activityColors(activitiesById);
-    final summary = buildStatisticsSummary(
-      records: records,
-      eventsById: activitiesById,
-    );
-
     return Column(
       children: [
-        _chartCard(_PieStatisticsChart(summary, activityColors)),
-        _chartCard(_TimeSlotStatisticsChart(
-          summary.hourlyCountsByActivityName,
-          activityColors,
-        )),
+        _chartCard(_PieStatisticsChart(model)),
+        _chartCard(_TimeSlotStatisticsChart(model)),
       ],
     );
   }
@@ -42,22 +35,12 @@ class StatisticsCharts extends StatelessWidget {
       child: child,
     );
   }
-
-  Map<String, Color> _activityColors(Map<int, StatisticsActivity> activities) {
-    final colors = <String, Color>{};
-    activities.forEach((activityId, activity) {
-      colors[activity.name] =
-          Colors.primaries[activityId.abs() % Colors.primaries.length].shade300;
-    });
-    return colors;
-  }
 }
 
 class _PieStatisticsChart extends StatelessWidget {
-  final StatisticsSummary summary;
-  final Map<String, Color> activityColors;
+  final StatisticsChartModel model;
 
-  const _PieStatisticsChart(this.summary, this.activityColors);
+  const _PieStatisticsChart(this.model);
 
   @override
   Widget build(BuildContext context) {
@@ -87,7 +70,7 @@ class _PieStatisticsChart extends StatelessWidget {
                   ),
                   child: Center(
                     child: Text(
-                      "共 ${summary.totalCount} 次",
+                      "共 ${model.totalCount} 次",
                       style:
                           TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
                     ),
@@ -104,38 +87,38 @@ class _PieStatisticsChart extends StatelessWidget {
 
   List<PieChartSectionData> _sections() {
     return [
-      for (final activityCount in summary.activityCounts)
+      for (final slice in model.pieSlices)
         PieChartSectionData(
-          color: activityColors[activityCount.activity.name],
+          color: _color(slice.colorIndex),
           radius: 80,
           titleStyle: TextStyle(
             fontSize: 15,
             fontWeight: FontWeight.bold,
             color: Colors.black87,
           ),
-          title:
-              "${activityCount.activity.name} ${activityCount.count.toString()}",
-          value: activityCount.count.toDouble(),
+          title: "${slice.activityName} ${slice.count}",
+          value: slice.count.toDouble(),
         )
     ];
+  }
+
+  Color _color(int colorIndex) {
+    return Colors.primaries[colorIndex].shade300;
   }
 }
 
 class _TimeSlotStatisticsChart extends StatelessWidget {
-  final Map<String, List<double>> hourlyCountsByActivityName;
-  final Map<String, Color> activityColors;
+  final StatisticsChartModel model;
 
-  const _TimeSlotStatisticsChart(
-    this.hourlyCountsByActivityName,
-    this.activityColors,
-  );
+  const _TimeSlotStatisticsChart(this.model);
 
   @override
   Widget build(BuildContext context) {
     final orientation = MediaQuery.of(context).orientation;
-    final slotCounts = _slotCountsForOrientation(orientation);
-    final bars = _barGroups(slotCounts);
-    final maxY = _maxStackHeight(slotCounts);
+    final slots = orientation == Orientation.portrait
+        ? model.portraitSlots
+        : model.landscapeSlots;
+    final bars = _barGroups(slots);
 
     return Container(
       margin: EdgeInsets.only(left: 5, top: 10, right: 10),
@@ -168,7 +151,7 @@ class _TimeSlotStatisticsChart extends StatelessWidget {
                   getTitlesWidget: (double val, TitleMeta meta) {
                     return Text(val.round().toString());
                   },
-                  interval: maxY / 6,
+                  interval: _axisInterval(slots.maxY),
                 ),
               ),
             ),
@@ -180,43 +163,23 @@ class _TimeSlotStatisticsChart extends StatelessWidget {
     );
   }
 
-  Map<String, List<double>> _slotCountsForOrientation(Orientation orientation) {
-    if (orientation == Orientation.portrait) {
-      return {
-        for (final entry in hourlyCountsByActivityName.entries)
-          entry.key: combineStatisticsAdjacentHourSlots(entry.value),
-      };
-    }
-
-    return Map.of(hourlyCountsByActivityName);
-  }
-
-  List<BarChartGroupData> _barGroups(Map<String, List<double>> slotCounts) {
-    final slotCount = slotCounts.isEmpty ? 0 : slotCounts.values.first.length;
-    final stacks =
-        List.generate(slotCount, (index) => <BarChartRodStackItem>[]);
-    final stackHeights = List.filled(slotCount, 0.0);
-
-    slotCounts.forEach((activityName, slots) {
-      for (var index = 0; index < slotCount; index++) {
-        stacks[index].add(BarChartRodStackItem(
-          stackHeights[index],
-          stackHeights[index] + slots[index],
-          activityColors[activityName]!,
-        ));
-        stackHeights[index] += slots[index];
-      }
-    });
-
+  List<BarChartGroupData> _barGroups(StatisticsTimeSlotModel slots) {
     return [
-      for (var index = 0; index < slotCount; index++)
+      for (final bar in slots.bars)
         BarChartGroupData(
-          x: slotCount == 12 ? index * 2 : index,
+          x: bar.x,
           barRods: [
             BarChartRodData(
               borderRadius: BorderRadius.all(Radius.elliptical(5, 5)),
-              rodStackItems: stacks[index],
-              toY: stackHeights[index],
+              rodStackItems: [
+                for (final segment in bar.segments)
+                  BarChartRodStackItem(
+                    segment.fromY,
+                    segment.toY,
+                    _color(segment.colorIndex),
+                  ),
+              ],
+              toY: bar.total,
               width: 15,
             )
           ],
@@ -224,22 +187,11 @@ class _TimeSlotStatisticsChart extends StatelessWidget {
     ];
   }
 
-  double _maxStackHeight(Map<String, List<double>> slotCounts) {
-    if (slotCounts.isEmpty) {
-      return 0;
-    }
+  Color _color(int colorIndex) {
+    return Colors.primaries[colorIndex].shade300;
+  }
 
-    final slotCount = slotCounts.values.first.length;
-    var maxY = 0.0;
-    for (var index = 0; index < slotCount; index++) {
-      var slotTotal = 0.0;
-      for (final slots in slotCounts.values) {
-        slotTotal += slots[index];
-      }
-      if (slotTotal > maxY) {
-        maxY = slotTotal;
-      }
-    }
-    return maxY;
+  double _axisInterval(double maxValue) {
+    return maxValue <= 0 ? 1 : maxValue / 6;
   }
 }

@@ -328,7 +328,32 @@ void main() {
     expect(details, contains('ActivityDetailCharts'));
     expect(charts, contains('fl_chart'));
     expect(charts, contains('HeatMapCalendar'));
-    expect(charts, contains('buildActivityHeatmapSeries'));
+    expect(charts, contains('buildActivityDetailChartModel'));
+  });
+
+  test('chart adapters delegate view model construction to analytics modules',
+      () {
+    final detailCharts = File('lib/EventsDetails/activity_detail_charts.dart')
+        .readAsStringSync();
+    final statisticsCharts =
+        File('lib/Statistics/statistics_charts.dart').readAsStringSync();
+    final detailModel = File('lib/analytics/activity_detail_chart_models.dart')
+        .readAsStringSync();
+    final statisticsModel =
+        File('lib/analytics/statistics_chart_models.dart').readAsStringSync();
+
+    expect(detailCharts, contains('buildActivityDetailChartModel'));
+    expect(detailCharts, isNot(contains('recordsInMonth(')));
+    expect(detailCharts, isNot(contains('recordsOnDay(')));
+    expect(detailCharts, isNot(contains('combineAdjacentHourSlots(')));
+    expect(detailCharts, isNot(contains('_recordLabel')));
+    expect(statisticsCharts, contains('buildStatisticsChartModel'));
+    expect(statisticsCharts, isNot(contains('buildStatisticsSummary')));
+    expect(statisticsCharts,
+        isNot(contains('combineStatisticsAdjacentHourSlots')));
+    expect(statisticsCharts, isNot(contains('_maxStackHeight')));
+    expect(detailModel, isNot(contains('fl_chart')));
+    expect(statisticsModel, isNot(contains('fl_chart')));
   });
 
   test('activity description editing state stays in Riverpod', () {

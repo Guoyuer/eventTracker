@@ -18,6 +18,8 @@ flowchart LR
   subgraph Logic["Pure logic modules"]
     ActivityDetailAnalytics["activity_detail_analytics.dart"]
     StatisticsAnalytics["statistics_analytics.dart"]
+    ActivityDetailChartModels["activity_detail_chart_models.dart"]
+    StatisticsChartModels["statistics_chart_models.dart"]
     ActivityRecordingActions["ActivityRecordingActions"]
     AsyncStateView["AsyncStateView"]
   end
@@ -64,8 +66,10 @@ flowchart LR
   StatisticsProvider --> StatisticsRepositoryProvider
   EventEditor --> ActivityRepositoryProvider
   EventDetails --> ActivityDetailAnalytics
+  EventDetails --> ActivityDetailChartModels
   EventDetails --> ActivityRepositoryProvider
   Statistics --> StatisticsAnalytics
+  Statistics --> StatisticsChartModels
   ActivityRepositoryProvider --> ActivityRepository
   ActivityRepository --> RecordLifecycleStore
   RecordLifecycleStore --> AppDatabase
@@ -131,10 +135,10 @@ The direction is to keep record and activity rules in pure modules or repositori
 
 ```mermaid
 flowchart LR
-  ChartAdapters["Chart adapters own view-model construction"]
-  ChartAdapters --> Logic["Move chart view models into pure modules"]
+  HeatmapCalendar["Heatmap calendar owns geometry and level mapping"]
+  HeatmapCalendar --> Logic["Move geometry and level mapping into pure modules"]
 
   Next["Next deepening candidates"]
-  Next --> ChartViewModels["Extract pure chart view-model builders"]
   Next --> HeatmapGeometry["Extract heatmap geometry and level mapping"]
+  Next --> DependencyBatches["Modernize dependencies in focused batches"]
 ```
