@@ -127,7 +127,7 @@ Status: in progress
 - Dropped legacy step tables and record sentinel assumptions from the active schema through a tested v3 migration.
 - Moved activity display models and analytics read models into `lib/domain/` so analytics no longer imports Drift generated row types.
 - Replaced mutable activity models plus `EventStatus` with immutable sealed `PlainActivity`, `InactiveTimedActivity`, and `ActiveTimedActivity` snapshots, making an active Timed Activity's start time non-null by construction.
-- Added a pure `DateRange` value object so persistence and analytics modules no longer depend on Flutter `DateTimeRange`.
+- Replaced the ambiguous `DateRange` value object with `CalendarDateRange` for inclusive UI days and `DateInterval` for half-open timestamp intervals, keeping Flutter `DateTimeRange` out of persistence and analytics.
 - Extracted statistics chart rendering and `fl_chart` adapters out of the statistics page route.
 - Moved activity-detail and statistics chart view-model construction out of chart adapters and into tested analytics modules.
 - Moved heatmap calendar date geometry, placeholder cells, month spacer weeks, and value-to-level mapping out of Widgets into `heatmap_calendar_model.dart`.
@@ -136,6 +136,8 @@ Status: in progress
 - Added active Timed Activity snapshot rules so Aggregate Totals repair keeps the active record as `lastRecordId` without counting it in completed totals.
 - Added `ActivitySnapshotStore`: activity list reads now use one Events-to-active-Records join instead of N+1 last-record queries, fail fast on malformed active histories, and do not expose `lastRecordId` outside persistence.
 - Changed Activity detail navigation to pass only an Activity ID and reload a fresh Activity Snapshot, removing the stale list-snapshot contract.
+- Fixed Statistics end-day handling: queries now include the full selected last day, exclude next-day midnight with a half-open interval, ignore active Records, and load Records plus Activities in one transaction.
+- Corrected the default Statistics window from eight displayed dates to seven inclusive calendar days.
 - Define invariants for timed records, plain records, values, and units.
 
 ## Phase 4: UI Composition

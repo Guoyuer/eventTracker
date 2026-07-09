@@ -13,7 +13,7 @@ class ActivityHeatmapSeries {
     required this.unit,
   });
 
-  final DateRange range;
+  final CalendarDateRange range;
   final Map<DateTime, double> data;
   final String unit;
 }
@@ -45,9 +45,9 @@ ActivityHeatmapSeries buildActivityHeatmapSeries({
   required DateTime now,
 }) {
   final data = <DateTime, double>{};
-  final range = DateRange(
-    start: records.isEmpty ? getDate(now) : getDate(records.first.endTime),
-    end: getDate(now),
+  final range = CalendarDateRange(
+    firstDay: records.isEmpty ? getDate(now) : getDate(records.first.endTime),
+    lastDay: getDate(now),
   );
 
   for (final record in records) {
@@ -149,7 +149,10 @@ ActivityTimeSlotSeries _buildDurationTimeSlotSeries(
   for (final record in records) {
     _addDurationByHour(
       seconds,
-      DateRange(start: record.requiredStartTime, end: record.endTime),
+      DateInterval(
+        start: record.requiredStartTime,
+        endExclusive: record.endTime,
+      ),
     );
   }
 
@@ -169,10 +172,12 @@ ActivityTimeSlotSeries _buildDurationTimeSlotSeries(
   );
 }
 
-void _addDurationByHour(List<double> seconds, DateRange range) {
+void _addDurationByHour(List<double> seconds, DateInterval range) {
   final start = range.start;
-  final end = range.end;
-  assert(start.compareTo(end) < 0);
+  final end = range.endExclusive;
+  if (start == end) {
+    return;
+  }
 
   if (start.day == end.day && start.hour == end.hour) {
     seconds[start.hour] += end.difference(start).inSeconds;

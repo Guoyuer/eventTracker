@@ -28,7 +28,8 @@ flowchart LR
     UnitRepository["UnitRepository"]
     StatisticsRepository["StatisticsRepository"]
     AggregateRules["ActivityAggregateSnapshot"]
-    DateRange["DateRange"]
+    CalendarDateRange["CalendarDateRange"]
+    DateInterval["DateInterval"]
   end
 
   subgraph State["Riverpod state and adapter wiring"]
@@ -75,13 +76,14 @@ flowchart LR
   RecordLifecycleProvider --> RecordLifecycle
   UnitListProvider --> UnitRepository
   StatisticsProvider --> StatisticsRepository
-  StatisticsProvider --> DateRange
+  StatisticsProvider --> CalendarDateRange
 
   ActivityReader --> DriftActivityRepository
   ActivityWriter --> DriftActivityRepository
   RecordLifecycle --> DriftActivityRepository
   UnitRepository --> DriftUnitRepository
   StatisticsRepository --> DriftStatisticsRepository
+  CalendarDateRange --> DateInterval
   DriftActivityRepository --> RecordLifecycleStore
   DriftActivityRepository --> ActivitySnapshotStore
   RecordLifecycleStore --> AggregateStore
@@ -149,12 +151,25 @@ flowchart LR
 
 Active state now comes from active Records rather than cached `lastRecordId`, malformed histories fail at one Interface, and the domain model cannot represent an active Timed Activity without a start time.
 
+## Deepened Statistics Range
+
+```mermaid
+flowchart LR
+  Before["Widget adds one day"] --> Between["inclusive SQL BETWEEN"]
+  Between --> Bug["next-day 00:00 included"]
+
+  After["CalendarDateRange"] --> Interval["DateInterval [start, endExclusive)"]
+  Interval --> Query[">= start AND < endExclusive"]
+  Query --> Transaction["Records + Activities transaction"]
+```
+
+Calendar-day selection and timestamp interval semantics now have separate Interfaces. The Widget displays inclusive days; persistence receives one half-open interval and reads a consistent snapshot.
+
 ## Next Deepening
 
 ```mermaid
 flowchart LR
-  StatisticsRange["Statistics date selection"] --> Inclusive["inclusive next-day midnight"]
-  Inclusive --> HalfOpen["half-open DateRange"]
+  AggregateCache["Aggregate Totals cache"] --> Malformed["malformed Record histories"]
+  Malformed --> Invariants["stronger lifecycle invariants"]
+  SourceShape["source-shape tests"] --> Behavior["behavior and dependency tests"]
 ```
-
-The next slice should make Statistics interval semantics explicit and keep its Records/Activities read consistent.

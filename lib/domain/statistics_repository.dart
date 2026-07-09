@@ -9,5 +9,5 @@ class StatisticsData {
 }
 
 abstract interface class StatisticsRepository {
-  Future<StatisticsData> getStatisticsData(DateRange range);
+  Future<StatisticsData> getStatisticsData(CalendarDateRange range);
 }

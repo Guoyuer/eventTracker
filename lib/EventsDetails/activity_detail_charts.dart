@@ -76,8 +76,8 @@ class _ActivityDetailChartsState extends State<ActivityDetailCharts> {
             scrollDirection: Axis.horizontal,
             child: HeatMapCalendar(
               dateRange: DateTimeRange(
-                start: model.heatmapSeries.range.start,
-                end: model.heatmapSeries.range.end,
+                start: model.heatmapSeries.range.firstDay,
+                end: model.heatmapSeries.range.lastDay,
               ),
               input: model.heatmapSeries.data,
               unit: model.heatmapSeries.unit,

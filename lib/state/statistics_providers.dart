@@ -6,19 +6,13 @@ import '../persistence/persistence_providers.dart';
 import 'mutable_state.dart';
 
 final selectedStatisticsRangeProvider =
-    NotifierProvider<MutableState<DateRange>, DateRange>(() {
-      final now = DateTime.now();
+    NotifierProvider<MutableState<CalendarDateRange>, CalendarDateRange>(() {
       return MutableState(
-        DateRange(
-          start: DateTime(now.year, now.month, now.day).add(Duration(days: -7)),
-          end: now,
-        ),
+        CalendarDateRange.recentDays(endingOn: DateTime.now(), dayCount: 7),
       );
     });
 
-final statisticsProvider = FutureProvider.family<StatisticsData, DateRange>((
-  ref,
-  range,
-) {
-  return ref.watch(statisticsRepositoryProvider).getStatisticsData(range);
-});
+final statisticsProvider =
+    FutureProvider.family<StatisticsData, CalendarDateRange>((ref, range) {
+      return ref.watch(statisticsRepositoryProvider).getStatisticsData(range);
+    });

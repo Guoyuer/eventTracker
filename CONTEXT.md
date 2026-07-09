@@ -8,6 +8,8 @@
 
 - **Activity**: A user-defined thing to track, currently stored in the `events` table and displayed as a project in the UI.
 - **Activity Snapshot**: An immutable Activity read model. Plain, inactive Timed, and active Timed states are separate types; active state is derived from Records rather than Aggregate Totals cache fields.
+- **Calendar Date Range**: A user-selected inclusive set of whole local calendar days.
+- **Date Interval**: A timestamp interval with explicit half-open semantics: start included, end excluded.
 - **Record**: One occurrence of an activity. A record can have an `endTime`, optional `startTime`, and optional numeric `value`.
 - **Timed Activity**: An activity where duration matters. It creates an active record at start and completes that record at stop.
 - **Plain Activity**: An activity where only occurrence time matters. It creates a completed record immediately.

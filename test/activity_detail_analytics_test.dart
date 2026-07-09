@@ -59,8 +59,8 @@ void main() {
         now: DateTime(2026, 1, 5, 12),
       );
 
-      expect(series.range.start, DateTime(2026, 1, 1));
-      expect(series.range.end, DateTime(2026, 1, 5));
+      expect(series.range.firstDay, DateTime(2026, 1, 1));
+      expect(series.range.lastDay, DateTime(2026, 1, 5));
       expect(series.unit, '分钟');
       expect(series.data, {DateTime(2026, 1, 1): 30, DateTime(2026, 1, 2): 5});
     },

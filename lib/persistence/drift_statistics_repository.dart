@@ -11,30 +11,47 @@ class DriftStatisticsRepository implements StatisticsRepository {
   final AppDatabase _db;
 
   @override
-  Future<StatisticsData> getStatisticsData(DateRange range) async {
-    final records =
-        await (_db.select(_db.records)..where(
-              (record) =>
-                  record.endTime.isBetweenValues(range.start, range.end),
-            ))
-            .get();
-    final activities = await _db.select(_db.events).get();
+  Future<StatisticsData> getStatisticsData(CalendarDateRange range) {
+    final interval = range.interval;
+    return _db.transaction(() async {
+      final records =
+          await (_db.select(_db.records)
+                ..where(
+                  (record) =>
+                      record.endTime.isBiggerOrEqualValue(interval.start) &
+                      record.endTime.isSmallerThanValue(interval.endExclusive),
+                )
+                ..orderBy([
+                  (record) => OrderingTerm.asc(record.endTime),
+                  (record) => OrderingTerm.asc(record.id),
+                ]))
+              .get();
+      final activities = await _db.select(_db.events).get();
 
-    return StatisticsData(
-      records: [
-        for (final record in records)
-          ActivityRecord(
-            id: record.id,
-            eventId: record.eventId,
-            startTime: record.startTime,
-            endTime: record.endTime!,
-            value: record.value,
-          ),
-      ],
-      activitiesById: {
-        for (final activity in activities)
-          activity.id: StatisticsActivity(id: activity.id, name: activity.name),
-      },
+      return StatisticsData(
+        records: [for (final record in records) _toActivityRecord(record)],
+        activitiesById: {
+          for (final activity in activities)
+            activity.id: StatisticsActivity(
+              id: activity.id,
+              name: activity.name,
+            ),
+        },
+      );
+    });
+  }
+
+  ActivityRecord _toActivityRecord(Record record) {
+    final endTime = record.endTime;
+    if (endTime == null) {
+      throw StateError('Statistics query returned active Record ${record.id}');
+    }
+    return ActivityRecord(
+      id: record.id,
+      eventId: record.eventId,
+      startTime: record.startTime,
+      endTime: endTime,
+      value: record.value,
     );
   }
 }

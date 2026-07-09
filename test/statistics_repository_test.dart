@@ -35,7 +35,10 @@ void main() {
     await lifecycle.addPlainRecord(runId, DateTime(2026, 1, 2, 8));
 
     final data = await repository.getStatisticsData(
-      DateRange(start: DateTime(2026, 1, 1), end: DateTime(2026, 1, 3)),
+      CalendarDateRange(
+        firstDay: DateTime(2026, 1, 1),
+        lastDay: DateTime(2026, 1, 3),
+      ),
     );
 
     expect(data.records.map((record) => record.eventId), [readId, runId]);
@@ -50,10 +53,56 @@ void main() {
     await lifecycle.addPlainRecord(eventId, DateTime(2026, 1, 1, 8));
 
     final data = await repository.getStatisticsData(
-      DateRange(start: DateTime(2026, 1, 1), end: DateTime(2026, 1, 2)),
+      CalendarDateRange(
+        firstDay: DateTime(2026, 1, 1),
+        lastDay: DateTime(2026, 1, 1),
+      ),
     );
 
     expect(data.records, hasLength(1));
     expect(data.records.single.endTime, DateTime(2026, 1, 1, 8));
+  });
+
+  test('repository includes full end day and excludes next midnight', () async {
+    final eventId = await insertTestActivity(db, name: 'Read', careTime: false);
+    for (final recordedAt in [
+      DateTime(2025, 12, 31, 23, 59, 59),
+      DateTime(2026, 1, 1),
+      DateTime(2026, 1, 31, 23, 59, 59),
+      DateTime(2026, 2, 1),
+    ]) {
+      await lifecycle.addPlainRecord(eventId, recordedAt);
+    }
+
+    final data = await repository.getStatisticsData(
+      CalendarDateRange(
+        firstDay: DateTime(2026, 1, 1),
+        lastDay: DateTime(2026, 1, 31),
+      ),
+    );
+
+    expect(data.records.map((record) => record.endTime), [
+      DateTime(2026, 1, 1),
+      DateTime(2026, 1, 31, 23, 59, 59),
+    ]);
+  });
+
+  test('repository excludes active Records from Statistics', () async {
+    final activityId = await insertTestActivity(
+      db,
+      name: 'Practice',
+      careTime: true,
+    );
+    await lifecycle.startTimedRecord(activityId, DateTime(2026, 1, 1, 8));
+
+    final data = await repository.getStatisticsData(
+      CalendarDateRange(
+        firstDay: DateTime(2026, 1, 1),
+        lastDay: DateTime(2026, 1, 1),
+      ),
+    );
+
+    expect(data.records, isEmpty);
+    expect(data.activitiesById[activityId]!.name, 'Practice');
   });
 }

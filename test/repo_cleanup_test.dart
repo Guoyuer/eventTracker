@@ -314,8 +314,13 @@ void main() {
     expect(detailAnalytics, isNot(contains('DateTimeRange')));
     expect(statisticsProviders, isNot(contains('flutter/material.dart')));
     expect(statisticsProviders, isNot(contains('DateTimeRange')));
-    expect(statisticsRepository, contains('DateRange'));
-    expect(detailAnalytics, contains('DateRange'));
+    expect(statisticsRepository, contains('CalendarDateRange'));
+    expect(statisticsRepository, contains('interval.endExclusive'));
+    expect(statisticsRepository, contains('_db.transaction'));
+    expect(statisticsRepository, contains('isSmallerThanValue'));
+    expect(statisticsRepository, isNot(contains('isBetweenValues')));
+    expect(detailAnalytics, contains('CalendarDateRange'));
+    expect(detailAnalytics, contains('DateInterval'));
     expect(database, isNot(contains('getAllUnits')));
     expect(database, isNot(contains('deleteUnitByName')));
     expect(database, isNot(contains('getRecordsInRange')));
@@ -572,6 +577,10 @@ void main() {
     expect(statistics, isNot(contains('BarChart')));
     expect(statistics, contains('selectedStatisticsRangeProvider'));
     expect(statistics, contains('StatisticsCharts'));
+    expect(statistics, contains('range.firstDay'));
+    expect(statistics, contains('range.lastDay'));
+    expect(statistics, isNot(contains('getDate(')));
+    expect(statistics, isNot(contains('add(Duration(days: 1))')));
     expect(providers, contains('selectedStatisticsRangeProvider'));
     expect(providers, contains('statisticsProvider'));
   });
