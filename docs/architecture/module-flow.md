@@ -20,6 +20,7 @@ flowchart LR
     StatisticsAnalytics["statistics_analytics.dart"]
     ActivityDetailChartModels["activity_detail_chart_models.dart"]
     StatisticsChartModels["statistics_chart_models.dart"]
+    DateRange["DateRange"]
     ActivityRecordingActions["ActivityRecordingActions"]
     AsyncStateView["AsyncStateView"]
   end
@@ -63,7 +64,9 @@ flowchart LR
   UnitListProvider --> UnitRepositoryProvider
   Statistics --> StatisticsProvider
   Statistics --> AsyncStateView
+  Statistics --> DateRange
   StatisticsProvider --> StatisticsRepositoryProvider
+  StatisticsProvider --> DateRange
   EventEditor --> ActivityRepositoryProvider
   EventDetails --> ActivityDetailAnalytics
   EventDetails --> ActivityDetailChartModels

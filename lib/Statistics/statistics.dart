@@ -6,6 +6,7 @@ import 'package:event_tracker/common/util.dart';
 import 'package:intl/intl.dart';
 
 import 'statistics_charts.dart';
+import '../domain/date_range.dart';
 import '../persistence/statistics_repository.dart' show StatisticsData;
 import '../state/statistics_providers.dart';
 
@@ -38,7 +39,7 @@ class StatisticPage extends ConsumerWidget {
                         lastDate: DateTime.now());
                     if (tmp != null) {
                       ref.read(selectedStatisticsRangeProvider.notifier).state =
-                          DateTimeRange(
+                          DateRange(
                               start: getDate(tmp.start),
                               end: getDate(tmp.end).add(Duration(days: 1)));
                     }
@@ -53,7 +54,7 @@ class StatisticPage extends ConsumerWidget {
 class Charts extends ConsumerWidget {
   Charts(this.range);
 
-  final DateTimeRange range;
+  final DateRange range;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {

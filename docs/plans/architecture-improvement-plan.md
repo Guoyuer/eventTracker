@@ -111,6 +111,7 @@ Current status:
 - Extracted statistics chart rendering and `fl_chart` adapters into `Statistics/statistics_charts.dart`.
 - Extracted activity-detail and statistics chart view-model construction into pure analytics modules, leaving chart widgets as rendering adapters.
 - Extracted heatmap calendar geometry and value-to-level mapping into `heatmap_calendar_model.dart`, leaving heatmap widgets as rendering adapters.
+- Introduced a pure `DateRange` domain value object so persistence and analytics seams no longer expose Flutter `DateTimeRange`.
 - Moved production `AppDatabase` construction and repository adapter wiring into Riverpod persistence providers, removing the old `DBHandle` singleton and no-argument repository factories.
 - Moved platform-specific sqflite executor setup into `database_bootstrap.dart`, leaving `AppDatabase` focused on Drift schema, migrations, and low-level queries.
 - Moved unit and statistics table-specific query helpers into `UnitRepository` and `StatisticsRepository`.
@@ -227,7 +228,7 @@ Rule:
 Recommended order from here:
 
 1. Upgrade Flutter and Dart SDK in a dedicated platform slice.
-2. Remove UI `DateTimeRange` leakage from persistence and analytics seams.
+2. Continue shrinking route Widgets by extracting remaining interaction coordinators.
 3. Revisit cached aggregate repair/rebuild options if product usage expands.
 
 ## Definition of Done for Each Slice

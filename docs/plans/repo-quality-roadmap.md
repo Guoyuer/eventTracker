@@ -117,6 +117,7 @@ Status: in progress
 - Dropped legacy step tables and record sentinel assumptions from the active schema through a tested v3 migration.
 - Moved activity display models and analytics read models into `lib/domain/` so analytics no longer imports Drift generated row types.
 - Moved `EventStatus` into `lib/domain/activity_models.dart` so domain models no longer depend on UI constants.
+- Added a pure `DateRange` value object so persistence and analytics modules no longer depend on Flutter `DateTimeRange`.
 - Extracted statistics chart rendering and `fl_chart` adapters out of the statistics page route.
 - Moved activity-detail and statistics chart view-model construction out of chart adapters and into tested analytics modules.
 - Moved heatmap calendar date geometry, placeholder cells, month spacer weeks, and value-to-level mapping out of Widgets into `heatmap_calendar_model.dart`.

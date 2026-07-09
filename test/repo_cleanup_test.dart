@@ -174,9 +174,21 @@ void main() {
         File('lib/persistence/unit_repository.dart').readAsStringSync();
     final statisticsRepository =
         File('lib/persistence/statistics_repository.dart').readAsStringSync();
+    final detailAnalytics =
+        File('lib/analytics/activity_detail_analytics.dart').readAsStringSync();
+    final statisticsProviders =
+        File('lib/state/statistics_providers.dart').readAsStringSync();
 
     expect(database, isNot(contains('flutter/material.dart')));
     expect(database, isNot(contains('DateTimeRange')));
+    expect(statisticsRepository, isNot(contains('flutter/material.dart')));
+    expect(statisticsRepository, isNot(contains('DateTimeRange')));
+    expect(detailAnalytics, isNot(contains('flutter/material.dart')));
+    expect(detailAnalytics, isNot(contains('DateTimeRange')));
+    expect(statisticsProviders, isNot(contains('flutter/material.dart')));
+    expect(statisticsProviders, isNot(contains('DateTimeRange')));
+    expect(statisticsRepository, contains('DateRange'));
+    expect(detailAnalytics, contains('DateRange'));
     expect(database, isNot(contains('getAllUnits')));
     expect(database, isNot(contains('deleteUnitByName')));
     expect(database, isNot(contains('getRecordsInRange')));

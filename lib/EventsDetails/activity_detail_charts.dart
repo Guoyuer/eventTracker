@@ -78,7 +78,10 @@ class _ActivityDetailChartsState extends State<ActivityDetailCharts> {
             controller: _scrollController,
             scrollDirection: Axis.horizontal,
             child: HeatMapCalendar(
-              dateRange: model.heatmapSeries.range,
+              dateRange: DateTimeRange(
+                start: model.heatmapSeries.range.start,
+                end: model.heatmapSeries.range.end,
+              ),
               input: model.heatmapSeries.data,
               unit: model.heatmapSeries.unit,
               onMonthTouched: (selectedMonth) {

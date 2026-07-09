@@ -1,9 +1,8 @@
 import 'dart:math';
 
-import 'package:flutter/material.dart' show DateTimeRange;
-
 import '../common/util.dart';
 import '../domain/activity_models.dart';
+import '../domain/date_range.dart';
 
 enum ActivityDetailMetric { duration, count, value }
 
@@ -14,7 +13,7 @@ class ActivityHeatmapSeries {
     required this.unit,
   });
 
-  final DateTimeRange range;
+  final DateRange range;
   final Map<DateTime, double> data;
   final String unit;
 }
@@ -49,7 +48,7 @@ ActivityHeatmapSeries buildActivityHeatmapSeries({
   required DateTime now,
 }) {
   final data = <DateTime, double>{};
-  final range = DateTimeRange(
+  final range = DateRange(
     start: records.isEmpty ? getDate(now) : getDate(records.first.endTime),
     end: getDate(now),
   );
@@ -141,7 +140,7 @@ ActivityTimeSlotSeries _buildDurationTimeSlotSeries(
   for (final record in records) {
     _addDurationByHour(
       seconds,
-      DateTimeRange(start: record.startTime!, end: record.endTime),
+      DateRange(start: record.startTime!, end: record.endTime),
     );
   }
 
@@ -161,7 +160,7 @@ ActivityTimeSlotSeries _buildDurationTimeSlotSeries(
   );
 }
 
-void _addDurationByHour(List<double> seconds, DateTimeRange range) {
+void _addDurationByHour(List<double> seconds, DateRange range) {
   final start = range.start;
   final end = range.end;
   assert(start.compareTo(end) < 0);

@@ -1,7 +1,7 @@
+import 'package:event_tracker/domain/date_range.dart';
 import 'package:event_tracker/persistence/database/app_database.dart';
 import 'package:event_tracker/persistence/record_lifecycle_store.dart';
 import 'package:event_tracker/persistence/statistics_repository.dart';
-import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'support/database_test_helpers.dart';
@@ -42,7 +42,7 @@ void main() {
     await lifecycle.addPlainRecord(runId, DateTime(2026, 1, 2, 8));
 
     final data = await repository.getStatisticsData(
-      DateTimeRange(
+      DateRange(
         start: DateTime(2026, 1, 1),
         end: DateTime(2026, 1, 3),
       ),
@@ -64,7 +64,7 @@ void main() {
     await lifecycle.addPlainRecord(eventId, DateTime(2026, 1, 1, 8));
 
     final data = await repository.getStatisticsData(
-      DateTimeRange(
+      DateRange(
         start: DateTime(2026, 1, 1),
         end: DateTime(2026, 1, 2),
       ),
