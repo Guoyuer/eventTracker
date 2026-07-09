@@ -91,6 +91,8 @@ Status: in progress
 - Continue making record lifecycle operations transactional. Completed for plain record add, timed record start, timed record stop, active timed record cancel, and event delete.
 - Moved record lifecycle writes and Aggregate Totals updates out of `AppDatabase` into `RecordLifecycleStore` plus the pure `ActivityAggregateTotals` rule object.
 - Made Record Lifecycle writes rebuild Aggregate Totals snapshots from completed records after plain add, timed stop, and active timed-record cancel, so drifted cached totals self-heal on the next lifecycle write.
+- Centralized Aggregate Totals snapshot repair in `ActivityAggregateStore` and exposed `ActivityRepository.repairAggregateTotals()` as the explicit rebuild command while keeping cached totals in the schema.
+- Made Aggregate Totals repair preserve an active Timed Activity `lastRecordId` while recomputing `sumTime` and `sumVal` only from completed records.
 - Replaced the short timed-record delete prompt with a cancel policy for accidental starts under five seconds.
 - Introduced `ActivityRepository` and migrated activity creation plus the activity-list recording flow to it.
 - Migrated activity detail record reads, deletion, and description edits to `ActivityRepository`.
@@ -130,6 +132,7 @@ Status: in progress
 - Moved heatmap calendar date geometry, placeholder cells, month spacer weeks, and value-to-level mapping out of Widgets into `heatmap_calendar_model.dart`.
 - Added explicit `ActivityAggregateTotals` invariants for plain and timed record accumulation.
 - Added `ActivityAggregateSnapshot` rebuild rules for cached `lastRecordId`, `sumTime`, and `sumVal`.
+- Added active Timed Activity snapshot rules so Aggregate Totals repair keeps the active record as `lastRecordId` without counting it in completed totals.
 - Define invariants for timed records, plain records, values, and units.
 
 ## Phase 4: UI Composition

@@ -699,19 +699,30 @@ void main() {
     },
   );
 
-  test('record lifecycle rebuilds aggregate snapshots from records', () {
+  test('aggregate repair is centralized behind a persistence module', () {
     final lifecycle = File(
       'lib/persistence/record_lifecycle_store.dart',
+    ).readAsStringSync();
+    final aggregateStore = File(
+      'lib/persistence/activity_aggregate_store.dart',
     ).readAsStringSync();
     final aggregate = File(
       'lib/domain/activity_aggregate_totals.dart',
     ).readAsStringSync();
+    final repository = File(
+      'lib/persistence/activity_repository.dart',
+    ).readAsStringSync();
 
-    expect(lifecycle, contains('_rebuildAggregateSnapshot'));
+    expect(lifecycle, contains('ActivityAggregateStore'));
     expect(
-      lifecycle,
+      aggregateStore,
       contains('ActivityAggregateSnapshot.fromCompletedRecords'),
     );
+    expect(aggregateStore, contains('rebuildActivitySnapshot'));
+    expect(aggregateStore, contains('rebuildAllActivitySnapshots'));
+    expect(repository, contains('repairAggregateTotals'));
+    expect(lifecycle, isNot(contains('_rebuildAggregateSnapshot')));
+    expect(lifecycle, isNot(contains('ActivityAggregateSnapshot')));
     expect(lifecycle, isNot(contains('activity.sumTime')));
     expect(lifecycle, isNot(contains('activity.sumVal')));
     expect(aggregate, contains('class ActivityAggregateRecord'));

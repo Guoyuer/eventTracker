@@ -1,3 +1,4 @@
+import 'package:drift/drift.dart' hide isNull;
 import 'package:event_tracker/domain/activity_models.dart';
 import 'package:event_tracker/persistence/database/app_database.dart';
 import 'package:event_tracker/persistence/activity_repository.dart';
@@ -220,5 +221,99 @@ void main() {
       expect(activity.sumDuration, const Duration(minutes: 10));
       expect(activity.lastRecordId, firstRecordId);
     },
+  );
+
+  test('repository repairs drifted aggregate totals', () async {
+    final activityId = await repository.createActivity(
+      name: 'Questions',
+      careTime: false,
+      unit: 'questions',
+    );
+    await repository.addPlainRecord(
+      activityId,
+      DateTime(2026, 1, 1, 8),
+      value: 3,
+    );
+    await repository.addPlainRecord(
+      activityId,
+      DateTime(2026, 1, 2, 8),
+      value: 5,
+    );
+    await _corruptAggregateTotals(
+      db,
+      activityId,
+      lastRecordId: null,
+      sumTime: const Duration(days: 99),
+      sumValue: 999,
+    );
+
+    await repository.repairAggregateTotals();
+
+    final activity =
+        (await repository.getActivities()).single as PlainEventModel;
+    final records = await getCompletedTestRecordsForActivity(db, activityId);
+
+    expect(activity.lastRecordId, records.last.id);
+    expect(activity.time, 2);
+    expect(activity.sumVal, 8);
+  });
+
+  test('repository repair preserves active timed records', () async {
+    final activityId = await repository.createActivity(
+      name: 'Practice',
+      careTime: true,
+      unit: 'pages',
+    );
+    final firstRecordId = await repository.startTimedRecord(
+      activityId,
+      DateTime(2026, 1, 1, 8),
+    );
+    await repository.stopActiveTimedRecord(
+      activityId,
+      DateTime(2026, 1, 1, 8, 10),
+      value: 4,
+    );
+    final activeRecordId = await repository.startTimedRecord(
+      activityId,
+      DateTime(2026, 1, 1, 9),
+    );
+    await _corruptAggregateTotals(
+      db,
+      activityId,
+      lastRecordId: firstRecordId,
+      sumTime: const Duration(days: 99),
+      sumValue: 999,
+    );
+
+    await repository.repairAggregateTotals();
+
+    final storedActivity = await getTestActivity(db, activityId);
+    final activity =
+        (await repository.getActivities()).single as TimingEventModel;
+
+    expect(storedActivity.lastRecordId, activeRecordId);
+    expect(storedActivity.sumTime, const Duration(minutes: 10));
+    expect(storedActivity.sumVal, 4);
+    expect(activity.status, EventStatus.active);
+    expect(activity.lastRecordId, activeRecordId);
+    expect(activity.sumDuration, const Duration(minutes: 10));
+  });
+}
+
+Future<void> _corruptAggregateTotals(
+  AppDatabase db,
+  int activityId, {
+  required int? lastRecordId,
+  required Duration sumTime,
+  required double sumValue,
+}) async {
+  await (db.update(
+    db.events,
+  )..where((event) => event.id.equals(activityId))).write(
+    EventsCompanion(
+      lastRecordId: Value(lastRecordId),
+      sumTime: Value(sumTime),
+      sumVal: Value(sumValue),
+    ),
   );
 }

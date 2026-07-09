@@ -68,6 +68,8 @@ Current status:
 - `RecordLifecycleStore` owns plain record add, timed record start, timed record stop, and active timed record cancel writes.
 - `ActivityAggregateTotals` owns plain and timed accumulation rules and fails fast on negative timed durations.
 - `ActivityAggregateSnapshot` rebuilds cached `lastRecordId`, `sumTime`, and `sumVal` from completed records after lifecycle writes, so the next write repairs drifted cached totals instead of compounding them.
+- `ActivityAggregateStore` owns cached snapshot repair for one Activity or all Activities and is reused by `RecordLifecycleStore` and `ActivityRepository.repairAggregateTotals()`.
+- Repair preserves an active Timed Activity record as `lastRecordId` while recomputing `sumTime` and `sumVal` only from completed records.
 - Accidental timed starts under five seconds now cancel directly instead of asking the user to delete or continue.
 
 Target shape:
@@ -86,11 +88,11 @@ Short-term approach:
 
 - Keep the current schema.
 - Keep cached totals.
-- Concentrate update rules and keep tests thick around them.
+- Concentrate update and repair rules in `ActivityAggregateStore` and keep tests thick around them.
 
 Longer-term option:
 
-- Recompute aggregate totals from records for some views, or add a repair/rebuild command if cached totals remain.
+- Recompute aggregate totals from records for some views if cached reads become a measurable correctness or performance liability.
 
 ### 3. Extract Analytics from Widgets
 
@@ -242,7 +244,7 @@ Rule:
 
 Recommended order from here:
 
-1. Revisit cached aggregate repair/rebuild options and decide whether aggregates should be repairable or recomputed.
+1. Continue hardening Aggregate Totals invariants around malformed record histories and any remaining direct cached-field reads.
 2. Continue shrinking remaining Widget/controller construction only when the route still owns behavior beyond UI adapters.
 3. Audit platform support after Android SDK installation or CI coverage is available.
 

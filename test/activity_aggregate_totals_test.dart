@@ -69,6 +69,21 @@ void main() {
     expect(snapshot.lastRecordId, 1);
   });
 
+  test('snapshot keeps active record as last record without counting it', () {
+    final snapshot = ActivityAggregateSnapshot.fromCompletedRecords([
+      ActivityAggregateRecord(
+        id: 1,
+        startTime: DateTime(2026, 1, 1, 8),
+        endTime: DateTime(2026, 1, 1, 8, 20),
+        value: 3,
+      ),
+    ], activeRecordId: 2);
+
+    expect(snapshot.lastRecordId, 2);
+    expect(snapshot.sumTime, const Duration(minutes: 20));
+    expect(snapshot.sumValue, 3);
+  });
+
   test('completed record duration fails fast when negative', () {
     final record = ActivityAggregateRecord(
       id: 1,

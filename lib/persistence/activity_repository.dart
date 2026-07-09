@@ -1,6 +1,7 @@
 import 'package:drift/drift.dart';
 
 import '../domain/activity_models.dart';
+import 'activity_aggregate_store.dart';
 import 'database/app_database.dart';
 import 'record_lifecycle_store.dart';
 
@@ -37,13 +38,26 @@ abstract class ActivityRepository {
   Future<void> cancelActiveTimedRecord(int activityId);
 
   Future<void> deleteActivity(int activityId);
+
+  Future<void> repairAggregateTotals();
 }
 
 class DriftActivityRepository implements ActivityRepository {
-  DriftActivityRepository(this._db)
-    : _recordLifecycle = RecordLifecycleStore(_db);
+  DriftActivityRepository(AppDatabase db)
+    : this._(db, ActivityAggregateStore(db));
+
+  DriftActivityRepository._(
+    AppDatabase db,
+    ActivityAggregateStore aggregateStore,
+  ) : _db = db,
+      _aggregateStore = aggregateStore,
+      _recordLifecycle = RecordLifecycleStore(
+        db,
+        aggregateStore: aggregateStore,
+      );
 
   final AppDatabase _db;
+  final ActivityAggregateStore _aggregateStore;
   final RecordLifecycleStore _recordLifecycle;
 
   @override
@@ -154,6 +168,11 @@ class DriftActivityRepository implements ActivityRepository {
         _db.events,
       )..where((activity) => activity.id.equals(activityId))).go();
     });
+  }
+
+  @override
+  Future<void> repairAggregateTotals() {
+    return _db.transaction(_aggregateStore.rebuildAllActivitySnapshots);
   }
 
   Future<BaseEventModel> _toActivityModel(Event event) {

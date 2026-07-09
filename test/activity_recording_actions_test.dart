@@ -286,6 +286,11 @@ class _FakeActivityRepository implements ActivityRepository {
   Future<void> deleteActivity(int activityId) {
     throw UnimplementedError();
   }
+
+  @override
+  Future<void> repairAggregateTotals() {
+    throw UnimplementedError();
+  }
 }
 
 class _PlainRecord {

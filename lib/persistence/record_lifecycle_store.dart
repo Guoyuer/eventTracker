@@ -1,12 +1,15 @@
 import 'package:drift/drift.dart';
 
 import '../domain/activity_aggregate_totals.dart';
+import 'activity_aggregate_store.dart';
 import 'database/app_database.dart';
 
 class RecordLifecycleStore {
-  RecordLifecycleStore(this._db);
+  RecordLifecycleStore(this._db, {ActivityAggregateStore? aggregateStore})
+    : _aggregateStore = aggregateStore ?? ActivityAggregateStore(_db);
 
   final AppDatabase _db;
+  final ActivityAggregateStore _aggregateStore;
 
   Future<void> addPlainRecord(
     int activityId,
@@ -24,7 +27,7 @@ class RecordLifecycleStore {
               value: Value(value),
             ),
           );
-      await _rebuildAggregateSnapshot(activityId);
+      await _aggregateStore.rebuildActivitySnapshot(activityId);
     });
   }
 
@@ -68,7 +71,7 @@ class RecordLifecycleStore {
         RecordsCompanion(endTime: Value(stoppedAt), value: Value(value)),
       );
 
-      await _rebuildAggregateSnapshot(activityId);
+      await _aggregateStore.rebuildActivitySnapshot(activityId);
     });
   }
 
@@ -80,37 +83,8 @@ class RecordLifecycleStore {
         _db.records,
       )..where((record) => record.id.equals(activeRecord.id))).go();
 
-      await _rebuildAggregateSnapshot(activityId);
+      await _aggregateStore.rebuildActivitySnapshot(activityId);
     });
-  }
-
-  Future<void> _rebuildAggregateSnapshot(int activityId) async {
-    final completedRecords =
-        await (_db.select(_db.records)..where(
-              (record) =>
-                  record.eventId.equals(activityId) &
-                  record.endTime.isNotNull(),
-            ))
-            .get();
-    final snapshot = ActivityAggregateSnapshot.fromCompletedRecords([
-      for (final record in completedRecords)
-        ActivityAggregateRecord(
-          id: record.id,
-          startTime: record.startTime,
-          endTime: record.endTime!,
-          value: record.value,
-        ),
-    ]);
-
-    await (_db.update(
-      _db.events,
-    )..where((event) => event.id.equals(activityId))).write(
-      EventsCompanion(
-        lastRecordId: Value(snapshot.lastRecordId),
-        sumTime: Value(snapshot.sumTime),
-        sumVal: Value(snapshot.sumValue),
-      ),
-    );
   }
 
   void _validateCompletedRecord(

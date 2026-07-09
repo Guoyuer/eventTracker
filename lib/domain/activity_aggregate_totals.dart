@@ -72,8 +72,9 @@ class ActivityAggregateSnapshot {
   });
 
   factory ActivityAggregateSnapshot.fromCompletedRecords(
-    Iterable<ActivityAggregateRecord> records,
-  ) {
+    Iterable<ActivityAggregateRecord> records, {
+    int? activeRecordId,
+  }) {
     final orderedRecords = records.toList()
       ..sort((left, right) {
         final endTimeComparison = left.endTime.compareTo(right.endTime);
@@ -91,7 +92,9 @@ class ActivityAggregateSnapshot {
     }
 
     return ActivityAggregateSnapshot(
-      lastRecordId: orderedRecords.isEmpty ? null : orderedRecords.last.id,
+      lastRecordId:
+          activeRecordId ??
+          (orderedRecords.isEmpty ? null : orderedRecords.last.id),
       sumTime: sumTime,
       sumValue: sumValue,
     );

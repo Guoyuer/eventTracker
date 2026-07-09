@@ -399,6 +399,11 @@ class _FakeActivityRepository implements ActivityRepository {
   Future<void> deleteActivity(int activityId) async {
     deletedActivityIds.add(activityId);
   }
+
+  @override
+  Future<void> repairAggregateTotals() {
+    throw UnimplementedError();
+  }
 }
 
 class _FakeUnitRepository implements UnitRepository {
