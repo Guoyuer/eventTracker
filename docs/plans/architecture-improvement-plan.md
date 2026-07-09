@@ -179,6 +179,7 @@ Current status:
 - `EventList` no longer uses the pass-through `EventDataHolder` inherited widget, and shared button helpers no longer expose unused long-press callbacks from retired manual-time-entry controls.
 - Activity-detail deletion now exits the route through `ActivityDetailController`, with the Widget only providing confirmation and navigation adapters.
 - Unit deletion now runs confirmation, repository mutation, refresh, notification, and Dismissible permission through `UnitManagementController`, preventing failed deletes from visually dismissing rows before refresh.
+- Add-activity creation now exits through `ActivityEditorController`, with `EventEditor` limited to form validation, draft values, notification, and navigation adapters.
 
 Target shape:
 
@@ -241,8 +242,8 @@ Rule:
 
 Recommended order from here:
 
-1. Continue shrinking route Widgets where `eventEditor.dart` and remaining route controller construction still mix form/navigation adapters with mutation policy.
-2. Revisit cached aggregate repair/rebuild options and decide whether aggregates should be repairable or recomputed.
+1. Revisit cached aggregate repair/rebuild options and decide whether aggregates should be repairable or recomputed.
+2. Continue shrinking remaining Widget/controller construction only when the route still owns behavior beyond UI adapters.
 3. Audit platform support after Android SDK installation or CI coverage is available.
 
 ## Definition of Done for Each Slice

@@ -397,6 +397,9 @@ void main() {
 
   test('route mutation policy lives in application controllers', () {
     final editor = File('lib/eventEditor.dart').readAsStringSync();
+    final editorController = File(
+      'lib/application/activity_editor_controller.dart',
+    ).readAsStringSync();
     final unitManager = File(
       'lib/UnitManager/unitsManagerPage.dart',
     ).readAsStringSync();
@@ -408,6 +411,11 @@ void main() {
     ).readAsStringSync();
 
     expect(editor, contains('ActivityEditorController'));
+    expect(editor, contains('createActivityAndExit'));
+    expect(editor, contains('exitEditor:'));
+    expect(editor, isNot(contains('if (!created')));
+    expect(editorController, contains('createActivityAndExit'));
+    expect(editorController, contains('ActivityEditorExit'));
     expect(
       editor,
       isNot(contains('.read(activityRepositoryProvider).createActivity')),

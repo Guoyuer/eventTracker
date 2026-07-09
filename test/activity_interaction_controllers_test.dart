@@ -53,6 +53,53 @@ void main() {
     expect(notifications, ['添加失败，可能是因为项目名重复！']);
   });
 
+  test('activity editor exits only after create succeeds', () async {
+    final repository = _FakeActivityRepository();
+    final exits = <bool>[];
+    final controller = ActivityEditorController(
+      repository: repository,
+      notify: (_) {},
+    );
+
+    await controller.createActivityAndExit(
+      name: 'Read',
+      unit: 'pages',
+      description: 'Books',
+      careTime: false,
+      exitEditor: exits.add,
+    );
+
+    expect(repository.createdActivities, [
+      _CreatedActivity(
+        name: 'Read',
+        unit: 'pages',
+        description: 'Books',
+        careTime: false,
+      ),
+    ]);
+    expect(exits, [true]);
+  });
+
+  test('activity editor stays open when create fails', () async {
+    final repository = _FakeActivityRepository()
+      ..createActivityError = StateError('duplicate');
+    final notifications = <String>[];
+    final exits = <bool>[];
+    final controller = ActivityEditorController(
+      repository: repository,
+      notify: notifications.add,
+    );
+
+    await controller.createActivityAndExit(
+      name: 'Read',
+      careTime: true,
+      exitEditor: exits.add,
+    );
+
+    expect(exits, isEmpty);
+    expect(notifications, ['添加失败，可能是因为项目名重复！']);
+  });
+
   test(
     'activity detail deletion returns success after repository delete',
     () async {

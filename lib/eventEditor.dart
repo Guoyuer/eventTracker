@@ -27,20 +27,20 @@ class EventEditor extends ConsumerWidget {
       }
 
       _formKey.currentState!.save();
-      final created =
-          await ActivityEditorController(
-            repository: ref.read(activityRepositoryProvider),
-            notify: showToast,
-          ).createActivity(
-            name: name!,
-            unit: selectedUnit,
-            description: description,
-            careTime: careTime,
-          );
-      if (!created || !context.mounted) {
-        return;
-      }
-      Navigator.pop(context, true);
+      await ActivityEditorController(
+        repository: ref.read(activityRepositoryProvider),
+        notify: showToast,
+      ).createActivityAndExit(
+        name: name!,
+        unit: selectedUnit,
+        description: description,
+        careTime: careTime,
+        exitEditor: (created) {
+          if (context.mounted) {
+            Navigator.pop(context, created);
+          }
+        },
+      );
     }
 
     return Scaffold(

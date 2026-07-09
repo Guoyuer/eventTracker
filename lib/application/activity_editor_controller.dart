@@ -1,6 +1,7 @@
 import '../persistence/activity_repository.dart';
 
 typedef ActivityEditorNotification = void Function(String message);
+typedef ActivityEditorExit = void Function(bool created);
 
 class ActivityEditorController {
   ActivityEditorController({
@@ -30,6 +31,24 @@ class ActivityEditorController {
     } catch (_) {
       _notify('添加失败，可能是因为项目名重复！');
       return false;
+    }
+  }
+
+  Future<void> createActivityAndExit({
+    required String name,
+    required bool careTime,
+    required ActivityEditorExit exitEditor,
+    String? unit,
+    String? description,
+  }) async {
+    final created = await createActivity(
+      name: name,
+      unit: unit,
+      description: description,
+      careTime: careTime,
+    );
+    if (created) {
+      exitEditor(true);
     }
   }
 }
