@@ -153,6 +153,7 @@ Status: in progress
 - Migrated small mutable UI state from legacy Riverpod `StateProvider` to Riverpod 3 `NotifierProvider` through `MutableState`.
 - Migrated unit selection to Flutter's current `RadioGroup` Interface.
 - Standardized async loading, empty, error, and retry states behind `AsyncStateView`.
+- Moved add-activity, activity-detail deletion/description-save, and unit-management mutation/refresh/notification policy behind tested application controllers.
 - Replaced the heatmap calendar's global empty-date sentinel with typed placeholder cells produced by the calendar model.
 - Removed the old settings-page DB viewer, delete-all-data button, fake-data generator, and inactive step-count route.
 

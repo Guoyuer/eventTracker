@@ -23,6 +23,9 @@ flowchart LR
     DateRange["DateRange"]
     ActivityRecordingController["ActivityRecordingController"]
     ActivityRecordingActions["ActivityRecordingActions"]
+    ActivityEditorController["ActivityEditorController"]
+    ActivityDetailController["ActivityDetailController"]
+    UnitManagementController["UnitManagementController"]
     AsyncStateView["AsyncStateView"]
   end
 
@@ -56,6 +59,10 @@ flowchart LR
   EventList --> ActivityListProvider
   EventList --> ActivityRecordingController
   EventList --> AsyncStateView
+  EventEditor --> ActivityEditorController
+  EventDetails --> ActivityDetailController
+  ActivityDescriptionEditor["ActivityDescriptionEditor"] --> ActivityDetailController
+  UnitManager --> UnitManagementController
   ActivityListProviders --> MutableState
   ActivityDetailProviders --> MutableState
   ActivityEditorProviders --> MutableState
@@ -63,6 +70,9 @@ flowchart LR
   StatisticsProviders --> MutableState
   ActivityRecordingController --> ActivityRecordingActions
   ActivityRecordingActions --> ActivityRepository
+  ActivityEditorController --> ActivityRepository
+  ActivityDetailController --> ActivityRepository
+  UnitManagementController --> UnitRepository
   ActivityListProvider --> ActivityRepositoryProvider
   EventDetails --> ActivityRecordsProvider
   EventDetails --> AsyncStateView

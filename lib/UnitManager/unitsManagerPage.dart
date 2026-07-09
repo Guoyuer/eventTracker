@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../application/unit_management_controller.dart';
 import '../common/async_state.dart';
 import '../common/commonWidget.dart';
 import '../domain/activity_models.dart';
@@ -44,6 +45,7 @@ class UnitsManager extends ConsumerWidget {
     WidgetRef ref,
     List<ActivityUnit> units,
   ) {
+    final controller = _controller(ref);
     return Column(
       children: [
         ListView.builder(
@@ -62,7 +64,8 @@ class UnitsManager extends ConsumerWidget {
               ),
               confirmDismiss: (direction) =>
                   _confirmDismiss(context, direction),
-              onDismissed: (direction) => _deleteUnit(ref, units[idx]),
+              onDismissed: (direction) =>
+                  controller.deleteUnit(units[idx].name),
             );
           },
         ),
@@ -70,7 +73,7 @@ class UnitsManager extends ConsumerWidget {
           padding: EdgeInsets.symmetric(horizontal: 100),
           child: myRaisedButton(Text("添加新单位"), () {
             displayTextInputDialog(context, "请输入单位", (unitName) {
-              return _addUnit(ref, unitName);
+              return controller.addUnit(unitName);
             });
           }),
         ),
@@ -78,18 +81,12 @@ class UnitsManager extends ConsumerWidget {
     );
   }
 
-  Future<void> _deleteUnit(WidgetRef ref, ActivityUnit unit) async {
-    try {
-      await ref.read(unitRepositoryProvider).deleteUnit(unit.name);
-      _refreshUnits(ref);
-    } catch (_) {
-      showToast("删除失败");
-      _refreshUnits(ref);
-    }
-  }
-
-  void _refreshUnits(WidgetRef ref) {
-    ref.invalidate(unitListProvider);
+  UnitManagementController _controller(WidgetRef ref) {
+    return UnitManagementController(
+      repository: ref.read(unitRepositoryProvider),
+      refresh: () => ref.invalidate(unitListProvider),
+      notify: showToast,
+    );
   }
 
   Future<bool> _confirmDismiss(
@@ -114,16 +111,5 @@ class UnitsManager extends ConsumerWidget {
         );
       },
     );
-  }
-
-  Future<bool> _addUnit(WidgetRef ref, String unitName) async {
-    try {
-      await ref.read(unitRepositoryProvider).addUnit(unitName);
-      _refreshUnits(ref);
-      return true;
-    } catch (_) {
-      showToast("添加失败，可能是因为重复");
-      return false;
-    }
   }
 }

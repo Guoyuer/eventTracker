@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:event_tracker/common/async_state.dart';
 import 'package:event_tracker/common/const.dart';
 
+import '../application/activity_detail_controller.dart';
 import '../domain/activity_models.dart';
 import '../persistence/persistence_providers.dart';
 import '../state/activity_detail_providers.dart';
@@ -45,14 +46,15 @@ class EventDetails extends ConsumerWidget {
         actions: [
           IconButton(
             onPressed: () async {
-              final delete = await _confirmDelete(context);
-              if (delete != true) {
-                return;
-              }
-              await ref
-                  .read(activityRepositoryProvider)
-                  .deleteActivity(event.id);
-              if (!context.mounted) {
+              final deleted =
+                  await ActivityDetailController(
+                    repository: ref.read(activityRepositoryProvider),
+                  ).deleteActivity(
+                    event.id,
+                    confirmDelete: () async =>
+                        await _confirmDelete(context) ?? false,
+                  );
+              if (!deleted || !context.mounted) {
                 return;
               }
               Navigator.of(context).pop(true);

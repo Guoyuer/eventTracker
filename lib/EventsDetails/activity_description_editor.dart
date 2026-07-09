@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../application/activity_detail_controller.dart';
 import '../common/async_state.dart';
 import '../persistence/persistence_providers.dart';
 import '../state/activity_detail_providers.dart';
@@ -57,13 +58,16 @@ class ActivityDescriptionEditor extends ConsumerWidget {
   }
 
   Future<void> _saveDescription(WidgetRef ref, String newValue) async {
-    await ref
-        .read(activityRepositoryProvider)
-        .updateActivityDescription(activityId, newValue);
-    ref.invalidate(activityDescriptionProvider(activityId));
-    ref
-        .read(activityDescriptionEditingProvider(activityId).notifier)
-        .set(false);
+    await ActivityDetailController(
+      repository: ref.read(activityRepositoryProvider),
+    ).saveDescription(
+      activityId,
+      newValue,
+      refresh: () => ref.invalidate(activityDescriptionProvider(activityId)),
+      exitEditing: () => ref
+          .read(activityDescriptionEditingProvider(activityId).notifier)
+          .set(false),
+    );
   }
 
   String _displayDescription(String? rawDescription) {

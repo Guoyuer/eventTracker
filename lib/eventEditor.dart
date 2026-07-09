@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:event_tracker/common/async_state.dart';
 import 'package:event_tracker/common/commonWidget.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'application/activity_editor_controller.dart';
 import 'domain/activity_models.dart';
 import 'persistence/persistence_providers.dart';
 import 'state/activity_editor_providers.dart';
@@ -26,22 +27,20 @@ class EventEditor extends ConsumerWidget {
       }
 
       _formKey.currentState!.save();
-      try {
-        await ref
-            .read(activityRepositoryProvider)
-            .createActivity(
-              name: name!,
-              unit: selectedUnit,
-              description: description,
-              careTime: careTime,
-            );
-        if (!context.mounted) {
-          return;
-        }
-        Navigator.pop(context, true);
-      } catch (_) {
-        showToast("添加失败，可能是因为项目名重复！");
+      final created =
+          await ActivityEditorController(
+            repository: ref.read(activityRepositoryProvider),
+            notify: showToast,
+          ).createActivity(
+            name: name!,
+            unit: selectedUnit,
+            description: description,
+            careTime: careTime,
+          );
+      if (!created || !context.mounted) {
+        return;
       }
+      Navigator.pop(context, true);
     }
 
     return Scaffold(

@@ -381,6 +381,59 @@ void main() {
     expect(eventsList, contains('ref.invalidate(activityListProvider)'));
   });
 
+  test('route mutation policy lives in application controllers', () {
+    final editor = File('lib/eventEditor.dart').readAsStringSync();
+    final unitManager = File(
+      'lib/UnitManager/unitsManagerPage.dart',
+    ).readAsStringSync();
+    final details = File(
+      'lib/EventsDetails/eventDetails.dart',
+    ).readAsStringSync();
+
+    expect(editor, contains('ActivityEditorController'));
+    expect(
+      editor,
+      isNot(contains('.read(activityRepositoryProvider).createActivity')),
+    );
+    expect(unitManager, contains('UnitManagementController'));
+    expect(
+      unitManager,
+      isNot(contains('.read(unitRepositoryProvider).addUnit')),
+    );
+    expect(
+      unitManager,
+      isNot(contains('.read(unitRepositoryProvider).deleteUnit')),
+    );
+    expect(details, contains('ActivityDetailController'));
+    expect(details, contains('confirmDelete:'));
+    expect(
+      details,
+      isNot(contains('.read(activityRepositoryProvider).deleteActivity')),
+    );
+    final descriptionEditor = File(
+      'lib/EventsDetails/activity_description_editor.dart',
+    ).readAsStringSync();
+    expect(descriptionEditor, contains('ActivityDetailController'));
+    expect(
+      descriptionEditor,
+      isNot(
+        contains('.read(activityRepositoryProvider).updateActivityDescription'),
+      ),
+    );
+
+    for (final path in [
+      'lib/application/activity_editor_controller.dart',
+      'lib/application/activity_detail_controller.dart',
+      'lib/application/unit_management_controller.dart',
+    ]) {
+      final source = File(path).readAsStringSync();
+
+      expect(source, isNot(contains('package:flutter/material.dart')));
+      expect(source, isNot(contains('BuildContext')));
+      expect(source, isNot(contains('WidgetRef')));
+    }
+  });
+
   test(
     'activity list does not expose incomplete manual time entry controls',
     () {

@@ -173,6 +173,7 @@ Current status:
 - Feature state providers now live under `lib/state/`, and the old `stateProviders.dart` compatibility facade has been removed.
 - Small mutable UI state now uses Riverpod 3 `NotifierProvider` through `MutableState` instead of legacy `StateProvider`.
 - Async loading, empty, error, and retry rendering now goes through `AsyncStateView` instead of page-local `.when` branches.
+- Add-activity, activity-detail deletion/description-save, and unit-management mutation policy now lives behind small application controllers, leaving route Widgets as UI Adapters for forms, dialogs, and navigation.
 
 Target shape:
 
