@@ -22,6 +22,9 @@ flowchart LR
 
   subgraph State["Riverpod state"]
     ActivityListProvider["activityListProvider"]
+    ActivityRecordsProvider["activityRecordsProvider"]
+    UnitListProvider["unitListProvider"]
+    StatisticsProvider["statisticsProvider"]
   end
 
   subgraph Persistence["Persistence module"]
@@ -33,13 +36,17 @@ flowchart LR
 
   EventList --> ActivityListProvider
   ActivityListProvider --> ActivityRepository
+  EventDetails --> ActivityRecordsProvider
+  ActivityRecordsProvider --> ActivityRepository
+  EventEditor --> UnitListProvider
+  UnitManager --> UnitListProvider
+  UnitListProvider --> UnitRepository
+  Statistics --> StatisticsProvider
+  StatisticsProvider --> StatisticsRepository
   EventEditor --> ActivityRepository
-  EventEditor --> UnitRepository
-  UnitManager --> UnitRepository
   EventDetails --> ActivityDetailAnalytics
   EventDetails --> ActivityRepository
   Statistics --> StatisticsAnalytics
-  Statistics --> StatisticsRepository
   ActivityRepository --> AppDatabase
   UnitRepository --> AppDatabase
   StatisticsRepository --> AppDatabase
@@ -74,9 +81,22 @@ flowchart LR
   B2 --> B3["Navigator.push(MainPage)"]
 
   After["After"]
-  After --> A1["ReloadEventsN"]
-  A1 --> A2["ref.invalidate(activityListProvider)"]
-  A2 --> A3["EventList reloads activity list"]
+  After --> A1["ref.invalidate(activityListProvider)"]
+  A1 --> A2["EventList reloads activity list"]
+```
+
+### Activity Details Heatmap
+
+```mermaid
+flowchart LR
+  Before["Before"]
+  Before --> B1["MonthTouchedN / DayTouchedN"]
+  B1 --> B2["NotificationListener in EventDetails"]
+
+  After["After"]
+  After --> A1["HeatMapCalendar callbacks"]
+  A1 --> A2["EventDetails handles month/day directly"]
+  EventDetails["EventDetails"] --> Records["activityRecordsProvider"]
 ```
 
 The direction is to keep record and activity rules in pure modules or repositories, and keep widgets focused on rendering and interaction.
@@ -89,5 +109,6 @@ flowchart LR
   DirectDB --> Settings["No active product route should call DBHandle directly"]
 
   Next["Next deepening candidates"]
-  Next --> LegacyStepSchema["Legacy step schema ADR or migration"]
+  Next --> ReadModels["Move generated Drift types out of UI"]
+  Next --> Lifecycle["Extract record lifecycle rules"]
 ```

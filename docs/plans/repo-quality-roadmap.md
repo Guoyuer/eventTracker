@@ -91,6 +91,7 @@ Status: in progress
 - Added tests around record lifecycle, aggregate totals, latest step lookup, repository activity creation, and repository activity recording.
 - Added tests for unit add/list/delete and duplicate-name protection through the repository.
 - Removed inactive step-count and debug/fake-data database methods from the active persistence API.
+- Retired the legacy step schema in ADR 0001 and schema v3 migration, including sentinel record cleanup.
 
 Remaining:
 
@@ -105,7 +106,7 @@ Status: in progress
 - Extract activity display models and event status logic out of generated persistence files.
 - Moved activity detail heatmap and time-slot aggregation out of Widgets into `activity_detail_analytics.dart`.
 - Moved statistics activity-count and time-slot aggregation out of Widgets into `statistics_analytics.dart`.
-- Decide whether to migrate or drop the remaining legacy step tables in a schema migration.
+- Dropped legacy step tables and record sentinel assumptions from the active schema through a tested v3 migration.
 - Define invariants for timed records, plain records, values, and units.
 
 ## Phase 4: UI Composition

@@ -30,14 +30,13 @@ class DBHandle {
   }
 }
 
-@DriftDatabase(
-    tables: [Units, Events, Records, Steps, StepOffset], include: {'SQL.moor'})
+@DriftDatabase(tables: [Units, Events, Records], include: {'SQL.moor'})
 class AppDatabase extends _$AppDatabase {
   AppDatabase([QueryExecutor? executor])
       : super(executor ?? defaultDatabaseExecutor());
 
   @override
-  int get schemaVersion => 2;
+  int get schemaVersion => 3;
 
   @override
   MigrationStrategy get migration =>
@@ -45,7 +44,18 @@ class AppDatabase extends _$AppDatabase {
         await customStatement('PRAGMA synchronous = OFF');
       }, onCreate: (Migrator m) {
         return m.createAll();
+      }, onUpgrade: (Migrator m, int from, int to) async {
+        if (from < 3) {
+          await _migrateToVersion3();
+        }
       });
+
+  Future<void> _migrateToVersion3() async {
+    await customStatement('DELETE FROM records WHERE event_id = -1');
+    await customStatement('DROP INDEX IF EXISTS step_time');
+    await customStatement('DROP TABLE IF EXISTS step_offset');
+    await customStatement('DROP TABLE IF EXISTS steps');
+  }
 
 //////////////////////////////////unit相关////////////////////////////////////
 
@@ -72,9 +82,7 @@ class AppDatabase extends _$AppDatabase {
     DateTime start = range.start;
     DateTime end = range.end;
     return (select(records)
-          ..where((tbl) =>
-              tbl.endTime.isBetweenValues(start, end) &
-              tbl.eventId.equals(-1).not()))
+          ..where((tbl) => tbl.endTime.isBetweenValues(start, end)))
         .get();
   }
 

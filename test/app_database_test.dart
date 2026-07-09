@@ -207,42 +207,6 @@ void main() {
     expect(event.lastRecordId, firstRecordId);
   });
 
-  test('range record reads exclude legacy step sentinel records', () async {
-    final eventId = await db.addEventInDB(
-      EventsCompanion(
-        name: const Value('Reading'),
-        careTime: const Value(false),
-      ),
-    );
-    final normalEnd = DateTime(2026, 1, 1, 8);
-    final legacyStepEnd = DateTime(2026, 1, 1, 9);
-
-    await db.addPlainRecordInDB(
-      RecordsCompanion(
-        eventId: Value(eventId),
-        endTime: Value(normalEnd),
-      ),
-    );
-    await db.into(db.records).insert(
-          RecordsCompanion(
-            eventId: const Value(-1),
-            endTime: Value(legacyStepEnd),
-            value: const Value(5000),
-          ),
-        );
-
-    final records = await db.getRecordsInRange(
-      DateTimeRange(
-        start: DateTime(2026, 1, 1),
-        end: DateTime(2026, 1, 2),
-      ),
-    );
-
-    expect(records, hasLength(1));
-    expect(records.single.eventId, eventId);
-    expect(records.single.endTime, normalEnd);
-  });
-
   test('default database executor uses explicit paths on desktop only', () {
     expect(
       usesExplicitDatabasePathOnPlatform(

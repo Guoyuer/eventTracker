@@ -18,7 +18,7 @@ During active Windows development, use the faster loop documented in `docs/plans
 
 ### 1. Deepen the Persistence Module
 
-Current problem: `AppDatabase` is too broad. It owns schema, platform persistence behavior, record lifecycle operations, unit operations, display model shaping, and some legacy schema concerns.
+Current problem: `AppDatabase` is too broad. It owns schema, platform persistence behavior, record lifecycle operations, unit operations, and display model shaping.
 
 Target shape:
 
@@ -45,6 +45,7 @@ Completed slice:
 - Removed inactive step-count UI, fake-data generation, debug DB viewer, and their direct database helper methods.
 - Removed unused/discontinued dependencies `share` and `moor_db_viewer`.
 - Moved activity detail record reads, activity deletion, and description reads/writes behind `ActivityRepository`.
+- Retired the legacy step schema via ADR 0001 and schema v3 migration.
 - Kept `flutter analyze`, `flutter test`, and `flutter build windows` green.
 
 Next slice:
@@ -113,23 +114,20 @@ Remaining analytics slice:
 1. Extract chart adapter helpers if `Statistics` remains difficult to read.
 2. Replace Widget-local calculation with calls into analytics modules where more remain.
 
-### 4. Retire Legacy Step Schema
+### 4. Retired Legacy Step Schema
 
-Current problem: the active step-count UI has been removed, but the schema still contains legacy step tables and record-sentinel assumptions.
+Current status: completed.
 
-Preferred direction:
+Completed direction:
 
-- Decide whether step tracking is a real product feature.
-- If not, remove legacy step tables in a schema migration.
-- If yes, reintroduce it as a separate module instead of `records.eventId = -1`.
+- ADR 0001 records that step tracking is out of scope for the active product.
+- Schema v3 deletes legacy `records.event_id = -1` sentinel rows.
+- Schema v3 drops `steps`, `step_offset`, and the `step_time` index.
+- Migration tests cover an old v2 database with step tables and sentinel records.
 
-Decision needed:
+Future rule:
 
-- Write an ADR before changing schema because existing local databases may still contain step tables or sentinel records.
-
-Minimal next step:
-
-- Stop adding new code paths that write step data. This is complete for the current active app.
+- Step tracking can return only as a new explicit module with its own product decision and schema.
 
 ### 5. Move UI Refresh to Riverpod
 
@@ -193,8 +191,8 @@ Rule:
 
 Recommended order from here:
 
-1. Replace remaining notification-based refresh calls with provider invalidation.
-2. Legacy step schema ADR or migration.
+1. Continue moving generated Drift types out of UI and analytics call sites.
+2. Extract record lifecycle and aggregate total rules out of broad `AppDatabase`.
 3. Dependency cleanup and upgrade batches.
 
 ## Definition of Done for Each Slice

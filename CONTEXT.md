@@ -12,7 +12,7 @@
 - **Plain Activity**: An activity where only occurrence time matters. It creates a completed record immediately.
 - **Unit**: A user-managed label for numeric values, such as kilometers, pages, or questions.
 - **Aggregate Totals**: Cached totals stored on an activity, currently `sumTime`, `sumVal`, and `lastRecordId`.
-- **Legacy Step Schema**: Historical step-count tables and sentinel records from an inactive prototype. There is no active step-count UI.
+- **Legacy Step Schema**: Retired historical step-count tables and sentinel records from an inactive prototype. ADR 0001 removes them from the active Drift schema through the v3 migration.
 
 ## Current Architecture
 

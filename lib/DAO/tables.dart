@@ -55,20 +55,3 @@ class Units extends Table {
 
   TextColumn get name => text().customConstraint("not null unique")();
 }
-
-class Steps extends Table {
-  IntColumn get id => integer().autoIncrement()();
-
-  IntColumn get step => integer().withDefault(Constant(0))();
-
-  DateTimeColumn get time => dateTime()(); //要加索引，会用where框选每天的
-}
-
-class StepOffset extends Table {
-  //存放当天的步数偏移量
-  IntColumn get id => integer()();
-
-  IntColumn get step => integer().withDefault(Constant(0))();
-
-  DateTimeColumn get time => dateTime()();
-}
