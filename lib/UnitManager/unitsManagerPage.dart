@@ -5,7 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 
 import '../common/commonWidget.dart';
-import '../persistence/database/app_database.dart';
+import '../domain/activity_models.dart';
 import '../persistence/unit_repository.dart';
 import '../stateProviders.dart';
 
@@ -63,7 +63,7 @@ class _UnitsManagerState extends ConsumerState<UnitsManager> {
     );
   }
 
-  Widget _buildListView(List<Unit> units) {
+  Widget _buildListView(List<ActivityUnit> units) {
     return Column(
       children: [
         ListView.builder(
@@ -93,7 +93,7 @@ class _UnitsManagerState extends ConsumerState<UnitsManager> {
     );
   }
 
-  Future<void> _deleteUnit(Unit unit) async {
+  Future<void> _deleteUnit(ActivityUnit unit) async {
     try {
       await _repository.deleteUnit(unit.name);
       _refreshUnits();

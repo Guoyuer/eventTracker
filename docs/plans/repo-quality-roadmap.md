@@ -86,6 +86,7 @@ Status: in progress
 - Introduced `ActivityRepository` and migrated activity creation plus the activity-list recording flow to it.
 - Migrated activity detail record reads, deletion, and description edits to `ActivityRepository`.
 - Introduced `UnitRepository` and migrated unit management plus unit-list loading to it.
+- Mapped unit UI data through a domain `ActivityUnit` read model so unit screens no longer import the Drift database module.
 - Introduced `StatisticsRepository` and migrated statistics range reads to it.
 - Move desktop sqflite setup behind a database bootstrap module.
 - Added tests around record lifecycle, aggregate totals, latest step lookup, repository activity creation, and repository activity recording.

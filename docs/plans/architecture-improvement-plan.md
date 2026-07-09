@@ -38,6 +38,7 @@ Completed slice:
 
 - Moved unit management behind `UnitRepository`.
 - Migrated `UnitManager` and unit loading in `EventEditor` to `UnitRepository`.
+- Mapped unit UI data through a domain `ActivityUnit` read model instead of generated Drift rows.
 - Added tests for add/delete/list unit behavior and duplicate-name protection.
 - Moved activity creation behind `ActivityRepository`.
 - Migrated `EventEditor` so it no longer creates `EventsCompanion` or calls `DBHandle().db.addEventInDB`.

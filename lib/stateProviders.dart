@@ -3,7 +3,6 @@ import 'package:flutter/rendering.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'domain/activity_models.dart';
-import 'persistence/database/app_database.dart';
 import 'persistence/activity_repository.dart';
 import 'persistence/statistics_repository.dart';
 import 'persistence/unit_repository.dart';
@@ -28,7 +27,7 @@ final activityRecordsProvider =
   return ref.watch(activityRepositoryProvider).getActivityRecords(activityId);
 });
 
-final unitListProvider = FutureProvider<List<Unit>>((ref) {
+final unitListProvider = FutureProvider<List<ActivityUnit>>((ref) {
   return unitRepository().getUnits();
 });
 

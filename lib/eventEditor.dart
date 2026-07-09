@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:event_tracker/common/commonWidget.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'domain/activity_models.dart';
 import 'persistence/activity_repository.dart';
-import 'persistence/database/app_database.dart';
 import 'stateProviders.dart';
 
 class EventEditor extends ConsumerStatefulWidget {
@@ -85,7 +85,7 @@ class _EventEditorState extends ConsumerState<EventEditor> {
                 ))));
   }
 
-  Widget _buildUnitSelector(List<Unit> units) {
+  Widget _buildUnitSelector(List<ActivityUnit> units) {
     List<Widget> children = [];
     if (units.isEmpty) {
       children.add(ListTile(title: Text("暂无单位，可到单位管理页面添加")));

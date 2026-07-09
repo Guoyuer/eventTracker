@@ -49,4 +49,19 @@ void main() {
       expect(source, isNot(contains("Map<int, Event")));
     }
   });
+
+  test('ui state does not import the Drift database module directly', () {
+    for (final path in [
+      'lib/stateProviders.dart',
+      'lib/eventEditor.dart',
+      'lib/UnitManager/unitsManagerPage.dart',
+      'lib/EventsList/eventsList.dart',
+      'lib/EventsDetails/eventDetails.dart',
+      'lib/Statistics/statistics.dart',
+    ]) {
+      final source = File(path).readAsStringSync();
+
+      expect(source, isNot(contains('persistence/database/app_database.dart')));
+    }
+  });
 }

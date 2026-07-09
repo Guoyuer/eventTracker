@@ -57,3 +57,13 @@ class StatisticsActivity {
   final int id;
   final String name;
 }
+
+class ActivityUnit {
+  ActivityUnit({
+    required this.id,
+    required this.name,
+  });
+
+  final int id;
+  final String name;
+}
