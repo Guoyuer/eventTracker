@@ -138,6 +138,22 @@ void main() {
     expect(providers, contains('statisticsProvider'));
   });
 
+  test('activity detail route delegates chart rendering', () {
+    final details =
+        File('lib/EventsDetails/eventDetails.dart').readAsStringSync();
+    final charts = File('lib/EventsDetails/activity_detail_charts.dart')
+        .readAsStringSync();
+
+    expect(details, isNot(contains('fl_chart')));
+    expect(details, isNot(contains('HeatMapCalendar')));
+    expect(details, isNot(contains('activity_detail_analytics.dart')));
+    expect(details, isNot(contains('ConsumerStatefulWidget')));
+    expect(details, contains('ActivityDetailCharts'));
+    expect(charts, contains('fl_chart'));
+    expect(charts, contains('HeatMapCalendar'));
+    expect(charts, contains('buildActivityHeatmapSeries'));
+  });
+
   test('database module does not expose record lifecycle convenience methods',
       () {
     final database =

@@ -99,6 +99,7 @@ Current status:
 
 - Extracted activity detail heatmap daily totals into `activity_detail_analytics.dart`.
 - Extracted activity detail time-slot distribution into `activity_detail_analytics.dart`.
+- Extracted activity detail chart rendering, heatmap wiring, and `fl_chart` adapters into `EventsDetails/activity_detail_charts.dart`.
 - Removed the old `EventsDetails/util.dart` helper after moving its behavior behind typed analytics results.
 - Added tests for timed duration, plain counts, plain values, record filtering, and adjacent-hour grouping.
 - Extracted statistics activity counts and hourly slot aggregation into `statistics_analytics.dart`.
