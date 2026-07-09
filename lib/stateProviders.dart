@@ -1,8 +1,10 @@
+import 'package:flutter/material.dart' show DateTimeRange;
 import 'package:flutter/rendering.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'DAO/base.dart';
 import 'persistence/activity_repository.dart';
+import 'persistence/statistics_repository.dart';
 import 'persistence/unit_repository.dart';
 
 final selectedIndexProvider = StateProvider<int>((ref) {
@@ -18,4 +20,9 @@ final activityListProvider = FutureProvider<List<BaseEventModel>>((ref) {
 
 final unitListProvider = FutureProvider<List<Unit>>((ref) {
   return unitRepository().getUnits();
+});
+
+final statisticsProvider =
+    FutureProvider.family<StatisticsData, DateTimeRange>((ref, range) {
+  return statisticsRepository().getStatisticsData(range);
 });

@@ -1,12 +1,14 @@
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:event_tracker/analytics/statistics_analytics.dart';
 import 'package:event_tracker/common/commonWidget.dart';
 import 'package:event_tracker/common/util.dart';
 import 'package:intl/intl.dart';
-import 'package:random_color/random_color.dart';
 
-import '../persistence/statistics_repository.dart';
+import '../DAO/base.dart';
+import '../persistence/statistics_repository.dart' show StatisticsData;
+import '../stateProviders.dart';
 
 class StatisticPage extends StatefulWidget {
   @override
@@ -58,81 +60,56 @@ class _StatisticPageState extends State<StatisticPage> {
   }
 }
 
-class Charts extends StatefulWidget {
-  @override
-  _ChartsState createState() => _ChartsState();
-
-  late final DateTimeRange range;
-
+class Charts extends ConsumerWidget {
   Charts(this.range);
-}
 
-class _ChartsState extends State<Charts> {
-  final StatisticsRepository _repository = statisticsRepository();
-  RandomColor _randomColor = RandomColor();
+  final DateTimeRange range;
 
   @override
-  void initState() {
-    super.initState();
-    for (int i = 0; i < 10; i++) {
-      colors.add(
-          _randomColor.randomColor(colorBrightness: ColorBrightness.light));
-    }
+  Widget build(BuildContext context, WidgetRef ref) {
+    final statistics = ref.watch(statisticsProvider(range));
+    return statistics.when(
+      data: (statisticsData) => _buildCharts(context, statisticsData),
+      error: (error, stackTrace) => Card(elevation: 10, child: Text("加载统计失败")),
+      loading: loadingScreen,
+    );
   }
 
-  List<Color> colors = [];
+  Widget _buildCharts(BuildContext context, StatisticsData statisticsData) {
+    final records = statisticsData.records;
+    final eventsMap = statisticsData.activitiesById;
 
-  @override
-  Widget build(BuildContext context) {
-    return FutureBuilder<StatisticsData>(
-        future: _repository.getStatisticsData(widget.range),
-        builder: (ctx, snapshot) {
-          switch (snapshot.connectionState) {
-            case ConnectionState.done:
-              if (snapshot.hasError) {
-                return Card(elevation: 10, child: Text("加载统计失败"));
-              }
-              final statisticsData = snapshot.data!;
-              final records = statisticsData.records;
-              final eventsMap = statisticsData.activitiesById;
+    if (records.isEmpty || eventsMap.isEmpty) {
+      return Card(elevation: 10, child: Text("暂无记录"));
+    }
 
-              if (records.isEmpty || eventsMap.isEmpty)
-                return Card(elevation: 10, child: Text("暂无记录"));
+    final name2color = _activityColors(eventsMap);
+    final summary = buildStatisticsSummary(
+      records: records,
+      eventsById: eventsMap,
+    );
 
-              while (colors.length < eventsMap.length) {
-                colors.add(_randomColor.randomColor(
-                    colorBrightness: ColorBrightness.light));
-              }
-              Map<String, Color> name2color = {};
-              int i = 0;
-              eventsMap.forEach((key, value) {
-                name2color[value.name] = colors[i];
-                i++;
-              });
-              final summary = buildStatisticsSummary(
-                records: records,
-                eventsById: eventsMap,
-              );
+    var timeSlotsBar = getTimeSlotsBar(
+        context, summary.hourlyCountsByActivityName, name2color);
+    List<Widget> charts = [getPieChart(summary, name2color), timeSlotsBar];
+    charts = charts
+        .map((e) => Card(
+              elevation: 10,
+              child: e,
+            ))
+        .toList();
+    return Column(
+      children: charts,
+    );
+  }
 
-              var timeSlotsBar = getTimeSlotsBar(
-                  summary.hourlyCountsByActivityName, name2color);
-              List<Widget> charts = [
-                getPieChart(summary, name2color),
-                timeSlotsBar
-              ];
-              charts = charts
-                  .map((e) => Card(
-                        elevation: 10,
-                        child: e,
-                      ))
-                  .toList();
-              return Column(
-                children: charts,
-              );
-            default:
-              return loadingScreen();
-          }
-        });
+  Map<String, Color> _activityColors(Map<int, Event> eventsMap) {
+    final colors = <String, Color>{};
+    eventsMap.forEach((activityId, activity) {
+      colors[activity.name] =
+          Colors.primaries[activityId.abs() % Colors.primaries.length].shade300;
+    });
+    return colors;
   }
 
   List<PieChartSectionData> getSections(
@@ -152,7 +129,9 @@ class _ChartsState extends State<Charts> {
     return res;
   }
 
-  Widget getTimeSlotsBar(Map<String, List<double>> hourlyCountsByActivityName,
+  Widget getTimeSlotsBar(
+      BuildContext context,
+      Map<String, List<double>> hourlyCountsByActivityName,
       Map<String, Color> name2color) {
     List<BarChartGroupData> bars = [];
     Map<String, List<double>> eventName2SlotNum = {};

@@ -27,7 +27,6 @@ dependencies:
     sdk: flutter
   flutter_riverpod: ^2.3.6
   fluttertoast: ^8.2.2
-  random_color:
   sprintf:
   intl:
   fl_chart:
