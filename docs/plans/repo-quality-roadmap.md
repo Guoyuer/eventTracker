@@ -10,7 +10,7 @@ Bring this repo from a working prototype to a maintainable Flutter app that can 
 - `flutter analyze` is green under the initial legacy lint profile.
 - `flutter test` is green with bootstrap and persistence lifecycle tests.
 - Persistence is tightly coupled to UI and uses cached aggregate fields that can drift from records.
-- Platform support is uneven: Firebase is configured only for Web/Android/iOS, while Windows needs sqflite FFI.
+- Platform support is Windows-first with sqflite FFI; unused Firebase configuration has been removed.
 - `windows/` and `pubspec.lock` are tracked for reproducible desktop development.
 
 ## Quality Gates
@@ -114,7 +114,7 @@ Status: in progress
 
 Status: pending
 
-- Decide whether Firebase is needed. Remove it if cloud sync is out of scope.
+- Removed unused Firebase dependency, generated options, and stale Firestore configuration.
 - Upgrade dependencies in small batches with tests between batches.
 - Then evaluate Flutter SDK upgrade separately.
 - Removed unused `share` and discontinued `moor_db_viewer`.

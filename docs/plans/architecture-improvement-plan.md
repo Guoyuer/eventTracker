@@ -180,11 +180,10 @@ Current problem: several packages are old or discontinued, but upgrading before 
 Order:
 
 1. Keep tests green while finishing persistence and analytics seams.
-2. Remove Firebase if cloud sync is not planned.
-3. Replace or remove remaining discontinued packages.
-4. Upgrade Drift in a dedicated branch/slice.
-5. Upgrade Riverpod separately.
-6. Upgrade Flutter SDK separately.
+2. Replace or remove remaining discontinued packages.
+3. Upgrade Drift in a dedicated branch/slice.
+4. Upgrade Riverpod separately.
+5. Upgrade Flutter SDK separately.
 
 Rule:
 
