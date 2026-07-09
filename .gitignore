@@ -29,3 +29,4 @@ web/
 ios/
 .idea/
 .vscode/
+*.iml
