@@ -1,0 +1,192 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>Architecture review - flutter_event_tracker</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script type="module">
+      import mermaid from "https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs";
+      mermaid.initialize({ startOnLoad: true, theme: "neutral", securityLevel: "loose" });
+    </script>
+    <style>
+      .seam { border-style: dashed; }
+      .deep { background: linear-gradient(135deg, #0f172a, #1e293b); }
+      .leak { color: #dc2626; }
+      .code { font-family: ui-monospace, SFMono-Regular, Consolas, monospace; }
+    </style>
+  </head>
+  <body class="bg-stone-50 text-slate-900 font-sans">
+    <main class="max-w-6xl mx-auto px-6 py-10 space-y-10">
+      <header class="space-y-4">
+        <div class="flex items-center justify-between">
+          <div>
+            <h1 class="text-3xl font-semibold">Architecture review - flutter_event_tracker</h1>
+            <p class="text-sm text-slate-600">Windows-first Flutter activity tracker. Review generated after subagent exploration.</p>
+          </div>
+          <div class="text-xs uppercase tracking-wider text-slate-500">2026-07-08</div>
+        </div>
+        <div class="grid grid-cols-4 gap-3 text-xs">
+          <div class="rounded border bg-white p-3"><span class="font-semibold">solid box</span><br>module</div>
+          <div class="rounded border seam bg-white p-3"><span class="font-semibold">dashed line</span><br>seam</div>
+          <div class="rounded border bg-white p-3"><span class="font-semibold leak">red arrow</span><br>leakage</div>
+          <div class="rounded deep text-white p-3"><span class="font-semibold">dark box</span><br>deep module</div>
+        </div>
+      </header>
+
+      <section id="candidates" class="space-y-8">
+        <article class="rounded-xl border bg-white p-6 shadow-sm" id="record-lifecycle">
+          <div class="flex gap-2 mb-3"><span class="rounded-full bg-emerald-100 px-3 py-1 text-xs font-semibold text-emerald-700">Strong</span><span class="rounded-full bg-slate-100 px-3 py-1 text-xs">in-process</span></div>
+          <h2 class="text-2xl font-semibold mb-2">Deepen Timed Record lifecycle</h2>
+          <p class="code text-sm text-slate-600 mb-4">lib/EventsList/util.dart · lib/persistence/activity_repository.dart · lib/DAO/base.dart</p>
+          <div class="grid md:grid-cols-2 gap-4 mb-4">
+            <div class="rounded-lg border p-4">
+              <div class="text-xs uppercase tracking-wider text-slate-500 mb-2">Before</div>
+              <pre class="mermaid">flowchart TD
+UI[EventList util] --> A[getLastRecordId]
+UI --> B[getActivityStartTime]
+UI --> C[DateTime.now duration]
+UI --> D[stopTimedRecord]
+D --> DB[AppDatabase transaction]
+UI -. leak .-> Bug[endTime duration mismatch]
+classDef leak stroke:#dc2626,color:#dc2626;
+class Bug leak</pre>
+            </div>
+            <div class="rounded-lg border p-4">
+              <div class="text-xs uppercase tracking-wider text-slate-500 mb-2">After</div>
+              <pre class="mermaid">flowchart TD
+UI[EventList util] --> R[stopActiveTimedRecord(activityId, stoppedAt, value)]
+R --> Deep[RecordLifecycle module]
+Deep --> DB[AppDatabase low-level writes]
+Deep --> Totals[Aggregate Totals]
+classDef deep fill:#0f172a,color:#fff,stroke:#0f172a;
+class R,Deep deep</pre>
+            </div>
+          </div>
+          <p><b>Problem.</b> UI knows active-record ordering and computes duration outside the persistence module.</p>
+          <p><b>Solution.</b> Repository owns stop/delete active timed record as one deep module interface.</p>
+          <ul class="list-disc pl-5 mt-3 text-sm"><li>locality: lifecycle bugs concentrate</li><li>leverage: one command, many callers</li><li>tests hit one interface</li></ul>
+        </article>
+
+        <article class="rounded-xl border bg-white p-6 shadow-sm" id="persistence-models">
+          <div class="flex gap-2 mb-3"><span class="rounded-full bg-emerald-100 px-3 py-1 text-xs font-semibold text-emerald-700">Strong</span><span class="rounded-full bg-slate-100 px-3 py-1 text-xs">local-substitutable</span></div>
+          <h2 class="text-2xl font-semibold mb-2">Stop DAO type leakage</h2>
+          <p class="code text-sm text-slate-600 mb-4">lib/DAO/model/displayModel.dart · lib/persistence/*.dart · lib/analytics/*.dart</p>
+          <div class="grid md:grid-cols-2 gap-4 mb-4">
+            <div class="rounded-lg border p-4"><div class="text-xs uppercase tracking-wider text-slate-500 mb-2">Before</div><pre class="mermaid">flowchart LR
+DAO[Drift Record/Event] --> Repo[Repository]
+DAO --> Analytics[Analytics]
+DAO --> UI[Widgets]
+Repo -. shallow .-> UI
+classDef leak stroke:#dc2626,stroke-width:2px;
+class DAO leak</pre></div>
+            <div class="rounded-lg border p-4"><div class="text-xs uppercase tracking-wider text-slate-500 mb-2">After</div><pre class="mermaid">flowchart LR
+DAO[Drift schema] --> Repo[Persistence module]
+Repo --> ReadModels[ActivitySnapshot / ActivityRecord]
+ReadModels --> Analytics
+ReadModels --> UI
+classDef deep fill:#0f172a,color:#fff,stroke:#0f172a;
+class Repo,ReadModels deep</pre></div>
+          </div>
+          <p><b>Problem.</b> The persistence seam exists, but callers still know generated Drift schema.</p>
+          <p><b>Solution.</b> Add domain read models and move display models out of `part of base.dart`.</p>
+          <ul class="list-disc pl-5 mt-3 text-sm"><li>interface shrinks</li><li>analytics becomes pure Dart</li><li>DB upgrades localize</li></ul>
+        </article>
+
+        <article class="rounded-xl border bg-white p-6 shadow-sm" id="state">
+          <div class="flex gap-2 mb-3"><span class="rounded-full bg-emerald-100 px-3 py-1 text-xs font-semibold text-emerald-700">Strong</span><span class="rounded-full bg-slate-100 px-3 py-1 text-xs">in-process</span></div>
+          <h2 class="text-2xl font-semibold mb-2">Unify UI state in Riverpod</h2>
+          <p class="code text-sm text-slate-600 mb-4">lib/main.dart · lib/stateProviders.dart · EventsList · UnitManager · Statistics · EventDetails</p>
+          <div class="grid md:grid-cols-2 gap-4 mb-4">
+            <div class="rounded-lg border p-4"><div class="text-xs uppercase tracking-wider text-slate-500 mb-2">Before</div><pre class="mermaid">flowchart TD
+Mutation --> N[ReloadEventsN]
+N --> Main[NotificationListener all]
+Main --> Provider[activityListProvider]
+Unit[UnitManager setState] --> LocalFuture
+Stats[Statistics FutureBuilder] --> LocalFuture</pre></div>
+            <div class="rounded-lg border p-4"><div class="text-xs uppercase tracking-wider text-slate-500 mb-2">After</div><pre class="mermaid">flowchart TD
+Mutation --> Invalidate[ref.invalidate specific provider]
+ProviderA[activityListProvider]
+ProviderU[unitListProvider]
+ProviderS[statisticsProvider.family]
+ProviderD[activityRecordsProvider.family]
+classDef deep fill:#0f172a,color:#fff,stroke:#0f172a;
+class ProviderA,ProviderU,ProviderS,ProviderD deep</pre></div>
+          </div>
+          <p><b>Problem.</b> Refresh flows are split across Notification, FutureBuilder, and local setState.</p>
+          <p><b>Solution.</b> Use provider families for activity list, units, statistics, and activity records.</p>
+          <ul class="list-disc pl-5 mt-3 text-sm"><li>locality: state rules concentrate</li><li>leverage: overrideable tests</li><li>fewer runtime casts</li></ul>
+        </article>
+
+        <article class="rounded-xl border bg-white p-6 shadow-sm" id="schema">
+          <div class="flex gap-2 mb-3"><span class="rounded-full bg-emerald-100 px-3 py-1 text-xs font-semibold text-emerald-700">Strong</span><span class="rounded-full bg-slate-100 px-3 py-1 text-xs">migration</span></div>
+          <h2 class="text-2xl font-semibold mb-2">Decide and migrate Legacy Step Schema</h2>
+          <p class="code text-sm text-slate-600 mb-4">lib/DAO/tables.dart · lib/DAO/base.dart · lib/DAO/SQL.moor · test/app_database_test.dart</p>
+          <div class="grid md:grid-cols-2 gap-4 mb-4">
+            <div class="rounded-lg border p-4"><div class="text-xs uppercase tracking-wider text-slate-500 mb-2">Before</div><pre class="mermaid">flowchart LR
+Records[records table] --> Sentinel[eventId = -1]
+Steps[Steps table]
+Offset[StepOffset table]
+Queries[getRecordsInRange] -. filter .-> Sentinel
+classDef leak stroke:#dc2626,color:#dc2626;
+class Sentinel leak</pre></div>
+            <div class="rounded-lg border p-4"><div class="text-xs uppercase tracking-wider text-slate-500 mb-2">After</div><pre class="mermaid">flowchart LR
+ADR[ADR: delete or restore step tracking] --> Migration[schema v3 migration]
+Migration --> Records[Activity records only]
+Migration --> Tests[old DB upgrade tests]
+classDef deep fill:#0f172a,color:#fff,stroke:#0f172a;
+class ADR,Migration deep</pre></div>
+          </div>
+          <p><b>Problem.</b> Inactive step prototype still shapes active record queries.</p>
+          <p><b>Solution.</b> Record an ADR, then remove or rebuild the step module with migration tests.</p>
+          <ul class="list-disc pl-5 mt-3 text-sm"><li>schema intent explicit</li><li>sentinel knowledge removed</li><li>upgrade risk tested</li></ul>
+        </article>
+
+        <article class="rounded-xl border bg-white p-6 shadow-sm" id="dependencies">
+          <div class="flex gap-2 mb-3"><span class="rounded-full bg-amber-100 px-3 py-1 text-xs font-semibold text-amber-700">Worth exploring</span><span class="rounded-full bg-slate-100 px-3 py-1 text-xs">platform</span></div>
+          <h2 class="text-2xl font-semibold mb-2">Resolve Firebase and dependency drift</h2>
+          <p class="code text-sm text-slate-600 mb-4">pubspec.yaml · app_bootstrap.dart · firestore.rules · windows generated plugins</p>
+          <div class="grid md:grid-cols-2 gap-4 mb-4">
+            <div class="rounded-lg border p-4"><div class="text-xs uppercase tracking-wider text-slate-500 mb-2">Before</div><pre class="mermaid">flowchart TD
+Pub[Loose pubspec constraints] --> Lock[Old lockfile]
+Firebase[firebase_core only] --> Windows[Windows plugin build]
+Rules[Expired Firestore rules] -. risk .-> App</pre></div>
+            <div class="rounded-lg border p-4"><div class="text-xs uppercase tracking-wider text-slate-500 mb-2">After</div><pre class="mermaid">flowchart TD
+Decision[ADR: no cloud sync or supported cloud sync]
+Decision --> Remove[Remove Firebase]
+Decision --> Matrix[Platform config matrix]
+Constraints[Explicit constraints] --> Batches[One dependency family per slice]</pre></div>
+          </div>
+          <p><b>Problem.</b> Firebase appears unused, rules are stale, and dependency constraints are too loose.</p>
+          <p><b>Solution.</b> Remove Firebase if cloud sync is out; then upgrade dependency families deliberately.</p>
+          <ul class="list-disc pl-5 mt-3 text-sm"><li>faster Windows build</li><li>controlled upgrades</li><li>less platform noise</li></ul>
+        </article>
+
+        <article class="rounded-xl border bg-white p-6 shadow-sm" id="workflow">
+          <div class="flex gap-2 mb-3"><span class="rounded-full bg-amber-100 px-3 py-1 text-xs font-semibold text-amber-700">Worth exploring</span><span class="rounded-full bg-slate-100 px-3 py-1 text-xs">testability</span></div>
+          <h2 class="text-2xl font-semibold mb-2">Make verification one-command</h2>
+          <p class="code text-sm text-slate-600 mb-4">test/support · tool/check.ps1 · README.md · GitHub Actions</p>
+          <div class="grid md:grid-cols-2 gap-4 mb-4">
+            <div class="rounded-lg border p-4"><div class="text-xs uppercase tracking-wider text-slate-500 mb-2">Before</div><pre class="mermaid">flowchart LR
+Tests[Repository tests] --> Setup1[duplicate FFI setup]
+Docs[Quality gates in docs] --> Human[manual commands]
+NoCI[No CI workflow]</pre></div>
+            <div class="rounded-lg border p-4"><div class="text-xs uppercase tracking-wider text-slate-500 mb-2">After</div><pre class="mermaid">flowchart LR
+Harness[database_test_harness] --> Tests
+Script[tool/check.ps1] --> Local
+Script --> CI[Windows GitHub Action]
+classDef deep fill:#0f172a,color:#fff,stroke:#0f172a;
+class Harness,Script deep</pre></div>
+          </div>
+          <p><b>Problem.</b> Tests repeat setup and quality gates live only in prose.</p>
+          <p><b>Solution.</b> Add a database test harness and a shared local/CI verification command.</p>
+          <ul class="list-disc pl-5 mt-3 text-sm"><li>lower test friction</li><li>CI mirrors local gate</li><li>regression checks repeatable</li></ul>
+        </article>
+      </section>
+
+      <section id="top-recommendation" class="rounded-xl border-2 border-emerald-600 bg-emerald-50 p-6">
+        <h2 class="text-2xl font-semibold mb-2">Top recommendation</h2>
+        <p>Start with <a class="text-emerald-700 underline" href="#record-lifecycle">Deepen Timed Record lifecycle</a>. It fixes a real duration mismatch risk and gives the persistence module more depth before schema and dependency work increase blast radius.</p>
+      </section>
+    </main>
+  </body>
+</html>
