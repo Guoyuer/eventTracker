@@ -1,38 +1,22 @@
-import 'dart:core';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:fluttertoast/fluttertoast.dart';
 
 import '../common/commonWidget.dart';
 import '../domain/activity_models.dart';
 import '../stateProviders.dart';
 
-class UnitsManager extends ConsumerStatefulWidget {
+class UnitsManager extends ConsumerWidget {
   const UnitsManager();
 
   @override
-  ConsumerState<UnitsManager> createState() => _UnitsManagerState();
-}
-
-class _UnitsManagerState extends ConsumerState<UnitsManager> {
-  final TextEditingController _unitNameController = TextEditingController();
-
-  @override
-  void dispose() {
-    _unitNameController.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final units = ref.watch(unitListProvider);
     return Scaffold(
       appBar: AppBar(
         title: Text("单位管理"),
       ),
       body: units.when(
-        data: _buildListView,
+        data: (units) => _buildListView(context, ref, units),
         error: (error, stackTrace) => Center(child: Text("加载单位失败")),
         loading: loadingScreen,
       ),
@@ -60,7 +44,11 @@ class _UnitsManagerState extends ConsumerState<UnitsManager> {
     );
   }
 
-  Widget _buildListView(List<ActivityUnit> units) {
+  Widget _buildListView(
+    BuildContext context,
+    WidgetRef ref,
+    List<ActivityUnit> units,
+  ) {
     return Column(
       children: [
         ListView.builder(
@@ -75,36 +63,41 @@ class _UnitsManagerState extends ConsumerState<UnitsManager> {
                   child: ListTile(
                       contentPadding: EdgeInsets.symmetric(horizontal: 20),
                       title: Center(child: Text(units[idx].name)))),
-              confirmDismiss: confirmDismissFunc,
-              onDismissed: (direction) => _deleteUnit(units[idx]),
+              confirmDismiss: (direction) =>
+                  _confirmDismiss(context, direction),
+              onDismissed: (direction) => _deleteUnit(ref, units[idx]),
             );
           },
         ),
         Container(
             padding: EdgeInsets.symmetric(horizontal: 100),
             child: myRaisedButton(Text("添加新单位"), () {
-              displayTextInputDialog(
-                  context, "请输入单位", addUnitButton, _unitNameController);
+              displayTextInputDialog(context, "请输入单位", (unitName) {
+                return _addUnit(ref, unitName);
+              });
             }))
       ],
     );
   }
 
-  Future<void> _deleteUnit(ActivityUnit unit) async {
+  Future<void> _deleteUnit(WidgetRef ref, ActivityUnit unit) async {
     try {
       await ref.read(unitRepositoryProvider).deleteUnit(unit.name);
-      _refreshUnits();
+      _refreshUnits(ref);
     } catch (_) {
       showToast("删除失败");
-      _refreshUnits();
+      _refreshUnits(ref);
     }
   }
 
-  void _refreshUnits() {
+  void _refreshUnits(WidgetRef ref) {
     ref.invalidate(unitListProvider);
   }
 
-  Future<bool> confirmDismissFunc(DismissDirection direction) async {
+  Future<bool> _confirmDismiss(
+    BuildContext context,
+    DismissDirection direction,
+  ) async {
     return await showDialog(
         context: context,
         builder: (BuildContext context) {
@@ -122,31 +115,14 @@ class _UnitsManagerState extends ConsumerState<UnitsManager> {
         });
   }
 
-  TextButton addUnitButton() {
-    return TextButton(
-      child: Text('添加'),
-      onPressed: _unitNameController.text.isEmpty ? null : _addUnit,
-    );
-  }
-
-  Future<void> _addUnit() async {
+  Future<bool> _addUnit(WidgetRef ref, String unitName) async {
     try {
-      await ref.read(unitRepositoryProvider).addUnit(_unitNameController.text);
-      _refreshUnits();
-      _unitNameController.clear();
-      if (!mounted) {
-        return;
-      }
-      Navigator.pop(context);
+      await ref.read(unitRepositoryProvider).addUnit(unitName);
+      _refreshUnits(ref);
+      return true;
     } catch (_) {
-      Fluttertoast.showToast(
-          msg: "添加失败，可能是因为重复",
-          toastLength: Toast.LENGTH_SHORT,
-          gravity: ToastGravity.CENTER,
-          timeInSecForIosWeb: 1,
-          backgroundColor: Colors.blueAccent,
-          textColor: Colors.white,
-          fontSize: 16.0);
+      showToast("添加失败，可能是因为重复");
+      return false;
     }
   }
 }

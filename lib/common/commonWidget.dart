@@ -43,29 +43,45 @@ Widget loadingScreen() {
 Future<void> displayTextInputDialog(
   BuildContext context,
   String title,
-  Widget Function() okButton,
-  TextEditingController controller,
+  Future<bool> Function(String value) onSubmit,
 ) async {
-  return showDialog(
-      context: context,
-      builder: (context) {
-        return AlertDialog(
-          title: Text(title),
-          content: TextField(controller: controller),
-          actions: <Widget>[
-            TextButton(
-              child: Text('取消'),
-              onPressed: () {
-                Navigator.pop(context);
-              },
-            ),
-            ValueListenableBuilder<TextEditingValue>(
-              valueListenable: controller,
-              builder: (context, _, __) => okButton(),
-            ),
-          ],
-        );
-      });
+  final controller = TextEditingController();
+  try {
+    return await showDialog(
+        context: context,
+        builder: (context) {
+          return AlertDialog(
+            title: Text(title),
+            content: TextField(controller: controller),
+            actions: <Widget>[
+              TextButton(
+                child: Text('取消'),
+                onPressed: () {
+                  Navigator.pop(context);
+                },
+              ),
+              ValueListenableBuilder<TextEditingValue>(
+                valueListenable: controller,
+                builder: (context, value, __) {
+                  return TextButton(
+                    child: Text('添加'),
+                    onPressed: value.text.isEmpty
+                        ? null
+                        : () async {
+                            final shouldClose = await onSubmit(value.text);
+                            if (shouldClose && context.mounted) {
+                              Navigator.pop(context);
+                            }
+                          },
+                  );
+                },
+              ),
+            ],
+          );
+        });
+  } finally {
+    controller.dispose();
+  }
 }
 
 void showToast(String text) {

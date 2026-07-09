@@ -179,6 +179,19 @@ void main() {
     expect(providers, contains('activityEditorSelectedUnitProvider'));
   });
 
+  test('unit manager does not own text input state', () {
+    final unitManager =
+        File('lib/UnitManager/unitsManagerPage.dart').readAsStringSync();
+    final commonWidgets =
+        File('lib/common/commonWidget.dart').readAsStringSync();
+
+    expect(unitManager, isNot(contains('ConsumerStatefulWidget')));
+    expect(unitManager, isNot(contains('TextEditingController')));
+    expect(unitManager, isNot(contains('setState(')));
+    expect(commonWidgets, contains('TextEditingController'));
+    expect(commonWidgets, contains('controller.dispose()'));
+  });
+
   test('database module does not expose record lifecycle convenience methods',
       () {
     final database =
