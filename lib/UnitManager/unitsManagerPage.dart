@@ -1,30 +1,25 @@
 import 'dart:core';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 
 import '../DAO/base.dart';
 import '../common/commonWidget.dart';
 import '../persistence/unit_repository.dart';
+import '../stateProviders.dart';
 
 // ignore: must_be_immutable
-class UnitsManager extends StatefulWidget {
+class UnitsManager extends ConsumerStatefulWidget {
   const UnitsManager();
 
   @override
-  _UnitsManagerState createState() => _UnitsManagerState();
+  ConsumerState<UnitsManager> createState() => _UnitsManagerState();
 }
 
-class _UnitsManagerState extends State<UnitsManager> {
-  late Future<List<Unit>> _units;
+class _UnitsManagerState extends ConsumerState<UnitsManager> {
   final TextEditingController _unitNameController = TextEditingController();
   final UnitRepository _repository = unitRepository();
-
-  @override
-  void initState() {
-    super.initState();
-    _units = _repository.getUnits();
-  }
 
   @override
   void dispose() {
@@ -34,26 +29,17 @@ class _UnitsManagerState extends State<UnitsManager> {
 
   @override
   Widget build(BuildContext context) {
-    return FutureBuilder<List<Unit>>(
-        future: _units,
-        builder: (ctx, snapshot) {
-          Widget _body;
-          switch (snapshot.connectionState) {
-            case ConnectionState.done:
-              List<Unit> units = snapshot.data!;
-              _body = _buildListView(units);
-              break;
-            default:
-              _body = loadingScreen();
-          }
-
-          return Scaffold(
-            appBar: AppBar(
-              title: Text("单位管理"),
-            ),
-            body: _body,
-          );
-        });
+    final units = ref.watch(unitListProvider);
+    return Scaffold(
+      appBar: AppBar(
+        title: Text("单位管理"),
+      ),
+      body: units.when(
+        data: _buildListView,
+        error: (error, stackTrace) => Center(child: Text("加载单位失败")),
+        loading: loadingScreen,
+      ),
+    );
   }
 
   Widget stackBehindDismiss() {
@@ -118,12 +104,7 @@ class _UnitsManagerState extends State<UnitsManager> {
   }
 
   void _refreshUnits() {
-    if (!mounted) {
-      return;
-    }
-    setState(() {
-      _units = _repository.getUnits();
-    });
+    ref.invalidate(unitListProvider);
   }
 
   Future<bool> confirmDismissFunc(DismissDirection direction) async {

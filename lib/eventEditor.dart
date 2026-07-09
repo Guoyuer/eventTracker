@@ -1,18 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:event_tracker/common/commonWidget.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'DAO/base.dart';
 import 'persistence/activity_repository.dart';
-import 'persistence/unit_repository.dart';
+import 'stateProviders.dart';
 
-class EventEditor extends StatefulWidget {
+class EventEditor extends ConsumerStatefulWidget {
   const EventEditor();
 
   @override
-  _EventEditorState createState() => _EventEditorState();
+  ConsumerState<EventEditor> createState() => _EventEditorState();
 }
 
-class _EventEditorState extends State<EventEditor> {
-  late final Future<List<Unit>> _units;
+class _EventEditorState extends ConsumerState<EventEditor> {
   String? selectedUnit;
   bool careTime = true;
   final _formKey = GlobalKey<FormState>();
@@ -20,16 +20,10 @@ class _EventEditorState extends State<EventEditor> {
   late String name;
   String? desc;
   final ActivityRepository _activityRepository = activityRepository();
-  final UnitRepository _unitRepository = unitRepository();
-
-  @override
-  void initState() {
-    super.initState();
-    _units = _unitRepository.getUnits();
-  }
 
   @override
   Widget build(BuildContext context) {
+    final units = ref.watch(unitListProvider);
     return Scaffold(
         appBar: AppBar(
           title: Text("添加新项目"),
@@ -77,51 +71,48 @@ class _EventEditorState extends State<EventEditor> {
                         ])),
                     Card(
                         elevation: 8,
-                        child: FutureBuilder<List<Unit>>(
-                            future: _units,
-                            builder: (ctx, snapshot) {
-                              switch (snapshot.connectionState) {
-                                case ConnectionState.done:
-                                  List<Unit> units = snapshot.data!;
-                                  List<Widget> children = [];
-                                  if (units.isEmpty) {
-                                    children.add(ListTile(
-                                        title: Text("暂无单位，可到单位管理页面添加")));
-                                  } else {
-                                    children
-                                        .add(ListTile(title: Text("可选择单位：")));
-                                  }
-                                  var unitsList = ListView.builder(
-                                      physics:
-                                          const NeverScrollableScrollPhysics(),
-                                      shrinkWrap: true,
-                                      itemCount: units.length,
-                                      itemBuilder: (ctx, idx) {
-                                        return RadioListTile(
-                                            title: Text(units[idx].name),
-                                            groupValue: selectedUnit,
-                                            toggleable: true,
-                                            value: units[idx].name,
-                                            onChanged: (String? val) {
-                                              setState(() {
-                                                selectedUnit = val;
-                                              });
-                                            });
-                                      });
-
-                                  children.add(unitsList);
-                                  return Column(
-                                    children: children,
-                                  );
-                                default:
-                                  return loadingScreen();
-                              }
-                            })),
+                        child: units.when(
+                          data: _buildUnitSelector,
+                          error: (error, stackTrace) => ListTile(
+                            title: Text("加载单位失败"),
+                          ),
+                          loading: loadingScreen,
+                        )),
                     myRaisedButton(Text("保存"), () {
                       _saveActivity();
                     })
                   ],
                 ))));
+  }
+
+  Widget _buildUnitSelector(List<Unit> units) {
+    List<Widget> children = [];
+    if (units.isEmpty) {
+      children.add(ListTile(title: Text("暂无单位，可到单位管理页面添加")));
+    } else {
+      children.add(ListTile(title: Text("可选择单位：")));
+    }
+    var unitsList = ListView.builder(
+        physics: const NeverScrollableScrollPhysics(),
+        shrinkWrap: true,
+        itemCount: units.length,
+        itemBuilder: (ctx, idx) {
+          return RadioListTile(
+              title: Text(units[idx].name),
+              groupValue: selectedUnit,
+              toggleable: true,
+              value: units[idx].name,
+              onChanged: (String? val) {
+                setState(() {
+                  selectedUnit = val;
+                });
+              });
+        });
+
+    children.add(unitsList);
+    return Column(
+      children: children,
+    );
   }
 
   Future<void> _saveActivity() async {
