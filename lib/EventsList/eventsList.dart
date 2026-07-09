@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart' hide DatePickerTheme;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../application/activity_recording_actions.dart';
-import '../stateProviders.dart';
 import '../common/commonWidget.dart';
 import '../domain/activity_models.dart';
+import '../persistence/persistence_providers.dart';
+import '../state/activity_list_providers.dart';
 
 part 'util.dart';
 

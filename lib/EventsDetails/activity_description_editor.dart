@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../stateProviders.dart';
+import '../persistence/persistence_providers.dart';
+import '../state/activity_detail_providers.dart';
 
 class ActivityDescriptionEditor extends ConsumerWidget {
   const ActivityDescriptionEditor({

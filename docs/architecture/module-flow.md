@@ -22,6 +22,12 @@ flowchart LR
   end
 
   subgraph State["Riverpod state"]
+    AppNavigationProviders["app_navigation_providers.dart"]
+    ActivityListProviders["activity_list_providers.dart"]
+    ActivityDetailProviders["activity_detail_providers.dart"]
+    ActivityEditorProviders["activity_editor_providers.dart"]
+    UnitProviders["unit_providers.dart"]
+    StatisticsProviders["statistics_providers.dart"]
     AppDatabaseProvider["appDatabaseProvider"]
     ActivityRepositoryProvider["activityRepositoryProvider"]
     UnitRepositoryProvider["unitRepositoryProvider"]
@@ -121,10 +127,10 @@ The direction is to keep record and activity rules in pure modules or repositori
 
 ```mermaid
 flowchart LR
-  ProviderModule["Broad stateProviders.dart module"]
-  ProviderModule --> State["Split feature providers by ownership"]
+  AsyncStates["Inconsistent async state rendering"]
+  AsyncStates --> UI["Standardize loading, empty, error, and retry states"]
 
   Next["Next deepening candidates"]
-  Next --> Providers["Split broad feature providers out of stateProviders.dart"]
   Next --> AsyncState["Standardize loading, empty, error, and retry states"]
+  Next --> ChartViewModels["Extract pure chart view-model builders"]
 ```

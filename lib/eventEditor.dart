@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:event_tracker/common/commonWidget.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'domain/activity_models.dart';
-import 'stateProviders.dart';
+import 'persistence/persistence_providers.dart';
+import 'state/activity_editor_providers.dart';
+import 'state/unit_providers.dart';
 
 class EventEditor extends ConsumerWidget {
   EventEditor({Key? key}) : super(key: key);

@@ -1,7 +1,7 @@
 import 'package:event_tracker/EventsDetails/activity_description_editor.dart';
 import 'package:event_tracker/domain/activity_models.dart';
 import 'package:event_tracker/persistence/activity_repository.dart';
-import 'package:event_tracker/stateProviders.dart';
+import 'package:event_tracker/persistence/persistence_providers.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';

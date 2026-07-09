@@ -8,8 +8,9 @@ import 'EventsList/eventsList.dart';
 import 'Statistics/statistics.dart';
 import 'UnitManager/unitsManagerPage.dart';
 import 'eventEditor.dart';
-import 'stateProviders.dart';
 import 'bootstrap/app_bootstrap.dart';
+import 'state/activity_list_providers.dart';
+import 'state/app_navigation_providers.dart';
 
 void main() async {
   await bootstrapApp();

@@ -3,7 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../common/commonWidget.dart';
 import '../domain/activity_models.dart';
-import '../stateProviders.dart';
+import '../persistence/persistence_providers.dart';
+import '../state/unit_providers.dart';
 
 class UnitsManager extends ConsumerWidget {
   const UnitsManager();

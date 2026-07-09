@@ -4,7 +4,9 @@ import 'package:event_tracker/common/commonWidget.dart';
 import 'package:event_tracker/common/const.dart';
 
 import '../domain/activity_models.dart';
-import '../stateProviders.dart';
+import '../persistence/persistence_providers.dart';
+import '../state/activity_detail_providers.dart';
+import '../state/activity_list_providers.dart';
 import 'activity_detail_charts.dart';
 import 'activity_description_editor.dart';
 

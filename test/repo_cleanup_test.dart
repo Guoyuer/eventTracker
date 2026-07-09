@@ -63,6 +63,12 @@ void main() {
   test('ui state does not import the Drift database module directly', () {
     for (final path in [
       'lib/stateProviders.dart',
+      'lib/state/activity_detail_providers.dart',
+      'lib/state/activity_editor_providers.dart',
+      'lib/state/activity_list_providers.dart',
+      'lib/state/app_navigation_providers.dart',
+      'lib/state/statistics_providers.dart',
+      'lib/state/unit_providers.dart',
       'lib/eventEditor.dart',
       'lib/UnitManager/unitsManagerPage.dart',
       'lib/EventsList/eventsList.dart',
@@ -73,6 +79,27 @@ void main() {
 
       expect(source, isNot(contains('persistence/database/app_database.dart')));
     }
+  });
+
+  test('active app files import focused state modules instead of facade', () {
+    for (final path in [
+      'lib/main.dart',
+      'lib/eventEditor.dart',
+      'lib/UnitManager/unitsManagerPage.dart',
+      'lib/EventsList/eventsList.dart',
+      'lib/EventsDetails/eventDetails.dart',
+      'lib/EventsDetails/activity_description_editor.dart',
+      'lib/Statistics/statistics.dart',
+    ]) {
+      final source = File(path).readAsStringSync();
+
+      expect(source, isNot(contains('stateProviders.dart')));
+    }
+
+    final facade = File('lib/stateProviders.dart').readAsStringSync();
+    expect(facade, isNot(contains('import ')));
+    expect(facade, contains("export 'state/activity_list_providers.dart';"));
+    expect(facade, contains("export 'state/statistics_providers.dart';"));
   });
 
   test('persistence providers own database adapter wiring', () {
@@ -231,7 +258,8 @@ void main() {
   test('activity tiles keep ticking state outside the whole tile widget', () {
     final activityList =
         File('lib/EventsList/eventsList.dart').readAsStringSync();
-    final providers = File('lib/stateProviders.dart').readAsStringSync();
+    final providers =
+        File('lib/state/activity_list_providers.dart').readAsStringSync();
 
     expect(activityList,
         isNot(contains('class EventTile extends ConsumerStatefulWidget')));
@@ -246,7 +274,8 @@ void main() {
   test('statistics page keeps selected range in Riverpod state', () {
     final statistics =
         File('lib/Statistics/statistics.dart').readAsStringSync();
-    final providers = File('lib/stateProviders.dart').readAsStringSync();
+    final providers =
+        File('lib/state/statistics_providers.dart').readAsStringSync();
 
     expect(statistics, isNot(contains('StatefulWidget')));
     expect(statistics, isNot(contains('setState(')));
@@ -279,7 +308,8 @@ void main() {
   test('activity description editing state stays in Riverpod', () {
     final editor = File('lib/EventsDetails/activity_description_editor.dart')
         .readAsStringSync();
-    final providers = File('lib/stateProviders.dart').readAsStringSync();
+    final providers =
+        File('lib/state/activity_detail_providers.dart').readAsStringSync();
 
     expect(editor, isNot(contains('ConsumerStatefulWidget')));
     expect(editor, isNot(contains('TextEditingController')));
@@ -290,7 +320,8 @@ void main() {
 
   test('activity editor draft choices stay in Riverpod', () {
     final editor = File('lib/eventEditor.dart').readAsStringSync();
-    final providers = File('lib/stateProviders.dart').readAsStringSync();
+    final providers =
+        File('lib/state/activity_editor_providers.dart').readAsStringSync();
 
     expect(editor, isNot(contains('ConsumerStatefulWidget')));
     expect(editor, isNot(contains('setState(')));

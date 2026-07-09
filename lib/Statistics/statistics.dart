@@ -6,7 +6,7 @@ import 'package:intl/intl.dart';
 
 import 'statistics_charts.dart';
 import '../persistence/statistics_repository.dart' show StatisticsData;
-import '../stateProviders.dart';
+import '../state/statistics_providers.dart';
 
 class StatisticPage extends ConsumerWidget {
   @override
