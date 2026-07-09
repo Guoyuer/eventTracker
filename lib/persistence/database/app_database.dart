@@ -7,10 +7,10 @@ import 'package:drift/drift.dart';
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
 
-import '../domain/activity_models.dart';
+import '../../domain/activity_models.dart';
 import 'tables.dart';
 
-part 'base.g.dart';
+part 'app_database.g.dart';
 // 实现单例模式
 
 class DBHandle {
@@ -29,7 +29,7 @@ class DBHandle {
   }
 }
 
-@DriftDatabase(tables: [Units, Events, Records], include: {'SQL.moor'})
+@DriftDatabase(tables: [Units, Events, Records], include: {'sql.moor'})
 class AppDatabase extends _$AppDatabase {
   AppDatabase([QueryExecutor? executor])
       : super(executor ?? defaultDatabaseExecutor());

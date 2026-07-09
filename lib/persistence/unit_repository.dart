@@ -1,6 +1,6 @@
 import 'package:drift/drift.dart';
 
-import '../DAO/base.dart';
+import 'database/app_database.dart';
 
 abstract class UnitRepository {
   Future<List<Unit>> getUnits();

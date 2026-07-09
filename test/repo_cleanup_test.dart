@@ -23,9 +23,11 @@ void main() {
   });
 
   test('legacy step schema stays retired from active Drift schema', () {
-    final tables = File('lib/DAO/tables.dart').readAsStringSync();
-    final database = File('lib/DAO/base.dart').readAsStringSync();
-    final sql = File('lib/DAO/SQL.moor').readAsStringSync();
+    final tables =
+        File('lib/persistence/database/tables.dart').readAsStringSync();
+    final database =
+        File('lib/persistence/database/app_database.dart').readAsStringSync();
+    final sql = File('lib/persistence/database/sql.moor').readAsStringSync();
 
     expect(tables, isNot(contains('class Steps')));
     expect(tables, isNot(contains('class StepOffset')));
@@ -41,6 +43,8 @@ void main() {
       final source = File(path).readAsStringSync();
 
       expect(source, isNot(contains("../DAO/base.dart")));
+      expect(
+          source, isNot(contains("../persistence/database/app_database.dart")));
       expect(source, isNot(contains("List<Record")));
       expect(source, isNot(contains("Map<int, Event")));
     }

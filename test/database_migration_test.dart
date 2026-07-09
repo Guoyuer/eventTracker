@@ -1,7 +1,7 @@
 import 'dart:io';
 
 import 'package:drift_sqflite/drift_sqflite.dart';
-import 'package:event_tracker/DAO/base.dart';
+import 'package:event_tracker/persistence/database/app_database.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:path/path.dart' as p;

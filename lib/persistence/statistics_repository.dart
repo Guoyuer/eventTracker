@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart' show DateTimeRange;
 
-import '../DAO/base.dart';
 import '../domain/activity_models.dart';
+import 'database/app_database.dart';
 
 class StatisticsData {
   StatisticsData({

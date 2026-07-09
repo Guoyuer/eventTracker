@@ -46,6 +46,7 @@ Completed slice:
 - Removed unused/discontinued dependencies `share` and `moor_db_viewer`.
 - Moved activity detail record reads, activity deletion, and description reads/writes behind `ActivityRepository`.
 - Retired the legacy step schema via ADR 0001 and schema v3 migration.
+- Renamed the uppercase `DAO` module path to `lib/persistence/database/`.
 - Kept `flutter analyze`, `flutter test`, and `flutter build windows` green.
 
 Next slice:

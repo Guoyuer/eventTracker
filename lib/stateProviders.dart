@@ -2,8 +2,8 @@ import 'package:flutter/material.dart' show DateTimeRange;
 import 'package:flutter/rendering.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import 'DAO/base.dart';
 import 'domain/activity_models.dart';
+import 'persistence/database/app_database.dart';
 import 'persistence/activity_repository.dart';
 import 'persistence/statistics_repository.dart';
 import 'persistence/unit_repository.dart';

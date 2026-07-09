@@ -80,7 +80,7 @@ Status: completed
 
 Status: in progress
 
-- Rename `DAO` to a lower-case persistence module path.
+- Renamed `DAO` to the lower-case `lib/persistence/database/` module path.
 - Replaced ad hoc string SQL updates in record lifecycle and latest-step reads with typed Drift operations.
 - Continue making record lifecycle operations transactional. Completed for plain record add, timed record start, timed record stop, active timed record delete, and event delete.
 - Introduced `ActivityRepository` and migrated activity creation plus the activity-list recording flow to it.
@@ -95,7 +95,6 @@ Status: in progress
 
 Remaining:
 
-- Rename `DAO` to a lower-case persistence module path.
 - Continue migrating UI callers from `AppDatabase` to repository-style modules.
 - Move details and statistics reads behind persistence interfaces.
 
@@ -141,7 +140,7 @@ The first slice should make the quality gates meaningful without changing produc
 
 ### Strong: Persistence Module
 
-Files: `lib/DAO/base.dart`, `lib/DAO/tables.dart`, `lib/main.dart`, callers in list/detail/statistics pages.
+Files: `lib/persistence/database/app_database.dart`, `lib/persistence/database/tables.dart`, `lib/main.dart`, callers in list/detail/statistics pages.
 
 Problem: UI modules know too much about the database implementation and persistence setup. Record lifecycle methods update multiple tables with manual ordering requirements.
 

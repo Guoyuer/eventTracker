@@ -22,7 +22,7 @@ doc/api/
 .flutter*
 
 .VSCodeCounter/
-lib/DAO/*.g.dart
+lib/persistence/database/*.g.dart
 
 android/
 web/

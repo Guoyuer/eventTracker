@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:event_tracker/common/commonWidget.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'DAO/base.dart';
 import 'persistence/activity_repository.dart';
+import 'persistence/database/app_database.dart';
 import 'stateProviders.dart';
 
 class EventEditor extends ConsumerStatefulWidget {

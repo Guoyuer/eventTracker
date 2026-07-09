@@ -1,4 +1,4 @@
-import 'package:event_tracker/DAO/base.dart';
+import 'package:event_tracker/persistence/database/app_database.dart';
 import 'package:event_tracker/persistence/unit_repository.dart';
 import 'package:flutter_test/flutter_test.dart';
 

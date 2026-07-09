@@ -1,7 +1,7 @@
 import 'package:drift/drift.dart';
 
-import '../DAO/base.dart';
 import '../domain/activity_models.dart';
+import 'database/app_database.dart';
 
 abstract class ActivityRepository {
   Future<List<BaseEventModel>> getActivities();
