@@ -41,7 +41,7 @@ abstract class ActivityRepository {
 
 class DriftActivityRepository implements ActivityRepository {
   DriftActivityRepository(this._db)
-      : _recordLifecycle = RecordLifecycleStore(_db);
+    : _recordLifecycle = RecordLifecycleStore(_db);
 
   final AppDatabase _db;
   final RecordLifecycleStore _recordLifecycle;
@@ -49,18 +49,20 @@ class DriftActivityRepository implements ActivityRepository {
   @override
   Future<List<BaseEventModel>> getActivities() async {
     final events = await _db.select(_db.events).get();
-    return [
-      for (final event in events) await _toActivityModel(event),
-    ];
+    return [for (final event in events) await _toActivityModel(event)];
   }
 
   @override
   Future<List<ActivityRecord>> getActivityRecords(int activityId) async {
-    final records = await (_db.select(_db.records)
-          ..orderBy([(record) => OrderingTerm(expression: record.endTime)])
-          ..where((record) =>
-              record.eventId.equals(activityId) & record.endTime.isNotNull()))
-        .get();
+    final records =
+        await (_db.select(_db.records)
+              ..orderBy([(record) => OrderingTerm(expression: record.endTime)])
+              ..where(
+                (record) =>
+                    record.eventId.equals(activityId) &
+                    record.endTime.isNotNull(),
+              ))
+            .get();
     return [
       for (final record in records)
         ActivityRecord(
@@ -80,7 +82,9 @@ class DriftActivityRepository implements ActivityRepository {
     String? unit,
     String? description,
   }) {
-    return _db.into(_db.events).insert(
+    return _db
+        .into(_db.events)
+        .insert(
           EventsCompanion(
             name: Value(name),
             careTime: Value(careTime),
@@ -102,10 +106,7 @@ class DriftActivityRepository implements ActivityRepository {
   }
 
   @override
-  Future<void> updateActivityDescription(
-    int activityId,
-    String description,
-  ) {
+  Future<void> updateActivityDescription(int activityId, String description) {
     return (_db.update(_db.events)
           ..where((activity) => activity.id.equals(activityId)))
         .write(EventsCompanion(description: Value(description)));
@@ -117,11 +118,7 @@ class DriftActivityRepository implements ActivityRepository {
     DateTime endTime, {
     double? value,
   }) {
-    return _recordLifecycle.addPlainRecord(
-      activityId,
-      endTime,
-      value: value,
-    );
+    return _recordLifecycle.addPlainRecord(activityId, endTime, value: value);
   }
 
   @override
@@ -150,12 +147,12 @@ class DriftActivityRepository implements ActivityRepository {
   @override
   Future<void> deleteActivity(int activityId) async {
     return _db.transaction(() async {
-      await (_db.delete(_db.records)
-            ..where((record) => record.eventId.equals(activityId)))
-          .go();
-      await (_db.delete(_db.events)
-            ..where((activity) => activity.id.equals(activityId)))
-          .go();
+      await (_db.delete(
+        _db.records,
+      )..where((record) => record.eventId.equals(activityId))).go();
+      await (_db.delete(
+        _db.events,
+      )..where((activity) => activity.id.equals(activityId))).go();
     });
   }
 
@@ -195,8 +192,9 @@ class DriftActivityRepository implements ActivityRepository {
     }
 
     final record = await _recordById(event.lastRecordId!);
-    final status =
-        record.endTime == null ? EventStatus.active : EventStatus.notActive;
+    final status = record.endTime == null
+        ? EventStatus.active
+        : EventStatus.notActive;
 
     return TimingEventModel(
       event.id,
@@ -212,7 +210,8 @@ class DriftActivityRepository implements ActivityRepository {
   }
 
   Future<Record> _recordById(int id) {
-    return (_db.select(_db.records)..where((record) => record.id.equals(id)))
-        .getSingle();
+    return (_db.select(
+      _db.records,
+    )..where((record) => record.id.equals(id))).getSingle();
   }
 }

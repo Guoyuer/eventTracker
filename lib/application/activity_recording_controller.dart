@@ -9,9 +9,9 @@ class ActivityRecordingController {
     required ActivityRecordingActions actions,
     required ActivityListRefresh refresh,
     required ActivityNotification notify,
-  })  : _actions = actions,
-        _refresh = refresh,
-        _notify = notify;
+  }) : this._(actions, refresh, notify);
+
+  ActivityRecordingController._(this._actions, this._refresh, this._notify);
 
   final ActivityRecordingActions _actions;
   final ActivityListRefresh _refresh;

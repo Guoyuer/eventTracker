@@ -6,10 +6,8 @@ import '../persistence/persistence_providers.dart';
 import '../state/activity_detail_providers.dart';
 
 class ActivityDescriptionEditor extends ConsumerWidget {
-  const ActivityDescriptionEditor({
-    Key? key,
-    required this.activityId,
-  }) : super(key: key);
+  const ActivityDescriptionEditor({Key? key, required this.activityId})
+    : super(key: key);
 
   final int activityId;
 
@@ -46,7 +44,7 @@ class ActivityDescriptionEditor extends ConsumerWidget {
       onTap: () {
         ref
             .read(activityDescriptionEditingProvider(activityId).notifier)
-            .state = true;
+            .set(true);
       },
       child: Text(
         displayDescription,
@@ -63,8 +61,9 @@ class ActivityDescriptionEditor extends ConsumerWidget {
         .read(activityRepositoryProvider)
         .updateActivityDescription(activityId, newValue);
     ref.invalidate(activityDescriptionProvider(activityId));
-    ref.read(activityDescriptionEditingProvider(activityId).notifier).state =
-        false;
+    ref
+        .read(activityDescriptionEditingProvider(activityId).notifier)
+        .set(false);
   }
 
   String _displayDescription(String? rawDescription) {

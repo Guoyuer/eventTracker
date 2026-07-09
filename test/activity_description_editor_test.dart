@@ -8,41 +8,40 @@ import 'package:flutter_test/flutter_test.dart';
 
 void main() {
   testWidgets(
-      'description editor loads and updates through repository provider',
-      (tester) async {
-    final repository = _FakeActivityRepository(description: 'Initial');
+    'description editor loads and updates through repository provider',
+    (tester) async {
+      final repository = _FakeActivityRepository(description: 'Initial');
 
-    await tester.pumpWidget(
-      ProviderScope(
-        overrides: [
-          activityRepositoryProvider.overrideWithValue(repository),
-        ],
-        child: MaterialApp(
-          home: Scaffold(
-            body: ActivityDescriptionEditor(activityId: 7),
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [activityRepositoryProvider.overrideWithValue(repository)],
+          child: MaterialApp(
+            home: Scaffold(body: ActivityDescriptionEditor(activityId: 7)),
           ),
         ),
-      ),
-    );
+      );
 
-    await tester.pump();
+      await tester.pump();
 
-    expect(find.text('Initial'), findsOneWidget);
+      expect(find.text('Initial'), findsOneWidget);
 
-    await tester.tap(find.text('Initial'));
-    await tester.pump();
-    await tester.enterText(find.byType(TextFormField), 'Updated');
-    await tester.testTextInput.receiveAction(TextInputAction.done);
-    await tester.pump();
-    await tester.pump();
+      await tester.tap(find.text('Initial'));
+      await tester.pump();
+      await tester.enterText(find.byType(TextFormField), 'Updated');
+      await tester.testTextInput.receiveAction(TextInputAction.done);
+      await tester.pump();
+      await tester.pump();
 
-    expect(repository.updatedDescriptions, {7: 'Updated'});
-    expect(find.text('Updated'), findsOneWidget);
-  });
+      expect(repository.updatedDescriptions, {7: 'Updated'});
+      expect(find.text('Updated'), findsOneWidget);
+    },
+  );
 }
 
 class _FakeActivityRepository implements ActivityRepository {
-  _FakeActivityRepository({String? description}) : _description = description;
+  _FakeActivityRepository({String? description}) : this._(description);
+
+  _FakeActivityRepository._(this._description);
 
   String? _description;
   final Map<int, String> updatedDescriptions = {};

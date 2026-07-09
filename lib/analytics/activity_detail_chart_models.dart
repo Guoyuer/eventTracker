@@ -26,10 +26,7 @@ class ActivityDetailChartModel {
 }
 
 class ActivityTimeSlotBar {
-  ActivityTimeSlotBar({
-    required this.x,
-    required this.value,
-  });
+  ActivityTimeSlotBar({required this.x, required this.value});
 
   final int x;
   final double value;
@@ -51,8 +48,9 @@ ActivityDetailChartModel buildActivityDetailChartModel({
     metric: metric,
     now: now,
   );
-  final visibleRecords =
-      selectedMonth == null ? records : recordsInMonth(records, selectedMonth);
+  final visibleRecords = selectedMonth == null
+      ? records
+      : recordsInMonth(records, selectedMonth);
   final barRecords = visibleRecords.isEmpty ? records : visibleRecords;
   final timeSlotSeries = buildActivityTimeSlotSeries(
     records: barRecords,

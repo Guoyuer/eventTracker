@@ -5,44 +5,48 @@ import 'package:event_tracker/persistence/activity_repository.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
-  test('plain activity records immediately when no unit value is needed',
-      () async {
-    final repository = _FakeActivityRepository();
-    final recorder = ActivityRecordingActions(repository);
-    final recordedAt = DateTime(2026, 1, 1, 8);
+  test(
+    'plain activity records immediately when no unit value is needed',
+    () async {
+      final repository = _FakeActivityRepository();
+      final recorder = ActivityRecordingActions(repository);
+      final recordedAt = DateTime(2026, 1, 1, 8);
 
-    final outcome = await recorder.record(
-      _plainActivity(unit: null),
-      recordedAt,
-      requestValue: (_) => throw StateError('value prompt should not open'),
-    );
+      final outcome = await recorder.record(
+        _plainActivity(unit: null),
+        recordedAt,
+        requestValue: (_) => throw StateError('value prompt should not open'),
+      );
 
-    expect(outcome, ActivityRecordingOutcome.changed);
-    expect(repository.plainRecords, [
-      _PlainRecord(activityId: 1, endTime: recordedAt),
-    ]);
-  });
+      expect(outcome, ActivityRecordingOutcome.changed);
+      expect(repository.plainRecords, [
+        _PlainRecord(activityId: 1, endTime: recordedAt),
+      ]);
+    },
+  );
 
-  test('plain activity asks for a value when the activity has a unit',
-      () async {
-    final repository = _FakeActivityRepository();
-    final recorder = ActivityRecordingActions(repository);
-    final recordedAt = DateTime(2026, 1, 1, 8);
+  test(
+    'plain activity asks for a value when the activity has a unit',
+    () async {
+      final repository = _FakeActivityRepository();
+      final recorder = ActivityRecordingActions(repository);
+      final recordedAt = DateTime(2026, 1, 1, 8);
 
-    final outcome = await recorder.record(
-      _plainActivity(unit: 'pages'),
-      recordedAt,
-      requestValue: (unit) async {
-        expect(unit, 'pages');
-        return 12;
-      },
-    );
+      final outcome = await recorder.record(
+        _plainActivity(unit: 'pages'),
+        recordedAt,
+        requestValue: (unit) async {
+          expect(unit, 'pages');
+          return 12;
+        },
+      );
 
-    expect(outcome, ActivityRecordingOutcome.changed);
-    expect(repository.plainRecords, [
-      _PlainRecord(activityId: 1, endTime: recordedAt, value: 12),
-    ]);
-  });
+      expect(outcome, ActivityRecordingOutcome.changed);
+      expect(repository.plainRecords, [
+        _PlainRecord(activityId: 1, endTime: recordedAt, value: 12),
+      ]);
+    },
+  );
 
   test('canceling the value prompt leaves repository unchanged', () async {
     final repository = _FakeActivityRepository();
@@ -76,48 +80,52 @@ void main() {
     ]);
   });
 
-  test('active timed activity under threshold cancels accidental record',
-      () async {
-    final repository = _FakeActivityRepository();
-    final recorder = ActivityRecordingActions(repository);
-    final startTime = DateTime(2026, 1, 1, 8);
+  test(
+    'active timed activity under threshold cancels accidental record',
+    () async {
+      final repository = _FakeActivityRepository();
+      final recorder = ActivityRecordingActions(repository);
+      final startTime = DateTime(2026, 1, 1, 8);
 
-    final outcome = await recorder.record(
-      _timedActivity(status: EventStatus.active, startTime: startTime),
-      startTime.add(const Duration(seconds: 4)),
-      requestValue: (_) => throw StateError('value prompt should not open'),
-    );
+      final outcome = await recorder.record(
+        _timedActivity(status: EventStatus.active, startTime: startTime),
+        startTime.add(const Duration(seconds: 4)),
+        requestValue: (_) => throw StateError('value prompt should not open'),
+      );
 
-    expect(outcome, ActivityRecordingOutcome.canceledAccidentalTimedRecord);
-    expect(repository.canceledTimedActivityIds, [2]);
-    expect(repository.stoppedTimedRecords, isEmpty);
-  });
+      expect(outcome, ActivityRecordingOutcome.canceledAccidentalTimedRecord);
+      expect(repository.canceledTimedActivityIds, [2]);
+      expect(repository.stoppedTimedRecords, isEmpty);
+    },
+  );
 
-  test('active timed activity over threshold stops with prompted value',
-      () async {
-    final repository = _FakeActivityRepository();
-    final recorder = ActivityRecordingActions(repository);
-    final startTime = DateTime(2026, 1, 1, 8);
-    final stoppedAt = startTime.add(const Duration(minutes: 20));
+  test(
+    'active timed activity over threshold stops with prompted value',
+    () async {
+      final repository = _FakeActivityRepository();
+      final recorder = ActivityRecordingActions(repository);
+      final startTime = DateTime(2026, 1, 1, 8);
+      final stoppedAt = startTime.add(const Duration(minutes: 20));
 
-    final outcome = await recorder.record(
-      _timedActivity(
-        status: EventStatus.active,
-        startTime: startTime,
-        unit: 'km',
-      ),
-      stoppedAt,
-      requestValue: (unit) async {
-        expect(unit, 'km');
-        return 4;
-      },
-    );
+      final outcome = await recorder.record(
+        _timedActivity(
+          status: EventStatus.active,
+          startTime: startTime,
+          unit: 'km',
+        ),
+        stoppedAt,
+        requestValue: (unit) async {
+          expect(unit, 'km');
+          return 4;
+        },
+      );
 
-    expect(outcome, ActivityRecordingOutcome.changed);
-    expect(repository.stoppedTimedRecords, [
-      _TimedStop(activityId: 2, stoppedAt: stoppedAt, value: 4),
-    ]);
-  });
+      expect(outcome, ActivityRecordingOutcome.changed);
+      expect(repository.stoppedTimedRecords, [
+        _TimedStop(activityId: 2, stoppedAt: stoppedAt, value: 4),
+      ]);
+    },
+  );
 
   test('recording controller refreshes changed activity lists', () async {
     final repository = _FakeActivityRepository();
@@ -134,21 +142,23 @@ void main() {
     expect(harness.notifications, isEmpty);
   });
 
-  test('recording controller reports canceled accidental timed records',
-      () async {
-    final repository = _FakeActivityRepository();
-    final harness = _ControllerHarness(repository);
-    final startTime = DateTime(2026, 1, 1, 8);
+  test(
+    'recording controller reports canceled accidental timed records',
+    () async {
+      final repository = _FakeActivityRepository();
+      final harness = _ControllerHarness(repository);
+      final startTime = DateTime(2026, 1, 1, 8);
 
-    await harness.controller.record(
-      _timedActivity(status: EventStatus.active, startTime: startTime),
-      startTime.add(const Duration(seconds: 4)),
-      requestValue: (_) => throw StateError('value prompt should not open'),
-    );
+      await harness.controller.record(
+        _timedActivity(status: EventStatus.active, startTime: startTime),
+        startTime.add(const Duration(seconds: 4)),
+        requestValue: (_) => throw StateError('value prompt should not open'),
+      );
 
-    expect(harness.refreshCount, 1);
-    expect(harness.notifications, ['已取消本次计时']);
-  });
+      expect(harness.refreshCount, 1);
+      expect(harness.notifications, ['已取消本次计时']);
+    },
+  );
 
   test('recording controller leaves unchanged outcomes quiet', () async {
     final repository = _FakeActivityRepository();
@@ -233,10 +243,7 @@ class _FakeActivityRepository implements ActivityRepository {
   }
 
   @override
-  Future<void> updateActivityDescription(
-    int activityId,
-    String description,
-  ) {
+  Future<void> updateActivityDescription(int activityId, String description) {
     throw UnimplementedError();
   }
 

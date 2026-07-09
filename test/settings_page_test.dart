@@ -6,9 +6,7 @@ void main() {
   testWidgets('settings page exposes only product settings', (tester) async {
     await tester.pumpWidget(
       MaterialApp(
-        routes: {
-          'unitsManager': (_) => const Scaffold(body: Text('units')),
-        },
+        routes: {'unitsManager': (_) => const Scaffold(body: Text('units'))},
         home: SettingPage(),
       ),
     );

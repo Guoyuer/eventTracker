@@ -8,7 +8,9 @@ Future<int> insertTestActivity(
   String? unit,
   String? description,
 }) {
-  return db.into(db.events).insert(
+  return db
+      .into(db.events)
+      .insert(
         EventsCompanion(
           name: Value(name),
           careTime: Value(careTime),
@@ -19,14 +21,15 @@ Future<int> insertTestActivity(
 }
 
 Future<Event> getTestActivity(AppDatabase db, int activityId) {
-  return (db.select(db.events)
-        ..where((activity) => activity.id.equals(activityId)))
-      .getSingle();
+  return (db.select(
+    db.events,
+  )..where((activity) => activity.id.equals(activityId))).getSingle();
 }
 
 Future<Record> getTestRecord(AppDatabase db, int recordId) {
-  return (db.select(db.records)..where((record) => record.id.equals(recordId)))
-      .getSingle();
+  return (db.select(
+    db.records,
+  )..where((record) => record.id.equals(recordId))).getSingle();
 }
 
 Future<List<Record>> getCompletedTestRecordsForActivity(
@@ -35,7 +38,9 @@ Future<List<Record>> getCompletedTestRecordsForActivity(
 ) {
   return (db.select(db.records)
         ..orderBy([(record) => OrderingTerm(expression: record.endTime)])
-        ..where((record) =>
-            record.eventId.equals(activityId) & record.endTime.isNotNull()))
+        ..where(
+          (record) =>
+              record.eventId.equals(activityId) & record.endTime.isNotNull(),
+        ))
       .get();
 }

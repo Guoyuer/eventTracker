@@ -1,11 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-enum AsyncStateLayout {
-  page,
-  card,
-  inline,
-}
+enum AsyncStateLayout { page, card, inline }
 
 class AsyncStateView<T> extends StatelessWidget {
   const AsyncStateView({
@@ -61,10 +57,7 @@ class AsyncStateView<T> extends StatelessWidget {
       case AsyncStateLayout.card:
         return Card(
           elevation: 10,
-          child: Padding(
-            padding: EdgeInsets.all(16),
-            child: child,
-          ),
+          child: Padding(padding: EdgeInsets.all(16), child: child),
         );
       case AsyncStateLayout.inline:
         return child;
@@ -89,11 +82,7 @@ class _LoadingState extends StatelessWidget {
 }
 
 class _MessageState extends StatelessWidget {
-  const _MessageState({
-    required this.message,
-    this.icon,
-    this.action,
-  });
+  const _MessageState({required this.message, this.icon, this.action});
 
   final String message;
   final IconData? icon;
@@ -115,10 +104,7 @@ class _MessageState extends StatelessWidget {
           SizedBox(height: 8),
         ],
         messageWidget,
-        if (action != null) ...[
-          SizedBox(height: 8),
-          action!,
-        ],
+        if (action != null) ...[SizedBox(height: 8), action!],
       ],
     );
   }

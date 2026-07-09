@@ -80,8 +80,11 @@ class ActivityRecordingActions {
       return ActivityRecordingOutcome.unchanged;
     }
 
-    await _repository.stopActiveTimedRecord(activity.id, stoppedAt,
-        value: value);
+    await _repository.stopActiveTimedRecord(
+      activity.id,
+      stoppedAt,
+      value: value,
+    );
     return ActivityRecordingOutcome.changed;
   }
 

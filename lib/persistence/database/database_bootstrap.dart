@@ -7,8 +7,10 @@ import 'package:path_provider/path_provider.dart';
 
 QueryExecutor defaultDatabaseExecutor() {
   return LazyDatabase(() async {
-    if (usesExplicitDatabasePathOnPlatform(defaultTargetPlatform,
-        isWeb: kIsWeb)) {
+    if (usesExplicitDatabasePathOnPlatform(
+      defaultTargetPlatform,
+      isWeb: kIsWeb,
+    )) {
       final directory = await getApplicationSupportDirectory();
       await directory.create(recursive: true);
       return SqfliteQueryExecutor(
@@ -25,8 +27,10 @@ QueryExecutor defaultDatabaseExecutor() {
 }
 
 @visibleForTesting
-bool usesExplicitDatabasePathOnPlatform(TargetPlatform platform,
-    {required bool isWeb}) {
+bool usesExplicitDatabasePathOnPlatform(
+  TargetPlatform platform, {
+  required bool isWeb,
+}) {
   return !isWeb &&
       (platform == TargetPlatform.windows ||
           platform == TargetPlatform.linux ||

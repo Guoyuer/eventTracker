@@ -5,10 +5,7 @@ import '../domain/date_range.dart';
 import 'database/app_database.dart';
 
 class StatisticsData {
-  StatisticsData({
-    required this.records,
-    required this.activitiesById,
-  });
+  StatisticsData({required this.records, required this.activitiesById});
 
   final List<ActivityRecord> records;
   final Map<int, StatisticsActivity> activitiesById;
@@ -25,10 +22,12 @@ class DriftStatisticsRepository implements StatisticsRepository {
 
   @override
   Future<StatisticsData> getStatisticsData(DateRange range) async {
-    final records = await (_db.select(_db.records)
-          ..where((record) =>
-              record.endTime.isBetweenValues(range.start, range.end)))
-        .get();
+    final records =
+        await (_db.select(_db.records)..where(
+              (record) =>
+                  record.endTime.isBetweenValues(range.start, range.end),
+            ))
+            .get();
     final activities = await _db.select(_db.events).get();
 
     return StatisticsData(
@@ -44,10 +43,7 @@ class DriftStatisticsRepository implements StatisticsRepository {
       ],
       activitiesById: {
         for (final activity in activities)
-          activity.id: StatisticsActivity(
-            id: activity.id,
-            name: activity.name,
-          ),
+          activity.id: StatisticsActivity(id: activity.id, name: activity.name),
       },
     );
   }

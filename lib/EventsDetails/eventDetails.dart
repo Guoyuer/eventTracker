@@ -41,56 +41,56 @@ class EventDetails extends ConsumerWidget {
     }
 
     return Scaffold(
-        appBar: AppBar(
-          actions: [
-            IconButton(
-                onPressed: () async {
-                  final delete = await _confirmDelete(context);
-                  if (delete != true) {
-                    return;
-                  }
-                  await ref
-                      .read(activityRepositoryProvider)
-                      .deleteActivity(event.id);
-                  if (!context.mounted) {
-                    return;
-                  }
-                  Navigator.of(context).pop(true);
-                },
-                icon: Icon(Icons.delete))
-          ],
-          title: Text("${event.name} - 项目详细"),
-        ),
-        body: ListView(children: listChildren));
+      appBar: AppBar(
+        actions: [
+          IconButton(
+            onPressed: () async {
+              final delete = await _confirmDelete(context);
+              if (delete != true) {
+                return;
+              }
+              await ref
+                  .read(activityRepositoryProvider)
+                  .deleteActivity(event.id);
+              if (!context.mounted) {
+                return;
+              }
+              Navigator.of(context).pop(true);
+            },
+            icon: Icon(Icons.delete),
+          ),
+        ],
+        title: Text("${event.name} - 项目详细"),
+      ),
+      body: ListView(children: listChildren),
+    );
   }
 
   Widget _buildDescriptionCard() {
     return Card(
-        elevation: 10,
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.start,
-          children: [
-            Align(
-                alignment: Alignment.center,
-                child: Text(
-                  "项目描述",
-                  style: chartTitleStyle,
-                )),
-            Align(
-                alignment: Alignment.center,
-                child: ActivityDescriptionEditor(activityId: event.id))
-          ],
-        ));
+      elevation: 10,
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.start,
+        children: [
+          Align(
+            alignment: Alignment.center,
+            child: Text("项目描述", style: chartTitleStyle),
+          ),
+          Align(
+            alignment: Alignment.center,
+            child: ActivityDescriptionEditor(activityId: event.id),
+          ),
+        ],
+      ),
+    );
   }
 
   Widget _buildCharts(WidgetRef ref) {
     final records = ref.watch(activityRecordsProvider(event.id));
     return AsyncStateView<List<ActivityRecord>>(
       value: records,
-      data: (records) => ActivityDetailCharts(
-        activity: event,
-        records: records,
-      ),
+      data: (records) =>
+          ActivityDetailCharts(activity: event, records: records),
       errorMessage: '加载记录失败',
       emptyMessage: '暂无记录',
       isEmpty: (records) => records.isEmpty,
@@ -101,19 +101,22 @@ class EventDetails extends ConsumerWidget {
 
   Future<bool?> _confirmDelete(BuildContext context) {
     return showDialog<bool>(
-        context: context,
-        builder: (context) {
-          return AlertDialog(
-            title: Text("是否删除该项目及所有记录？"),
-            actions: [
-              TextButton(
-                  onPressed: () => Navigator.of(context).pop(false),
-                  child: Text("否")),
-              TextButton(
-                  onPressed: () => Navigator.of(context).pop(true),
-                  child: Text("是"))
-            ],
-          );
-        });
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: Text("是否删除该项目及所有记录？"),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(false),
+              child: Text("否"),
+            ),
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(true),
+              child: Text("是"),
+            ),
+          ],
+        );
+      },
+    );
   }
 }

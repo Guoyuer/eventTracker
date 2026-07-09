@@ -54,10 +54,7 @@ class HeatMapDayCell {
     required this.value,
   });
 
-  const HeatMapDayCell.placeholder()
-      : date = null,
-        level = -1,
-        value = null;
+  const HeatMapDayCell.placeholder() : date = null, level = -1, value = null;
 
   final DateTime? date;
   final int level;
@@ -102,9 +99,7 @@ HeatMapCalendarModel buildHeatMapCalendarModel({
 }
 
 Map<DateTime, double> normalizeHeatMapInput(Map<DateTime, double> input) {
-  return {
-    for (final entry in input.entries) dateOnly(entry.key): entry.value,
-  };
+  return {for (final entry in input.entries) dateOnly(entry.key): entry.value};
 }
 
 DateTime dateOnly(DateTime dateTime) {
@@ -159,10 +154,11 @@ List<HeatMapMonthBlock> _buildMonths({
       valuesByDate: valuesByDate,
     );
     if (monthEnd == calendarMonthEnd && monthEnd.weekday == DateTime.saturday) {
-      weeks.add(HeatMapWeekColumn(List.filled(
-        DateTime.daysPerWeek,
-        const HeatMapDayCell.placeholder(),
-      )));
+      weeks.add(
+        HeatMapWeekColumn(
+          List.filled(DateTime.daysPerWeek, const HeatMapDayCell.placeholder()),
+        ),
+      );
     }
 
     months.add(
@@ -195,12 +191,14 @@ List<HeatMapWeekColumn> _buildWeeks({
       cursor.add(Duration(days: daysUntilSaturday)),
       end,
     );
-    weeks.add(_buildWeek(
-      start: cursor,
-      end: weekEnd,
-      levelByDate: levelByDate,
-      valuesByDate: valuesByDate,
-    ));
+    weeks.add(
+      _buildWeek(
+        start: cursor,
+        end: weekEnd,
+        levelByDate: levelByDate,
+        valuesByDate: valuesByDate,
+      ),
+    );
     cursor = weekEnd.add(const Duration(days: 1));
   }
 
@@ -262,10 +260,7 @@ Map<DateTime, int> _buildLevelMap({
   return levelByDate;
 }
 
-List<double> _thresholds({
-  required double maxValue,
-  required int maxLevel,
-}) {
+List<double> _thresholds({required double maxValue, required int maxLevel}) {
   if (maxLevel <= 0) {
     return [0];
   }

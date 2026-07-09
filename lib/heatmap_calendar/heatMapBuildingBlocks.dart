@@ -10,8 +10,9 @@ class HeatMapDisplay extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     HeatMapDataHolder dataHolder = HeatMapDataHolder.of(context);
-    List<Widget> years =
-        dataHolder.model.years.map((year) => YearTile(year)).toList();
+    List<Widget> years = dataHolder.model.years
+        .map((year) => YearTile(year))
+        .toList();
     return Row(mainAxisSize: MainAxisSize.min, children: years);
   }
 }
@@ -29,9 +30,7 @@ class YearTile extends StatelessWidget {
     List<Widget> months = year.months.map((month) => MonthTile(month)).toList();
     return Container(
       // width: 500,
-      child: Row(
-        children: months,
-      ),
+      child: Row(children: months),
     );
   }
 }
@@ -49,27 +48,29 @@ class MonthTile extends StatelessWidget {
   Widget build(BuildContext context) {
     var setting = HeatMapDataHolder.of(context).setting;
     int month = monthBlock.month;
-    List<Widget> weeks =
-        monthBlock.weeks.map((week) => WeekTile(week)).toList();
+    List<Widget> weeks = monthBlock.weeks
+        .map((week) => WeekTile(week))
+        .toList();
     final dataHolder = HeatMapDataHolder.of(context);
     return InkWell(
-        onLongPress: () {
-          dataHolder.onMonthTouched?.call(monthBlock.calendarMonthEnd);
-        },
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Container(
-                //同个Month的Tile
-                width: monthBlock.widthInWeeks *
-                        (setting.dayTileSize + setting.dayTileMargin) +
-                    (monthBlock.widthInWeeks - 1) * setting.monthTileMargin,
-                child: Row(
-                  children: weeks,
-                )),
-            Text("$month 月"),
-          ],
-        ));
+      onLongPress: () {
+        dataHolder.onMonthTouched?.call(monthBlock.calendarMonthEnd);
+      },
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(
+            //同个Month的Tile
+            width:
+                monthBlock.widthInWeeks *
+                    (setting.dayTileSize + setting.dayTileMargin) +
+                (monthBlock.widthInWeeks - 1) * setting.monthTileMargin,
+            child: Row(children: weeks),
+          ),
+          Text("$month 月"),
+        ],
+      ),
+    );
   }
 }
 
@@ -84,10 +85,9 @@ class WeekTile extends StatelessWidget {
     var setting = HeatMapDataHolder.of(context).setting;
     List<Widget> days = week.days.map((day) => DayTile(cell: day)).toList();
     return Container(
-        height: setting.dayTileSize * 7 + setting.dayTileMargin * 7,
-        child: Column(
-          children: days,
-        ));
+      height: setting.dayTileSize * 7 + setting.dayTileMargin * 7,
+      child: Column(children: days),
+    );
   }
 }
 
@@ -109,8 +109,10 @@ class DayTile extends StatelessWidget {
         height: setting.dayTileSize,
         width: setting.dayTileSize,
         margin: EdgeInsets.all(setting.dayTileMargin / 2),
-        decoration:
-            dayDecoration(setting.dayTileSize, setting.colorMap[level]!),
+        decoration: dayDecoration(
+          setting.dayTileSize,
+          setting.colorMap[level]!,
+        ),
       );
     } else {
       return InkWell(
@@ -122,8 +124,10 @@ class DayTile extends StatelessWidget {
           height: setting.dayTileSize,
           width: setting.dayTileSize,
           margin: EdgeInsets.all(setting.dayTileMargin / 2),
-          decoration:
-              dayDecoration(setting.dayTileSize, setting.colorMap[level]!),
+          decoration: dayDecoration(
+            setting.dayTileSize,
+            setting.colorMap[level]!,
+          ),
         ),
       );
     }
@@ -133,7 +137,8 @@ class DayTile extends StatelessWidget {
 BoxDecoration dayDecoration(double size, Color color) {
   double radius = size / 3;
   return BoxDecoration(
-      color: color,
-      // border: Border.all(color: Color.fromARGB(255, 223, 225, 228), width: 1),
-      borderRadius: BorderRadius.all(Radius.elliptical(radius, radius)));
+    color: color,
+    // border: Border.all(color: Color.fromARGB(255, 223, 225, 228), width: 1),
+    borderRadius: BorderRadius.all(Radius.elliptical(radius, radius)),
+  );
 }

@@ -30,10 +30,7 @@ class StatisticsCharts extends StatelessWidget {
   }
 
   Widget _chartCard(Widget child) {
-    return Card(
-      elevation: 10,
-      child: child,
-    );
+    return Card(elevation: 10, child: child);
   }
 }
 
@@ -46,20 +43,19 @@ class _PieStatisticsChart extends StatelessWidget {
   Widget build(BuildContext context) {
     return Column(
       children: [
-        Text(
-          "次数统计",
-          style: TextStyle(fontSize: 20),
-        ),
+        Text("次数统计", style: TextStyle(fontSize: 20)),
         SizedBox(height: 10),
         SizedBox(
           height: 300,
           child: Stack(
             children: [
-              PieChart(PieChartData(
-                centerSpaceRadius: 70,
-                sectionsSpace: 5,
-                sections: _sections(),
-              )),
+              PieChart(
+                PieChartData(
+                  centerSpaceRadius: 70,
+                  sectionsSpace: 5,
+                  sections: _sections(),
+                ),
+              ),
               Center(
                 child: Container(
                   width: 110,
@@ -71,16 +67,18 @@ class _PieStatisticsChart extends StatelessWidget {
                   child: Center(
                     child: Text(
                       "共 ${model.totalCount} 次",
-                      style:
-                          TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                      style: TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                   ),
                 ),
-              )
+              ),
             ],
           ),
         ),
-        SizedBox(height: 30)
+        SizedBox(height: 30),
       ],
     );
   }
@@ -98,7 +96,7 @@ class _PieStatisticsChart extends StatelessWidget {
           ),
           title: "${slice.activityName} ${slice.count}",
           value: slice.count.toDouble(),
-        )
+        ),
     ];
   }
 
@@ -122,44 +120,45 @@ class _TimeSlotStatisticsChart extends StatelessWidget {
 
     return Container(
       margin: EdgeInsets.only(left: 5, top: 10, right: 10),
-      child: Column(children: [
-        Text(
-          "时段活跃度",
-          style: TextStyle(fontSize: 20),
-        ),
-        SizedBox(height: 10),
-        SizedBox(
-          height: 300,
-          child: BarChart(BarChartData(
-            barTouchData: BarTouchData(
-              enabled: true,
-              touchTooltipData: BarTouchTooltipData(
-                tooltipBgColor: Colors.blueGrey,
-                getTooltipItem: (group, groupIndex, rod, rodIndex) {
-                  return BarTooltipItem(
-                    rod.toY.toInt().toString(),
-                    TextStyle(color: Colors.white, fontSize: 18),
-                  );
-                },
-              ),
-            ),
-            groupsSpace: 18,
-            titlesData: FlTitlesData(
-              leftTitles: AxisTitles(
-                sideTitles: SideTitles(
-                  showTitles: true,
-                  getTitlesWidget: (double val, TitleMeta meta) {
-                    return Text(val.round().toString());
-                  },
-                  interval: _axisInterval(slots.maxY),
+      child: Column(
+        children: [
+          Text("时段活跃度", style: TextStyle(fontSize: 20)),
+          SizedBox(height: 10),
+          SizedBox(
+            height: 300,
+            child: BarChart(
+              BarChartData(
+                barTouchData: BarTouchData(
+                  enabled: true,
+                  touchTooltipData: BarTouchTooltipData(
+                    getTooltipColor: (_) => Colors.blueGrey,
+                    getTooltipItem: (group, groupIndex, rod, rodIndex) {
+                      return BarTooltipItem(
+                        rod.toY.toInt().toString(),
+                        TextStyle(color: Colors.white, fontSize: 18),
+                      );
+                    },
+                  ),
                 ),
+                groupsSpace: 18,
+                titlesData: FlTitlesData(
+                  leftTitles: AxisTitles(
+                    sideTitles: SideTitles(
+                      showTitles: true,
+                      getTitlesWidget: (double val, TitleMeta meta) {
+                        return Text(val.round().toString());
+                      },
+                      interval: _axisInterval(slots.maxY),
+                    ),
+                  ),
+                ),
+                borderData: FlBorderData(show: false),
+                barGroups: bars,
               ),
             ),
-            borderData: FlBorderData(show: false),
-            barGroups: bars,
-          )),
-        )
-      ]),
+          ),
+        ],
+      ),
     );
   }
 
@@ -181,9 +180,9 @@ class _TimeSlotStatisticsChart extends StatelessWidget {
               ],
               toY: bar.total,
               width: 15,
-            )
+            ),
           ],
-        )
+        ),
     ];
   }
 

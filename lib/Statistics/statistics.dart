@@ -16,38 +16,49 @@ class StatisticPage extends ConsumerWidget {
     final range = ref.watch(selectedStatisticsRangeProvider);
     final timeLStr = DateFormat('yyyy.MM.dd').format(range.start);
     final timeRStr = DateFormat('yyyy.MM.dd').format(range.end);
-    return ListView(children: [
-      Card(
+    return ListView(
+      children: [
+        Card(
           elevation: 10,
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Container(
-                  margin: EdgeInsets.only(left: 10),
-                  height: 40,
-                  child: Center(
-                      child: Text(
+                margin: EdgeInsets.only(left: 10),
+                height: 40,
+                child: Center(
+                  child: Text(
                     timeLStr + ' 至 ' + timeRStr,
                     style: TextStyle(fontSize: 20),
-                  ))),
+                  ),
+                ),
+              ),
               Container(
-                  margin: EdgeInsets.only(right: 10),
-                  child: myRaisedButton(Text("更改区间"), () async {
-                    DateTimeRange? tmp = await showDateRangePicker(
-                        context: context,
-                        firstDate: DateTime.now().add(Duration(days: -100)),
-                        lastDate: DateTime.now());
-                    if (tmp != null) {
-                      ref.read(selectedStatisticsRangeProvider.notifier).state =
+                margin: EdgeInsets.only(right: 10),
+                child: myRaisedButton(Text("更改区间"), () async {
+                  DateTimeRange? tmp = await showDateRangePicker(
+                    context: context,
+                    firstDate: DateTime.now().add(Duration(days: -100)),
+                    lastDate: DateTime.now(),
+                  );
+                  if (tmp != null) {
+                    ref
+                        .read(selectedStatisticsRangeProvider.notifier)
+                        .set(
                           DateRange(
-                              start: getDate(tmp.start),
-                              end: getDate(tmp.end).add(Duration(days: 1)));
-                    }
-                  }))
+                            start: getDate(tmp.start),
+                            end: getDate(tmp.end).add(Duration(days: 1)),
+                          ),
+                        );
+                  }
+                }),
+              ),
             ],
-          )),
-      Charts(range)
-    ]);
+          ),
+        ),
+        Charts(range),
+      ],
+    );
   }
 }
 

@@ -21,15 +21,17 @@ void main() {
     await db.close();
   });
 
-  test('repository adds and lists units without exposing database companions',
-      () async {
-    await repository.addUnit('pages');
-    await repository.addUnit('minutes');
+  test(
+    'repository adds and lists units without exposing database companions',
+    () async {
+      await repository.addUnit('pages');
+      await repository.addUnit('minutes');
 
-    final units = await repository.getUnits();
+      final units = await repository.getUnits();
 
-    expect(units.map((unit) => unit.name), ['pages', 'minutes']);
-  });
+      expect(units.map((unit) => unit.name), ['pages', 'minutes']);
+    },
+  );
 
   test('repository deletes a unit by name', () async {
     await repository.addUnit('pages');

@@ -19,10 +19,7 @@ class ActivityHeatmapSeries {
 }
 
 class ActivityTimeSlotSeries {
-  ActivityTimeSlotSeries({
-    required this.hourlyValues,
-    required this.unit,
-  });
+  ActivityTimeSlotSeries({required this.hourlyValues, required this.unit});
 
   final List<double> hourlyValues;
   final String unit;
@@ -87,20 +84,26 @@ ActivityTimeSlotSeries buildActivityTimeSlotSeries({
 }
 
 List<ActivityRecord> recordsInMonth(
-    List<ActivityRecord> records, DateTime month) {
+  List<ActivityRecord> records,
+  DateTime month,
+) {
   return records
-      .where((record) =>
-          record.endTime.month == month.month &&
-          record.endTime.year == month.year)
+      .where(
+        (record) =>
+            record.endTime.month == month.month &&
+            record.endTime.year == month.year,
+      )
       .toList();
 }
 
 List<ActivityRecord> recordsOnDay(List<ActivityRecord> records, DateTime day) {
   return records
-      .where((record) =>
-          record.endTime.month == day.month &&
-          record.endTime.year == day.year &&
-          record.endTime.day == day.day)
+      .where(
+        (record) =>
+            record.endTime.month == day.month &&
+            record.endTime.year == day.year &&
+            record.endTime.day == day.day,
+      )
       .toList();
 }
 
@@ -122,7 +125,9 @@ double _dailyRecordValue(ActivityRecord record, ActivityDetailMetric metric) {
 }
 
 double _timeSlotRecordValue(
-    ActivityRecord record, ActivityDetailMetric metric) {
+  ActivityRecord record,
+  ActivityDetailMetric metric,
+) {
   switch (metric) {
     case ActivityDetailMetric.duration:
       throw StateError('duration values are split across occupied hours');
@@ -134,7 +139,8 @@ double _timeSlotRecordValue(
 }
 
 ActivityTimeSlotSeries _buildDurationTimeSlotSeries(
-    List<ActivityRecord> records) {
+  List<ActivityRecord> records,
+) {
   final seconds = List<double>.filled(24, 0);
 
   for (final record in records) {
@@ -170,8 +176,12 @@ void _addDurationByHour(List<double> seconds, DateRange range) {
     return;
   }
 
-  final left = DateTime(start.year, start.month, start.day, start.hour)
-      .add(const Duration(hours: 1));
+  final left = DateTime(
+    start.year,
+    start.month,
+    start.day,
+    start.hour,
+  ).add(const Duration(hours: 1));
   seconds[start.hour] += left.difference(start).inSeconds;
 
   final right = DateTime(end.year, end.month, end.day, end.hour);

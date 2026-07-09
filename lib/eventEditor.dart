@@ -27,7 +27,9 @@ class EventEditor extends ConsumerWidget {
 
       _formKey.currentState!.save();
       try {
-        await ref.read(activityRepositoryProvider).createActivity(
+        await ref
+            .read(activityRepositoryProvider)
+            .createActivity(
               name: name!,
               unit: selectedUnit,
               description: description,
@@ -43,66 +45,72 @@ class EventEditor extends ConsumerWidget {
     }
 
     return Scaffold(
-        appBar: AppBar(
-          title: Text("添加新项目"),
-        ),
-        body: Padding(
-            padding: EdgeInsets.symmetric(vertical: 16.0, horizontal: 24.0),
-            child: Form(
-                key: _formKey,
-                child: ListView(
-                  children: <Widget>[
-                    Card(
-                        elevation: 8,
-                        child: Column(children: [
-                          TextFormField(
-                            validator: (value) {
-                              if (value == null || value.isEmpty) {
-                                return "项目名称不得为空";
-                              }
-                              return null;
-                            },
-                            onSaved: (String? value) {
-                              name = value!;
-                            },
-                            autofocus: true,
-                            decoration: InputDecoration(
-                                hintText: "项目名称",
-                                prefixIcon: Icon(Icons.sticky_note_2_rounded)),
-                          ),
-                          TextFormField(
-                            onSaved: (String? value) {
-                              description = value;
-                            },
-                            decoration: InputDecoration(
-                                hintText: "项目说明",
-                                prefixIcon: Icon(Icons.subject_rounded)),
-                          ),
-                          SwitchListTile(
-                              title: Text("关注时长"),
-                              value: careTime,
-                              onChanged: (bool val) {
-                                ref
-                                    .read(
-                                        activityEditorCareTimeProvider.notifier)
-                                    .state = val;
-                              })
-                        ])),
-                    Card(
-                        elevation: 8,
-                        child: AsyncStateView<List<ActivityUnit>>(
-                          value: units,
-                          data: (units) =>
-                              _buildUnitSelector(ref, units, selectedUnit),
-                          errorMessage: '加载单位失败',
-                          layout: AsyncStateLayout.inline,
-                          onRetry: () => ref.invalidate(unitListProvider),
-                        )),
-                    myRaisedButton(Text("保存"), () {
-                      saveActivity();
-                    })
+      appBar: AppBar(title: Text("添加新项目")),
+      body: Padding(
+        padding: EdgeInsets.symmetric(vertical: 16.0, horizontal: 24.0),
+        child: Form(
+          key: _formKey,
+          child: ListView(
+            children: <Widget>[
+              Card(
+                elevation: 8,
+                child: Column(
+                  children: [
+                    TextFormField(
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return "项目名称不得为空";
+                        }
+                        return null;
+                      },
+                      onSaved: (String? value) {
+                        name = value!;
+                      },
+                      autofocus: true,
+                      decoration: InputDecoration(
+                        hintText: "项目名称",
+                        prefixIcon: Icon(Icons.sticky_note_2_rounded),
+                      ),
+                    ),
+                    TextFormField(
+                      onSaved: (String? value) {
+                        description = value;
+                      },
+                      decoration: InputDecoration(
+                        hintText: "项目说明",
+                        prefixIcon: Icon(Icons.subject_rounded),
+                      ),
+                    ),
+                    SwitchListTile(
+                      title: Text("关注时长"),
+                      value: careTime,
+                      onChanged: (bool val) {
+                        ref
+                            .read(activityEditorCareTimeProvider.notifier)
+                            .set(val);
+                      },
+                    ),
                   ],
-                ))));
+                ),
+              ),
+              Card(
+                elevation: 8,
+                child: AsyncStateView<List<ActivityUnit>>(
+                  value: units,
+                  data: (units) => _buildUnitSelector(ref, units, selectedUnit),
+                  errorMessage: '加载单位失败',
+                  layout: AsyncStateLayout.inline,
+                  onRetry: () => ref.invalidate(unitListProvider),
+                ),
+              ),
+              myRaisedButton(Text("保存"), () {
+                saveActivity();
+              }),
+            ],
+          ),
+        ),
+      ),
+    );
   }
 
   Widget _buildUnitSelector(
@@ -116,25 +124,26 @@ class EventEditor extends ConsumerWidget {
     } else {
       children.add(ListTile(title: Text("可选择单位：")));
     }
-    var unitsList = ListView.builder(
+    var unitsList = RadioGroup<String>(
+      groupValue: selectedUnit,
+      onChanged: (value) {
+        ref.read(activityEditorSelectedUnitProvider.notifier).set(value);
+      },
+      child: ListView.builder(
         physics: const NeverScrollableScrollPhysics(),
         shrinkWrap: true,
         itemCount: units.length,
         itemBuilder: (ctx, idx) {
-          return RadioListTile(
-              title: Text(units[idx].name),
-              groupValue: selectedUnit,
-              toggleable: true,
-              value: units[idx].name,
-              onChanged: (String? val) {
-                ref.read(activityEditorSelectedUnitProvider.notifier).state =
-                    val;
-              });
-        });
+          return RadioListTile<String>(
+            title: Text(units[idx].name),
+            toggleable: true,
+            value: units[idx].name,
+          );
+        },
+      ),
+    );
 
     children.add(unitsList);
-    return Column(
-      children: children,
-    );
+    return Column(children: children);
   }
 }

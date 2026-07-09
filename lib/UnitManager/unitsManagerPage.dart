@@ -14,9 +14,7 @@ class UnitsManager extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final units = ref.watch(unitListProvider);
     return Scaffold(
-      appBar: AppBar(
-        title: Text("单位管理"),
-      ),
+      appBar: AppBar(title: Text("单位管理")),
       body: AsyncStateView<List<ActivityUnit>>(
         value: units,
         data: (units) => _buildListView(context, ref, units),
@@ -34,14 +32,8 @@ class UnitsManager extends ConsumerWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Icon(
-            Icons.delete,
-            color: Colors.white,
-          ),
-          Icon(
-            Icons.delete,
-            color: Colors.white,
-          )
+          Icon(Icons.delete, color: Colors.white),
+          Icon(Icons.delete, color: Colors.white),
         ],
       ),
     );
@@ -63,9 +55,11 @@ class UnitsManager extends ConsumerWidget {
               background: stackBehindDismiss(),
               key: ObjectKey(units[idx]),
               child: Center(
-                  child: ListTile(
-                      contentPadding: EdgeInsets.symmetric(horizontal: 20),
-                      title: Center(child: Text(units[idx].name)))),
+                child: ListTile(
+                  contentPadding: EdgeInsets.symmetric(horizontal: 20),
+                  title: Center(child: Text(units[idx].name)),
+                ),
+              ),
               confirmDismiss: (direction) =>
                   _confirmDismiss(context, direction),
               onDismissed: (direction) => _deleteUnit(ref, units[idx]),
@@ -73,12 +67,13 @@ class UnitsManager extends ConsumerWidget {
           },
         ),
         Container(
-            padding: EdgeInsets.symmetric(horizontal: 100),
-            child: myRaisedButton(Text("添加新单位"), () {
-              displayTextInputDialog(context, "请输入单位", (unitName) {
-                return _addUnit(ref, unitName);
-              });
-            }))
+          padding: EdgeInsets.symmetric(horizontal: 100),
+          child: myRaisedButton(Text("添加新单位"), () {
+            displayTextInputDialog(context, "请输入单位", (unitName) {
+              return _addUnit(ref, unitName);
+            });
+          }),
+        ),
       ],
     );
   }
@@ -102,20 +97,23 @@ class UnitsManager extends ConsumerWidget {
     DismissDirection direction,
   ) async {
     return await showDialog(
-        context: context,
-        builder: (BuildContext context) {
-          return AlertDialog(
-            title: Text("是否删除该单位？"),
-            actions: [
-              TextButton(
-                  onPressed: () => Navigator.of(context).pop(false),
-                  child: Text("取消")),
-              TextButton(
-                  onPressed: () => Navigator.of(context).pop(true),
-                  child: Text("删除"))
-            ],
-          );
-        });
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text("是否删除该单位？"),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(false),
+              child: Text("取消"),
+            ),
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(true),
+              child: Text("删除"),
+            ),
+          ],
+        );
+      },
+    );
   }
 
   Future<bool> _addUnit(WidgetRef ref, String unitName) async {

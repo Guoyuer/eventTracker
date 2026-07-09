@@ -19,48 +19,47 @@ void main() {
     expect(metricForActivitySelection(plain, 1), ActivityDetailMetric.value);
   });
 
-  test('heatmap series aggregates timed activity duration by day in minutes',
-      () {
-    final activity = TimingEventModel(
-      1,
-      'Run',
-      null,
-      EventStatus.notActive,
-      Duration.zero,
-    );
-    final records = [
-      record(
-        id: 1,
-        start: DateTime(2026, 1, 1, 8),
-        end: DateTime(2026, 1, 1, 8, 20),
-      ),
-      record(
-        id: 2,
-        start: DateTime(2026, 1, 1, 9),
-        end: DateTime(2026, 1, 1, 9, 10),
-      ),
-      record(
-        id: 3,
-        start: DateTime(2026, 1, 2, 9),
-        end: DateTime(2026, 1, 2, 9, 5),
-      ),
-    ];
+  test(
+    'heatmap series aggregates timed activity duration by day in minutes',
+    () {
+      final activity = TimingEventModel(
+        1,
+        'Run',
+        null,
+        EventStatus.notActive,
+        Duration.zero,
+      );
+      final records = [
+        record(
+          id: 1,
+          start: DateTime(2026, 1, 1, 8),
+          end: DateTime(2026, 1, 1, 8, 20),
+        ),
+        record(
+          id: 2,
+          start: DateTime(2026, 1, 1, 9),
+          end: DateTime(2026, 1, 1, 9, 10),
+        ),
+        record(
+          id: 3,
+          start: DateTime(2026, 1, 2, 9),
+          end: DateTime(2026, 1, 2, 9, 5),
+        ),
+      ];
 
-    final series = buildActivityHeatmapSeries(
-      records: records,
-      activity: activity,
-      metric: ActivityDetailMetric.duration,
-      now: DateTime(2026, 1, 5, 12),
-    );
+      final series = buildActivityHeatmapSeries(
+        records: records,
+        activity: activity,
+        metric: ActivityDetailMetric.duration,
+        now: DateTime(2026, 1, 5, 12),
+      );
 
-    expect(series.range.start, DateTime(2026, 1, 1));
-    expect(series.range.end, DateTime(2026, 1, 5));
-    expect(series.unit, '分钟');
-    expect(series.data, {
-      DateTime(2026, 1, 1): 30,
-      DateTime(2026, 1, 2): 5,
-    });
-  });
+      expect(series.range.start, DateTime(2026, 1, 1));
+      expect(series.range.end, DateTime(2026, 1, 5));
+      expect(series.unit, '分钟');
+      expect(series.data, {DateTime(2026, 1, 1): 30, DateTime(2026, 1, 2): 5});
+    },
+  );
 
   test('heatmap series aggregates plain activity count and value by day', () {
     final activity = PlainEventModel(1, 'Read', 'pages', 0);
@@ -131,11 +130,14 @@ void main() {
     ];
 
     expect(recordsOnDay(records, DateTime(2026, 1, 1)), [records[0]]);
-    expect(recordsInMonth(records, DateTime(2026, 1, 20)),
-        [records[0], records[1]]);
+    expect(recordsInMonth(records, DateTime(2026, 1, 20)), [
+      records[0],
+      records[1],
+    ]);
     expect(
-        combineAdjacentHourSlots([for (var i = 0; i < 24; i++) i.toDouble()]),
-        [for (var i = 0; i < 12; i++) (i * 2 + i * 2 + 1).toDouble()]);
+      combineAdjacentHourSlots([for (var i = 0; i < 24; i++) i.toDouble()]),
+      [for (var i = 0; i < 12; i++) (i * 2 + i * 2 + 1).toDouble()],
+    );
   });
 }
 

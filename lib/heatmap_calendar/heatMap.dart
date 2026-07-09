@@ -11,12 +11,13 @@ class HeatMapSetting {
   final double weekTileMargin;
   final double monthTileMargin;
 
-  const HeatMapSetting(
-      {this.colorMap = heatmapColorMap,
-      this.dayTileSize = 15,
-      this.dayTileMargin = 5,
-      this.weekTileMargin = 6,
-      this.monthTileMargin = 2});
+  const HeatMapSetting({
+    this.colorMap = heatmapColorMap,
+    this.dayTileSize = 15,
+    this.dayTileMargin = 5,
+    this.weekTileMargin = 6,
+    this.monthTileMargin = 2,
+  });
 }
 
 class HeatMapDataHolder extends InheritedWidget {
@@ -26,14 +27,14 @@ class HeatMapDataHolder extends InheritedWidget {
   final ValueChanged<DateTime>? onDayTouched;
   final String? unit;
 
-  HeatMapDataHolder(
-      {required this.setting,
-      required this.model,
-      this.unit,
-      this.onMonthTouched,
-      this.onDayTouched,
-      required Widget child})
-      : super(child: child);
+  HeatMapDataHolder({
+    required this.setting,
+    required this.model,
+    this.unit,
+    this.onMonthTouched,
+    this.onDayTouched,
+    required Widget child,
+  }) : super(child: child);
 
   @override
   bool updateShouldNotify(HeatMapDataHolder oldWidget) {
@@ -53,31 +54,32 @@ class HeatMapCalendar extends StatelessWidget {
   final ValueChanged<DateTime>? onDayTouched;
   final String unit; //Tooltip显示的单位
 
-  HeatMapCalendar(
-      {Key? key,
-      this.setting = const HeatMapSetting(),
-      required Map<DateTime, double> input,
-      required this.dateRange,
-      required this.unit,
-      this.onMonthTouched,
-      this.onDayTouched})
-      : model = buildHeatMapCalendarModel(
-          start: dateRange.start,
-          end: dateRange.end,
-          input: input,
-          maxLevel: _maxColorLevel(setting.colorMap),
-        ),
-        super(key: key);
+  HeatMapCalendar({
+    Key? key,
+    this.setting = const HeatMapSetting(),
+    required Map<DateTime, double> input,
+    required this.dateRange,
+    required this.unit,
+    this.onMonthTouched,
+    this.onDayTouched,
+  }) : model = buildHeatMapCalendarModel(
+         start: dateRange.start,
+         end: dateRange.end,
+         input: input,
+         maxLevel: _maxColorLevel(setting.colorMap),
+       ),
+       super(key: key);
 
   @override
   Widget build(BuildContext context) {
     return HeatMapDataHolder(
-        setting: setting,
-        model: model,
-        unit: unit,
-        onMonthTouched: onMonthTouched,
-        onDayTouched: onDayTouched,
-        child: HeatMapDisplay());
+      setting: setting,
+      model: model,
+      unit: unit,
+      onMonthTouched: onMonthTouched,
+      onDayTouched: onDayTouched,
+      child: HeatMapDisplay(),
+    );
   }
 
   static int _maxColorLevel(Map<int, Color> colorMap) {

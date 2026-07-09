@@ -49,55 +49,56 @@ class FAB extends ConsumerWidget {
 
     bool visible = selectIdx == 0 && scrollDirection == ScrollDirection.forward;
     return Visibility(
-        visible: visible,
-        child: FloatingActionButton(
-            child: Icon(Icons.note_add_rounded),
-            onPressed: () async {
-              var added =
-                  await Navigator.of(parentContext).pushNamed("eventEditor");
-              if (added != null) {
-                ref.invalidate(activityListProvider);
-              }
-            }));
+      visible: visible,
+      child: FloatingActionButton(
+        child: Icon(Icons.note_add_rounded),
+        onPressed: () async {
+          var added = await Navigator.of(
+            parentContext,
+          ).pushNamed("eventEditor");
+          if (added != null) {
+            ref.invalidate(activityListProvider);
+          }
+        },
+      ),
+    );
   }
 }
 
 class MainPage extends ConsumerWidget {
   final List<String> bottomLabels = ["项目", "统计", "选项"];
 
-  final List<Widget> pages = [
-    EventList(),
-    StatisticPage(),
-    SettingPage(),
-  ];
+  final List<Widget> pages = [EventList(), StatisticPage(), SettingPage()];
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final selectedIdx = ref.watch(selectedIndexProvider);
     return Scaffold(
-      appBar: AppBar(
-        title: Text("活动记录本 - " + bottomLabels[selectedIdx]),
-      ),
+      appBar: AppBar(title: Text("活动记录本 - " + bottomLabels[selectedIdx])),
       body: pages[selectedIdx],
       floatingActionButton: FAB(context),
       bottomNavigationBar: BottomNavigationBar(
-          type: BottomNavigationBarType.fixed,
-          items: <BottomNavigationBarItem>[
-            BottomNavigationBarItem(
-                icon: Icon(Icons.event_note_rounded), label: bottomLabels[0]),
-            BottomNavigationBarItem(
-                icon: Icon(Icons.pie_chart_outline_rounded),
-                label: bottomLabels[1]),
-            BottomNavigationBarItem(
-                icon: Icon(Icons.settings), label: bottomLabels[2]),
-          ],
-          currentIndex: selectedIdx,
-          fixedColor: Colors.blue,
-          onTap: (index) {
-            ref
-                .read(selectedIndexProvider.notifier)
-                .update((state) => state = index);
-          }),
+        type: BottomNavigationBarType.fixed,
+        items: <BottomNavigationBarItem>[
+          BottomNavigationBarItem(
+            icon: Icon(Icons.event_note_rounded),
+            label: bottomLabels[0],
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.pie_chart_outline_rounded),
+            label: bottomLabels[1],
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.settings),
+            label: bottomLabels[2],
+          ),
+        ],
+        currentIndex: selectedIdx,
+        fixedColor: Colors.blue,
+        onTap: (index) {
+          ref.read(selectedIndexProvider.notifier).set(index);
+        },
+      ),
     );
   }
 }

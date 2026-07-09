@@ -26,32 +26,36 @@ void main() {
     }
   });
 
-  test('version 3 migration removes legacy step schema and sentinel records',
-      () async {
-    final dbPath = p.join(tempDir.path, 'db.sqlite');
-    await _createVersion2DatabaseWithLegacyStepData(dbPath);
+  test(
+    'version 3 migration removes legacy step schema and sentinel records',
+    () async {
+      final dbPath = p.join(tempDir.path, 'db.sqlite');
+      await _createVersion2DatabaseWithLegacyStepData(dbPath);
 
-    final db = AppDatabase(SqfliteQueryExecutor(path: dbPath));
-    addTearDown(db.close);
+      final db = AppDatabase(SqfliteQueryExecutor(path: dbPath));
+      addTearDown(db.close);
 
-    final records = await (db.select(db.records)
-          ..where((record) => record.endTime.isBetweenValues(
-                DateTime(2026, 1, 1),
-                DateTime(2026, 1, 2),
-              )))
-        .get();
+      final records =
+          await (db.select(db.records)..where(
+                (record) => record.endTime.isBetweenValues(
+                  DateTime(2026, 1, 1),
+                  DateTime(2026, 1, 2),
+                ),
+              ))
+              .get();
 
-    expect(records, hasLength(1));
-    expect(records.single.eventId, 1);
+      expect(records, hasLength(1));
+      expect(records.single.eventId, 1);
 
-    final legacyArtifacts = await db
-        .customSelect(
-          "SELECT name FROM sqlite_master WHERE name IN "
-          "('steps', 'step_offset', 'step_time')",
-        )
-        .get();
-    expect(legacyArtifacts, isEmpty);
-  });
+      final legacyArtifacts = await db
+          .customSelect(
+            "SELECT name FROM sqlite_master WHERE name IN "
+            "('steps', 'step_offset', 'step_time')",
+          )
+          .get();
+      expect(legacyArtifacts, isEmpty);
+    },
+  );
 }
 
 Future<void> _createVersion2DatabaseWithLegacyStepData(String dbPath) async {

@@ -7,10 +7,7 @@ void main() {
       final model = buildHeatMapCalendarModel(
         start: DateTime(2026, 1, 1, 13, 30),
         end: DateTime(2026, 1, 3, 23, 59),
-        input: {
-          DateTime(2026, 1, 1, 8): 1,
-          DateTime(2026, 1, 3, 9): 10,
-        },
+        input: {DateTime(2026, 1, 1, 8): 1, DateTime(2026, 1, 3, 9): 10},
         maxLevel: 4,
       );
 

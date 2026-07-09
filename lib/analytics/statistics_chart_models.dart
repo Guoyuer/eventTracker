@@ -32,10 +32,7 @@ class StatisticsPieSlice {
 }
 
 class StatisticsTimeSlotModel {
-  StatisticsTimeSlotModel({
-    required this.bars,
-    required this.maxY,
-  });
+  StatisticsTimeSlotModel({required this.bars, required this.maxY});
 
   final List<StatisticsTimeSlotBar> bars;
   final double maxY;

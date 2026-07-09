@@ -1,3 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-final selectedIndexProvider = StateProvider<int>((ref) => 0);
+import 'mutable_state.dart';
+
+final selectedIndexProvider = NotifierProvider<MutableState<int>, int>(
+  () => MutableState(0),
+);

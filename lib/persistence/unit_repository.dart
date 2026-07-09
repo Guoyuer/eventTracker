@@ -31,7 +31,8 @@ class DriftUnitRepository implements UnitRepository {
 
   @override
   Future<void> deleteUnit(String name) {
-    return (_db.delete(_db.units)..where((unit) => unit.name.equals(name)))
-        .go();
+    return (_db.delete(
+      _db.units,
+    )..where((unit) => unit.name.equals(name))).go();
   }
 }

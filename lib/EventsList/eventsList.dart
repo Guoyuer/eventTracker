@@ -35,9 +35,9 @@ class _EventListState extends ConsumerState<EventList> {
   }
 
   void _updateScrollDirection() {
-    ref.read(eventListScrollDirProvider.notifier).update(
-          (state) => _scrollController.position.userScrollDirection,
-        );
+    ref
+        .read(eventListScrollDirProvider.notifier)
+        .set(_scrollController.position.userScrollDirection);
   }
 
   @override
@@ -55,11 +55,12 @@ class _EventListState extends ConsumerState<EventList> {
 
   Widget _buildEventList(List<BaseEventModel> events) {
     return ListView.builder(
-        controller: _scrollController,
-        itemCount: events.length,
-        itemBuilder: (ctx, idx) {
-          return EventDataHolder(event: events[idx], child: EventTile());
-        });
+      controller: _scrollController,
+      itemCount: events.length,
+      itemBuilder: (ctx, idx) {
+        return EventDataHolder(event: events[idx], child: EventTile());
+      },
+    );
   }
 }
 
@@ -78,13 +79,19 @@ class EventTileButton extends ConsumerWidget {
           _submitRecording(context, ref, event, DateTime.now());
         });
       case EventStatus.active:
-        return eventListButton(Icon(Icons.stop_circle_outlined), Text("停止"),
-            () {
-          _submitRecording(context, ref, event, DateTime.now());
-        });
+        return eventListButton(
+          Icon(Icons.stop_circle_outlined),
+          Text("停止"),
+          () {
+            _submitRecording(context, ref, event, DateTime.now());
+          },
+        );
       default:
         return eventListButton(
-            Icon(Icons.help_outline_rounded), Text("???"), () {});
+          Icon(Icons.help_outline_rounded),
+          Text("???"),
+          () {},
+        );
     }
   }
 
@@ -112,7 +119,7 @@ class EventDataHolder extends InheritedWidget {
   final BaseEventModel event;
 
   EventDataHolder({required this.event, required Widget child})
-      : super(child: child);
+    : super(child: child);
 
   @override
   bool updateShouldNotify(EventDataHolder oldWidget) {
@@ -133,44 +140,49 @@ class EventTile extends ConsumerWidget {
         event is TimingEventModel && event.status == EventStatus.active;
 
     return Card(
-        elevation: 8,
-        child: Stack(
-          children: [
-            if (isActive) Positioned.fill(child: ActiveTimingHighlight()),
-            InkWell(
-              onTap: () async {
-                bool? deleted = await Navigator.of(context)
-                    .pushNamed("EventDetails", arguments: event) as bool?;
-                if (deleted != null && deleted) {
-                  ref.invalidate(activityListProvider);
-                }
-              },
-              child: Container(
-                  margin: EdgeInsets.only(left: 10, top: 10),
-                  height: 68,
-                  child: Column(
-                    children: [
-                      Align(
-                        alignment: Alignment.topLeft,
-                        child: Text(
-                          event.name,
-                          style: TextStyle(fontSize: 17),
-                        ),
-                      ),
-                      Expanded(
-                          child: Container(
-                        margin: EdgeInsets.only(left: 5),
-                        child: eventInfo,
-                      ))
-                    ],
-                  )),
+      elevation: 8,
+      child: Stack(
+        children: [
+          if (isActive) Positioned.fill(child: ActiveTimingHighlight()),
+          InkWell(
+            onTap: () async {
+              bool? deleted =
+                  await Navigator.of(
+                        context,
+                      ).pushNamed("EventDetails", arguments: event)
+                      as bool?;
+              if (deleted != null && deleted) {
+                ref.invalidate(activityListProvider);
+              }
+            },
+            child: Container(
+              margin: EdgeInsets.only(left: 10, top: 10),
+              height: 68,
+              child: Column(
+                children: [
+                  Align(
+                    alignment: Alignment.topLeft,
+                    child: Text(event.name, style: TextStyle(fontSize: 17)),
+                  ),
+                  Expanded(
+                    child: Container(
+                      margin: EdgeInsets.only(left: 5),
+                      child: eventInfo,
+                    ),
+                  ),
+                ],
+              ),
             ),
-            Positioned.fill(
-                child: Container(
-                    alignment: Alignment.centerRight,
-                    child: EventTileButton())),
-          ],
-        ));
+          ),
+          Positioned.fill(
+            child: Container(
+              alignment: Alignment.centerRight,
+              child: EventTileButton(),
+            ),
+          ),
+        ],
+      ),
+    );
   }
 }
 
@@ -248,20 +260,19 @@ class EventTileInfo extends StatelessWidget {
       return Align(alignment: Alignment.centerLeft, child: summaryText);
     }
 
-    return Column(children: [
-      Align(alignment: Alignment.centerLeft, child: summaryText),
-      Align(
-        alignment: Alignment.centerLeft,
-        child: _mutedText("累计：${value.toInt()} $unit"),
-      ),
-    ]);
+    return Column(
+      children: [
+        Align(alignment: Alignment.centerLeft, child: summaryText),
+        Align(
+          alignment: Alignment.centerLeft,
+          child: _mutedText("累计：${value.toInt()} $unit"),
+        ),
+      ],
+    );
   }
 
   Widget _mutedText(String text) {
-    return Text(
-      text,
-      style: TextStyle(color: Colors.grey[600], fontSize: 14),
-    );
+    return Text(text, style: TextStyle(color: Colors.grey[600], fontSize: 14));
   }
 }
 
@@ -278,10 +289,8 @@ class LapsedTimeStr extends ConsumerWidget {
       orElse: () => "已进行",
     );
     return Align(
-        alignment: Alignment.centerLeft,
-        child: Text(
-          text,
-          style: TextStyle(color: Colors.grey),
-        ));
+      alignment: Alignment.centerLeft,
+      child: Text(text, style: TextStyle(color: Colors.grey)),
+    );
   }
 }

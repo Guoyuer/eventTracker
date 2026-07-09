@@ -24,11 +24,41 @@ void main() {
     }
   });
 
+  test('sdk and dependencies stay on the modernized toolchain', () {
+    final pubspec = File('pubspec.yaml').readAsStringSync();
+    final lockfile = File('pubspec.lock').readAsStringSync();
+
+    expect(pubspec, contains('sdk: ^3.12.0'));
+    expect(pubspec, contains('flutter_riverpod: ^3.3.2'));
+    expect(pubspec, contains('fl_chart: ^1.2.0'));
+    expect(pubspec, contains('drift: ^2.34.1'));
+    expect(pubspec, contains('build_runner: ^2.15.1'));
+    expect(pubspec, contains('drift_dev: ^2.34.0'));
+    expect(pubspec, contains('sqlite3_flutter_libs: ^0.5.42'));
+    expect(pubspec, isNot(contains('sqlite3_flutter_libs: ^0.6.0+eol')));
+    expect(pubspec, contains('flutter_lints: ^6.0.0'));
+    expect(lockfile, contains('flutter_riverpod'));
+    expect(lockfile, contains('version: "3.3.2"'));
+    expect(lockfile, contains('sqlite3_flutter_libs'));
+    expect(lockfile, contains('version: "0.5.42"'));
+    expect(lockfile, isNot(contains('version: "0.6.0+eol"')));
+
+    for (final discontinuedPackage in [
+      'js',
+      'build_resolvers',
+      'build_runner_core',
+    ]) {
+      expect(lockfile, isNot(contains('\n  $discontinuedPackage:\n')));
+    }
+  });
+
   test('legacy step schema stays retired from active Drift schema', () {
-    final tables =
-        File('lib/persistence/database/tables.dart').readAsStringSync();
-    final database =
-        File('lib/persistence/database/app_database.dart').readAsStringSync();
+    final tables = File(
+      'lib/persistence/database/tables.dart',
+    ).readAsStringSync();
+    final database = File(
+      'lib/persistence/database/app_database.dart',
+    ).readAsStringSync();
     final sql = File('lib/persistence/database/sql.drift').readAsStringSync();
 
     expect(tables, isNot(contains('class Steps')));
@@ -46,7 +76,9 @@ void main() {
 
       expect(source, isNot(contains("../DAO/base.dart")));
       expect(
-          source, isNot(contains("../persistence/database/app_database.dart")));
+        source,
+        isNot(contains("../persistence/database/app_database.dart")),
+      );
       expect(source, isNot(contains("List<Record")));
       expect(source, isNot(contains("Map<int, Event")));
     }
@@ -99,9 +131,44 @@ void main() {
     expect(File('lib/stateProviders.dart').existsSync(), isFalse);
   });
 
+  test(
+    'riverpod state uses current notifier providers instead of legacy state providers',
+    () {
+      final mutableState = File(
+        'lib/state/mutable_state.dart',
+      ).readAsStringSync();
+      expect(
+        mutableState,
+        contains('class MutableState<T> extends Notifier<T>'),
+      );
+      expect(mutableState, contains('void set(T value)'));
+      expect(mutableState, contains('void update(T Function(T value) update)'));
+
+      for (final path in [
+        'lib/state/activity_detail_providers.dart',
+        'lib/state/activity_editor_providers.dart',
+        'lib/state/activity_list_providers.dart',
+        'lib/state/app_navigation_providers.dart',
+        'lib/state/statistics_providers.dart',
+        'lib/eventEditor.dart',
+        'lib/main.dart',
+        'lib/EventsList/eventsList.dart',
+        'lib/EventsDetails/activity_description_editor.dart',
+        'lib/Statistics/statistics.dart',
+      ]) {
+        final source = File(path).readAsStringSync();
+
+        expect(source, isNot(contains('package:flutter_riverpod/legacy.dart')));
+        expect(source, isNot(contains('StateProvider')));
+        expect(source, isNot(contains('.notifier).state')));
+      }
+    },
+  );
+
   test('persistence providers own database adapter wiring', () {
-    final providers =
-        File('lib/persistence/persistence_providers.dart').readAsStringSync();
+    final providers = File(
+      'lib/persistence/persistence_providers.dart',
+    ).readAsStringSync();
 
     expect(providers, contains('appDatabaseProvider'));
     expect(providers, contains('Provider<AppDatabase>'));
@@ -127,10 +194,12 @@ void main() {
   });
 
   test('app database does not own platform bootstrap details', () {
-    final database =
-        File('lib/persistence/database/app_database.dart').readAsStringSync();
-    final bootstrap = File('lib/persistence/database/database_bootstrap.dart')
-        .readAsStringSync();
+    final database = File(
+      'lib/persistence/database/app_database.dart',
+    ).readAsStringSync();
+    final bootstrap = File(
+      'lib/persistence/database/database_bootstrap.dart',
+    ).readAsStringSync();
 
     expect(database, isNot(contains('path_provider')));
     expect(database, isNot(contains('drift_sqflite')));
@@ -143,10 +212,12 @@ void main() {
   });
 
   test('app database does not shape activity display models', () {
-    final database =
-        File('lib/persistence/database/app_database.dart').readAsStringSync();
-    final repository =
-        File('lib/persistence/activity_repository.dart').readAsStringSync();
+    final database = File(
+      'lib/persistence/database/app_database.dart',
+    ).readAsStringSync();
+    final repository = File(
+      'lib/persistence/activity_repository.dart',
+    ).readAsStringSync();
 
     expect(database, isNot(contains('activity_models.dart')));
     expect(database, isNot(contains('BaseEventModel')));
@@ -161,16 +232,21 @@ void main() {
   });
 
   test('app database does not own repository-specific query helpers', () {
-    final database =
-        File('lib/persistence/database/app_database.dart').readAsStringSync();
-    final unitRepository =
-        File('lib/persistence/unit_repository.dart').readAsStringSync();
-    final statisticsRepository =
-        File('lib/persistence/statistics_repository.dart').readAsStringSync();
-    final detailAnalytics =
-        File('lib/analytics/activity_detail_analytics.dart').readAsStringSync();
-    final statisticsProviders =
-        File('lib/state/statistics_providers.dart').readAsStringSync();
+    final database = File(
+      'lib/persistence/database/app_database.dart',
+    ).readAsStringSync();
+    final unitRepository = File(
+      'lib/persistence/unit_repository.dart',
+    ).readAsStringSync();
+    final statisticsRepository = File(
+      'lib/persistence/statistics_repository.dart',
+    ).readAsStringSync();
+    final detailAnalytics = File(
+      'lib/analytics/activity_detail_analytics.dart',
+    ).readAsStringSync();
+    final statisticsProviders = File(
+      'lib/state/statistics_providers.dart',
+    ).readAsStringSync();
 
     expect(database, isNot(contains('flutter/material.dart')));
     expect(database, isNot(contains('DateTimeRange')));
@@ -216,8 +292,9 @@ void main() {
 
   test('async loading empty and error states use the shared module', () {
     final asyncState = File('lib/common/async_state.dart').readAsStringSync();
-    final commonWidgets =
-        File('lib/common/commonWidget.dart').readAsStringSync();
+    final commonWidgets = File(
+      'lib/common/commonWidget.dart',
+    ).readAsStringSync();
 
     expect(asyncState, contains('class AsyncStateView'));
     expect(asyncState, contains('enum AsyncStateLayout'));
@@ -240,34 +317,40 @@ void main() {
     }
   });
 
-  test('ui widgets use repository providers instead of repository factories',
-      () {
-    for (final path in [
-      'lib/EventsList/eventsList.dart',
-      'lib/EventsList/events_list_helpers.dart',
-      'lib/eventEditor.dart',
-      'lib/UnitManager/unitsManagerPage.dart',
-    ]) {
-      final source = File(path).readAsStringSync();
+  test(
+    'ui widgets use repository providers instead of repository factories',
+    () {
+      for (final path in [
+        'lib/EventsList/eventsList.dart',
+        'lib/EventsList/events_list_helpers.dart',
+        'lib/eventEditor.dart',
+        'lib/UnitManager/unitsManagerPage.dart',
+      ]) {
+        final source = File(path).readAsStringSync();
 
-      expect(source, isNot(contains('activityRepository()')));
-      expect(source, isNot(contains('unitRepository()')));
-      expect(source, isNot(contains('statisticsRepository()')));
-    }
-  });
+        expect(source, isNot(contains('activityRepository()')));
+        expect(source, isNot(contains('unitRepository()')));
+        expect(source, isNot(contains('statisticsRepository()')));
+      }
+    },
+  );
 
   test('activity list delegates recording actions to a testable module', () {
-    final eventsList =
-        File('lib/EventsList/eventsList.dart').readAsStringSync();
-    final listHelpers =
-        File('lib/EventsList/events_list_helpers.dart').readAsStringSync();
-    final controller =
-        File('lib/application/activity_recording_controller.dart')
-            .readAsStringSync();
-    final actions = File('lib/application/activity_recording_actions.dart')
-        .readAsStringSync();
-    final repository =
-        File('lib/persistence/activity_repository.dart').readAsStringSync();
+    final eventsList = File(
+      'lib/EventsList/eventsList.dart',
+    ).readAsStringSync();
+    final listHelpers = File(
+      'lib/EventsList/events_list_helpers.dart',
+    ).readAsStringSync();
+    final controller = File(
+      'lib/application/activity_recording_controller.dart',
+    ).readAsStringSync();
+    final actions = File(
+      'lib/application/activity_recording_actions.dart',
+    ).readAsStringSync();
+    final repository = File(
+      'lib/persistence/activity_repository.dart',
+    ).readAsStringSync();
 
     expect(eventsList, contains('ActivityRecordingController'));
     expect(eventsList, isNot(contains('recordActivity(context')));
@@ -286,38 +369,49 @@ void main() {
   });
 
   test('activity detail deletion has a single activity-list refresh owner', () {
-    final details =
-        File('lib/EventsDetails/eventDetails.dart').readAsStringSync();
-    final eventsList =
-        File('lib/EventsList/eventsList.dart').readAsStringSync();
+    final details = File(
+      'lib/EventsDetails/eventDetails.dart',
+    ).readAsStringSync();
+    final eventsList = File(
+      'lib/EventsList/eventsList.dart',
+    ).readAsStringSync();
 
     expect(details, isNot(contains('activityListProvider')));
     expect(details, isNot(contains('ref.invalidate(activityListProvider)')));
     expect(eventsList, contains('ref.invalidate(activityListProvider)'));
   });
 
-  test('activity list does not expose incomplete manual time entry controls',
-      () {
-    final activityList =
-        File('lib/EventsList/eventsList.dart').readAsStringSync();
+  test(
+    'activity list does not expose incomplete manual time entry controls',
+    () {
+      final activityList = File(
+        'lib/EventsList/eventsList.dart',
+      ).readAsStringSync();
 
-    expect(activityList, isNot(contains('showTimePicker')));
-    expect(activityList, isNot(contains('手动指定')));
-  });
+      expect(activityList, isNot(contains('showTimePicker')));
+      expect(activityList, isNot(contains('手动指定')));
+    },
+  );
 
   test('activity tiles keep ticking state outside the whole tile widget', () {
-    final activityList =
-        File('lib/EventsList/eventsList.dart').readAsStringSync();
-    final providers =
-        File('lib/state/activity_list_providers.dart').readAsStringSync();
+    final activityList = File(
+      'lib/EventsList/eventsList.dart',
+    ).readAsStringSync();
+    final providers = File(
+      'lib/state/activity_list_providers.dart',
+    ).readAsStringSync();
 
-    expect(activityList,
-        isNot(contains('class EventTile extends ConsumerStatefulWidget')));
+    expect(
+      activityList,
+      isNot(contains('class EventTile extends ConsumerStatefulWidget')),
+    );
     expect(activityList, isNot(contains('Timer.periodic')));
     expect(activityList, isNot(contains('class _LapsedTimeStrState')));
     expect(activityList, contains('class ActiveTimingHighlight'));
     expect(
-        activityList, contains('class LapsedTimeStr extends ConsumerWidget'));
+      activityList,
+      contains('class LapsedTimeStr extends ConsumerWidget'),
+    );
     expect(providers, contains('elapsedDurationProvider'));
   });
 
@@ -328,10 +422,12 @@ void main() {
   });
 
   test('statistics page keeps selected range in Riverpod state', () {
-    final statistics =
-        File('lib/Statistics/statistics.dart').readAsStringSync();
-    final providers =
-        File('lib/state/statistics_providers.dart').readAsStringSync();
+    final statistics = File(
+      'lib/Statistics/statistics.dart',
+    ).readAsStringSync();
+    final providers = File(
+      'lib/state/statistics_providers.dart',
+    ).readAsStringSync();
 
     expect(statistics, isNot(contains('StatefulWidget')));
     expect(statistics, isNot(contains('setState(')));
@@ -346,10 +442,12 @@ void main() {
   });
 
   test('activity detail route delegates chart rendering', () {
-    final details =
-        File('lib/EventsDetails/eventDetails.dart').readAsStringSync();
-    final charts = File('lib/EventsDetails/activity_detail_charts.dart')
-        .readAsStringSync();
+    final details = File(
+      'lib/EventsDetails/eventDetails.dart',
+    ).readAsStringSync();
+    final charts = File(
+      'lib/EventsDetails/activity_detail_charts.dart',
+    ).readAsStringSync();
 
     expect(details, isNot(contains('fl_chart')));
     expect(details, isNot(contains('HeatMapCalendar')));
@@ -361,56 +459,83 @@ void main() {
     expect(charts, contains('buildActivityDetailChartModel'));
   });
 
-  test('chart adapters delegate view model construction to analytics modules',
-      () {
-    final detailCharts = File('lib/EventsDetails/activity_detail_charts.dart')
-        .readAsStringSync();
-    final statisticsCharts =
-        File('lib/Statistics/statistics_charts.dart').readAsStringSync();
-    final detailModel = File('lib/analytics/activity_detail_chart_models.dart')
-        .readAsStringSync();
-    final statisticsModel =
-        File('lib/analytics/statistics_chart_models.dart').readAsStringSync();
+  test(
+    'chart adapters delegate view model construction to analytics modules',
+    () {
+      final detailCharts = File(
+        'lib/EventsDetails/activity_detail_charts.dart',
+      ).readAsStringSync();
+      final statisticsCharts = File(
+        'lib/Statistics/statistics_charts.dart',
+      ).readAsStringSync();
+      final detailModel = File(
+        'lib/analytics/activity_detail_chart_models.dart',
+      ).readAsStringSync();
+      final statisticsModel = File(
+        'lib/analytics/statistics_chart_models.dart',
+      ).readAsStringSync();
 
-    expect(detailCharts, contains('buildActivityDetailChartModel'));
-    expect(detailCharts, isNot(contains('recordsInMonth(')));
-    expect(detailCharts, isNot(contains('recordsOnDay(')));
-    expect(detailCharts, isNot(contains('combineAdjacentHourSlots(')));
-    expect(detailCharts, isNot(contains('_recordLabel')));
-    expect(statisticsCharts, contains('buildStatisticsChartModel'));
-    expect(statisticsCharts, isNot(contains('buildStatisticsSummary')));
-    expect(statisticsCharts,
-        isNot(contains('combineStatisticsAdjacentHourSlots')));
-    expect(statisticsCharts, isNot(contains('_maxStackHeight')));
-    expect(detailModel, isNot(contains('fl_chart')));
-    expect(statisticsModel, isNot(contains('fl_chart')));
+      expect(detailCharts, contains('buildActivityDetailChartModel'));
+      expect(detailCharts, isNot(contains('recordsInMonth(')));
+      expect(detailCharts, isNot(contains('recordsOnDay(')));
+      expect(detailCharts, isNot(contains('combineAdjacentHourSlots(')));
+      expect(detailCharts, isNot(contains('_recordLabel')));
+      expect(detailCharts, contains('getTooltipColor'));
+      expect(detailCharts, isNot(contains('tooltipBgColor')));
+      expect(statisticsCharts, contains('buildStatisticsChartModel'));
+      expect(statisticsCharts, isNot(contains('buildStatisticsSummary')));
+      expect(
+        statisticsCharts,
+        isNot(contains('combineStatisticsAdjacentHourSlots')),
+      );
+      expect(statisticsCharts, isNot(contains('_maxStackHeight')));
+      expect(statisticsCharts, contains('getTooltipColor'));
+      expect(statisticsCharts, isNot(contains('tooltipBgColor')));
+      expect(detailModel, isNot(contains('fl_chart')));
+      expect(statisticsModel, isNot(contains('fl_chart')));
+    },
+  );
+
+  test('activity editor uses the current RadioGroup selection interface', () {
+    final editor = File('lib/eventEditor.dart').readAsStringSync();
+
+    expect(editor, contains('RadioGroup<String>'));
+    expect(editor, contains('RadioListTile<String>'));
+    expect(editor, isNot(contains('onChanged: (String? val)')));
   });
 
-  test('heatmap calendar delegates geometry and level mapping to pure model',
-      () {
-    final calendar =
-        File('lib/heatmap_calendar/heatMap.dart').readAsStringSync();
-    final blocks = File('lib/heatmap_calendar/heatMapBuildingBlocks.dart')
-        .readAsStringSync();
-    final model = File('lib/heatmap_calendar/heatmap_calendar_model.dart')
-        .readAsStringSync();
+  test(
+    'heatmap calendar delegates geometry and level mapping to pure model',
+    () {
+      final calendar = File(
+        'lib/heatmap_calendar/heatMap.dart',
+      ).readAsStringSync();
+      final blocks = File(
+        'lib/heatmap_calendar/heatMapBuildingBlocks.dart',
+      ).readAsStringSync();
+      final model = File(
+        'lib/heatmap_calendar/heatmap_calendar_model.dart',
+      ).readAsStringSync();
 
-    expect(calendar, contains('buildHeatMapCalendarModel'));
-    expect(calendar, isNot(contains('class HeatMapCalendarState')));
-    expect(calendar, isNot(contains('date2level')));
-    expect(calendar, isNot(contains('nilTime')));
-    expect(blocks, contains('HeatMapDayCell'));
-    expect(blocks, isNot(contains('split2weeks')));
-    expect(blocks, isNot(contains('DateTimeRange')));
-    expect(model, isNot(contains("package:flutter")));
-    expect(model, contains('class HeatMapCalendarModel'));
-  });
+      expect(calendar, contains('buildHeatMapCalendarModel'));
+      expect(calendar, isNot(contains('class HeatMapCalendarState')));
+      expect(calendar, isNot(contains('date2level')));
+      expect(calendar, isNot(contains('nilTime')));
+      expect(blocks, contains('HeatMapDayCell'));
+      expect(blocks, isNot(contains('split2weeks')));
+      expect(blocks, isNot(contains('DateTimeRange')));
+      expect(model, isNot(contains("package:flutter")));
+      expect(model, contains('class HeatMapCalendarModel'));
+    },
+  );
 
   test('activity description editing state stays in Riverpod', () {
-    final editor = File('lib/EventsDetails/activity_description_editor.dart')
-        .readAsStringSync();
-    final providers =
-        File('lib/state/activity_detail_providers.dart').readAsStringSync();
+    final editor = File(
+      'lib/EventsDetails/activity_description_editor.dart',
+    ).readAsStringSync();
+    final providers = File(
+      'lib/state/activity_detail_providers.dart',
+    ).readAsStringSync();
 
     expect(editor, isNot(contains('ConsumerStatefulWidget')));
     expect(editor, isNot(contains('TextEditingController')));
@@ -421,8 +546,9 @@ void main() {
 
   test('activity editor draft choices stay in Riverpod', () {
     final editor = File('lib/eventEditor.dart').readAsStringSync();
-    final providers =
-        File('lib/state/activity_editor_providers.dart').readAsStringSync();
+    final providers = File(
+      'lib/state/activity_editor_providers.dart',
+    ).readAsStringSync();
 
     expect(editor, isNot(contains('ConsumerStatefulWidget')));
     expect(editor, isNot(contains('setState(')));
@@ -433,10 +559,12 @@ void main() {
   });
 
   test('unit manager does not own text input state', () {
-    final unitManager =
-        File('lib/UnitManager/unitsManagerPage.dart').readAsStringSync();
-    final commonWidgets =
-        File('lib/common/commonWidget.dart').readAsStringSync();
+    final unitManager = File(
+      'lib/UnitManager/unitsManagerPage.dart',
+    ).readAsStringSync();
+    final commonWidgets = File(
+      'lib/common/commonWidget.dart',
+    ).readAsStringSync();
 
     expect(unitManager, isNot(contains('ConsumerStatefulWidget')));
     expect(unitManager, isNot(contains('TextEditingController')));
@@ -445,30 +573,33 @@ void main() {
     expect(commonWidgets, contains('controller.dispose()'));
   });
 
-  test('database module does not expose record lifecycle convenience methods',
-      () {
-    final database =
-        File('lib/persistence/database/app_database.dart').readAsStringSync();
+  test(
+    'database module does not expose record lifecycle convenience methods',
+    () {
+      final database = File(
+        'lib/persistence/database/app_database.dart',
+      ).readAsStringSync();
 
-    expect(database, isNot(contains('class DBHandle')));
-    expect(database, isNot(contains('factory DBHandle')));
-    expect(database, isNot(contains('static final AppDatabase _db')));
-    expect(database, isNot(contains('getRecordById')));
-    expect(database, isNot(contains('getEventById')));
+      expect(database, isNot(contains('class DBHandle')));
+      expect(database, isNot(contains('factory DBHandle')));
+      expect(database, isNot(contains('static final AppDatabase _db')));
+      expect(database, isNot(contains('getRecordById')));
+      expect(database, isNot(contains('getEventById')));
 
-    for (final oldMethodName in [
-      'addPlainRecordInDB',
-      'startTimingRecordInDB',
-      'stopTimingRecordInDB',
-      'stopActiveTimingRecordInDB',
-      'deleteActiveTimingRecordInDB',
-      'deleteActiveTimingRecordForEventInDB',
-      'getEventStartTime',
-      'getEventSumTime',
-      'getEventRecordsInRange',
-      'getStartTime',
-    ]) {
-      expect(database, isNot(contains(oldMethodName)));
-    }
-  });
+      for (final oldMethodName in [
+        'addPlainRecordInDB',
+        'startTimingRecordInDB',
+        'stopTimingRecordInDB',
+        'stopActiveTimingRecordInDB',
+        'deleteActiveTimingRecordInDB',
+        'deleteActiveTimingRecordForEventInDB',
+        'getEventStartTime',
+        'getEventSumTime',
+        'getEventRecordsInRange',
+        'getStartTime',
+      ]) {
+        expect(database, isNot(contains(oldMethodName)));
+      }
+    },
+  );
 }

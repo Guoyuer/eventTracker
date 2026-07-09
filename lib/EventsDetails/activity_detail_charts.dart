@@ -56,10 +56,7 @@ class _ActivityDetailChartsState extends State<ActivityDetailCharts> {
   }
 
   Widget _chartCard(Widget child) {
-    return Card(
-      elevation: 10,
-      child: child,
-    );
+    return Card(elevation: 10, child: child);
   }
 
   Widget _buildHeatmap(ActivityDetailChartModel model) {
@@ -93,101 +90,112 @@ class _ActivityDetailChartsState extends State<ActivityDetailCharts> {
             ),
           ),
         ),
-        Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
-          Container(
-            margin: EdgeInsets.only(left: 10),
-            child: RichText(
-              text: TextSpan(
-                style: TextStyle(fontSize: 16, color: Colors.black),
-                children: [
-                  TextSpan(text: model.recordCountHeading),
-                  TextSpan(
-                    text: '${model.visibleRecordCount}',
-                    style: TextStyle(fontWeight: FontWeight.bold),
-                  ),
-                  TextSpan(text: " 次")
-                ],
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Container(
+              margin: EdgeInsets.only(left: 10),
+              child: RichText(
+                text: TextSpan(
+                  style: TextStyle(fontSize: 16, color: Colors.black),
+                  children: [
+                    TextSpan(text: model.recordCountHeading),
+                    TextSpan(
+                      text: '${model.visibleRecordCount}',
+                      style: TextStyle(fontWeight: FontWeight.bold),
+                    ),
+                    TextSpan(text: " 次"),
+                  ],
+                ),
               ),
             ),
-          ),
-          Container(
-            height: 35,
-            margin: EdgeInsets.all(10),
-            child: ToggleButtons(
-              children: model.metricLabels.map((label) => Text(label)).toList(),
-              borderRadius: BorderRadius.all(Radius.circular(10)),
-              borderWidth: 2,
-              selectedBorderColor: Colors.blueAccent,
-              isSelected: [
-                for (var index = 0; index < model.metricLabels.length; index++)
-                  index == _selectedMetricIndex,
-              ],
-              onPressed: (index) {
-                if (index == _selectedMetricIndex) {
-                  return;
-                }
-                setState(() {
-                  _selectedMetricIndex = index;
-                });
-              },
+            Container(
+              height: 35,
+              margin: EdgeInsets.all(10),
+              child: ToggleButtons(
+                children: model.metricLabels
+                    .map((label) => Text(label))
+                    .toList(),
+                borderRadius: BorderRadius.all(Radius.circular(10)),
+                borderWidth: 2,
+                selectedBorderColor: Colors.blueAccent,
+                isSelected: [
+                  for (
+                    var index = 0;
+                    index < model.metricLabels.length;
+                    index++
+                  )
+                    index == _selectedMetricIndex,
+                ],
+                onPressed: (index) {
+                  if (index == _selectedMetricIndex) {
+                    return;
+                  }
+                  setState(() {
+                    _selectedMetricIndex = index;
+                  });
+                },
+              ),
             ),
-          )
-        ]),
+          ],
+        ),
       ],
     );
   }
 
   Widget _buildTimeSlotChart(ActivityDetailChartModel model) {
-    return Column(children: [
-      Text(
-        "时段活跃度",
-        style: chartTitleStyle,
-      ),
-      SizedBox(height: 10),
-      Container(
-        margin: EdgeInsets.symmetric(horizontal: 10),
-        height: 300,
-        child: BarChart(BarChartData(
-          barTouchData: BarTouchData(
-            enabled: true,
-            touchTooltipData: BarTouchTooltipData(
-              tooltipBgColor: Colors.blueGrey,
-              getTooltipItem: (group, groupIndex, rod, rodIndex) {
-                return BarTooltipItem(
-                  rod.toY.toInt().toString(),
-                  TextStyle(color: Colors.white, fontSize: 18),
-                );
-              },
-            ),
-          ),
-          titlesData: FlTitlesData(
-            leftTitles: AxisTitles(
-              sideTitles: SideTitles(
-                showTitles: true,
-                getTitlesWidget: (double val, TitleMeta meta) {
-                  return Text(val.floor().toString());
-                },
-                interval: _axisInterval(model.maxTimeSlotValue),
+    return Column(
+      children: [
+        Text("时段活跃度", style: chartTitleStyle),
+        SizedBox(height: 10),
+        Container(
+          margin: EdgeInsets.symmetric(horizontal: 10),
+          height: 300,
+          child: BarChart(
+            BarChartData(
+              barTouchData: BarTouchData(
+                enabled: true,
+                touchTooltipData: BarTouchTooltipData(
+                  getTooltipColor: (_) => Colors.blueGrey,
+                  getTooltipItem: (group, groupIndex, rod, rodIndex) {
+                    return BarTooltipItem(
+                      rod.toY.toInt().toString(),
+                      TextStyle(color: Colors.white, fontSize: 18),
+                    );
+                  },
+                ),
               ),
+              titlesData: FlTitlesData(
+                leftTitles: AxisTitles(
+                  sideTitles: SideTitles(
+                    showTitles: true,
+                    getTitlesWidget: (double val, TitleMeta meta) {
+                      return Text(val.floor().toString());
+                    },
+                    interval: _axisInterval(model.maxTimeSlotValue),
+                  ),
+                ),
+              ),
+              borderData: FlBorderData(show: false),
+              barGroups: _barGroups(model.timeSlotBars),
             ),
           ),
-          borderData: FlBorderData(show: false),
-          barGroups: _barGroups(model.timeSlotBars),
-        )),
-      )
-    ]);
+        ),
+      ],
+    );
   }
 
   List<BarChartGroupData> _barGroups(List<ActivityTimeSlotBar> bars) {
-    return [
-      for (final bar in bars) _barGroup(bar.x, bar.value),
-    ];
+    return [for (final bar in bars) _barGroup(bar.x, bar.value)];
   }
 
   BarChartGroupData _barGroup(int x, double value) {
-    return BarChartGroupData(x: x, barRods: [
-      BarChartRodData(toY: value, width: 15, gradient: gradientColors)
-    ]);
+    return BarChartGroupData(
+      x: x,
+      barRods: [
+        BarChartRodData(toY: value, width: 15, gradient: gradientColors),
+      ],
+    );
   }
 
   double _axisInterval(double maxValue) {

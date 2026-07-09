@@ -16,10 +16,7 @@ void main() {
     final totals = ActivityAggregateTotals(
       sumTime: const Duration(minutes: 10),
       sumValue: 2,
-    ).addTimedRecord(
-      duration: const Duration(minutes: 25),
-      value: 4,
-    );
+    ).addTimedRecord(duration: const Duration(minutes: 25), value: 4);
 
     expect(totals.sumTime, const Duration(minutes: 35));
     expect(totals.sumValue, 6);

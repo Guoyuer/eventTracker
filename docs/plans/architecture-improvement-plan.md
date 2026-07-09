@@ -171,6 +171,7 @@ Current status:
 - `ActivityRecordingController` now owns the route-level recording outcome policy, so changed, unchanged, and accidental short-timer cancellation results are handled behind a small tested Interface.
 - Activity detail deletion now returns a route result; `EventList` owns the single `activityListProvider` invalidation after deletion.
 - Feature state providers now live under `lib/state/`, and the old `stateProviders.dart` compatibility facade has been removed.
+- Small mutable UI state now uses Riverpod 3 `NotifierProvider` through `MutableState` instead of legacy `StateProvider`.
 - Async loading, empty, error, and retry rendering now goes through `AsyncStateView` instead of page-local `.when` branches.
 
 Target shape:
@@ -207,20 +208,24 @@ Next slice:
 
 ### 7. Modernize Dependencies Last
 
-Current problem: several packages are old or discontinued, but upgrading before architecture/test coverage would mix migration bugs with existing design debt.
+Current problem: dependency drift can hide platform breakage and leave the app on APIs that are already deprecated or moved to compatibility layers.
 
 Current status:
 
-- Current local SDK is Flutter 3.10 / Dart 3.0, so most latest 2026 package versions are SDK-blocked.
-- Upgraded the dependency batch that builds on the current SDK: Drift 2.14, drift_sqflite 2.0, build_runner 2.4, Riverpod 2.4, sqflite/path_provider/sqlite packages, and fluttertoast. Kept `fl_chart` pinned at 0.63 because 0.65 resolves but fails Windows build on Flutter 3.10 due to `TextScaler`.
+- Local development SDK is Flutter 3.44.5 / Dart 3.12.2.
+- The repo SDK constraint is Dart 3.12.
+- Previously SDK-blocked packages have been upgraded: Riverpod 3.3, fl_chart 1.2, fluttertoast 9.1, flutter_lints 6, Drift 2.34, build_runner 2.15, and current sqflite/path_provider stacks.
+- `sqlite3_flutter_libs` stays pinned to the Windows-compatible 0.5.x line because `0.6.0+eol` no longer bundles the sqlite runtime needed by `sqflite_common_ffi` on Windows.
+- Riverpod legacy `StateProvider` was replaced with `NotifierProvider`-based state Modules.
+- fl_chart tooltip adapters and Flutter Radio selection were migrated to their current Interfaces.
 - Removed unused `cupertino_icons` and stale `flutter_icons` configuration.
 - Migrated the Drift SQL include from `sql.moor` to `sql.drift` and regenerated `app_database.g.dart`.
 
 Order:
 
-1. Keep tests green while finishing persistence and analytics seams.
-2. Upgrade Flutter and Dart SDK in a dedicated platform slice.
-3. After SDK upgrade, revisit the packages still SDK-blocked by Flutter 3.10 / Dart 3.0.
+1. Keep tests green while finishing route interaction and aggregate seams.
+2. Revisit remaining outdated transitive versions only when a direct dependency or Flutter SDK release makes them resolvable.
+3. Keep Android/iOS/web compatibility practical, but treat Windows as the verified runtime until Android SDK is installed locally.
 
 Rule:
 
@@ -230,9 +235,9 @@ Rule:
 
 Recommended order from here:
 
-1. Upgrade Flutter and Dart SDK in a dedicated platform slice.
-2. Continue shrinking route Widgets by extracting remaining interaction coordinators.
-3. Revisit cached aggregate repair/rebuild options if product usage expands.
+1. Continue shrinking route Widgets by extracting remaining interaction coordinators.
+2. Revisit cached aggregate repair/rebuild options and decide whether aggregates should be repairable or recomputed.
+3. Audit platform support after Android SDK installation or CI coverage is available.
 
 ## Definition of Done for Each Slice
 

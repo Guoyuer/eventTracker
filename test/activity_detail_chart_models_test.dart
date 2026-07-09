@@ -67,15 +67,6 @@ void main() {
   });
 }
 
-ActivityRecord record({
-  required int id,
-  required DateTime end,
-  double? value,
-}) {
-  return ActivityRecord(
-    id: id,
-    eventId: 1,
-    endTime: end,
-    value: value,
-  );
+ActivityRecord record({required int id, required DateTime end, double? value}) {
+  return ActivityRecord(id: id, eventId: 1, endTime: end, value: value);
 }

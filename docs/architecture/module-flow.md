@@ -33,6 +33,7 @@ flowchart LR
     ActivityEditorProviders["activity_editor_providers.dart"]
     UnitProviders["unit_providers.dart"]
     StatisticsProviders["statistics_providers.dart"]
+    MutableState["MutableState"]
     AppDatabaseProvider["appDatabaseProvider"]
     ActivityRepositoryProvider["activityRepositoryProvider"]
     UnitRepositoryProvider["unitRepositoryProvider"]
@@ -55,6 +56,11 @@ flowchart LR
   EventList --> ActivityListProvider
   EventList --> ActivityRecordingController
   EventList --> AsyncStateView
+  ActivityListProviders --> MutableState
+  ActivityDetailProviders --> MutableState
+  ActivityEditorProviders --> MutableState
+  AppNavigationProviders --> MutableState
+  StatisticsProviders --> MutableState
   ActivityRecordingController --> ActivityRecordingActions
   ActivityRecordingActions --> ActivityRepository
   ActivityListProvider --> ActivityRepositoryProvider

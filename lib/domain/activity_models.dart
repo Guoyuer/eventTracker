@@ -1,9 +1,4 @@
-enum EventStatus {
-  plain,
-  active,
-  paused,
-  notActive,
-}
+enum EventStatus { plain, active, paused, notActive }
 
 class BaseEventModel {
   int id;
@@ -12,17 +7,28 @@ class BaseEventModel {
   String? description;
   int? lastRecordId;
 
-  BaseEventModel(this.id, this.name,
-      [this.unit, this.description, this.lastRecordId]);
+  BaseEventModel(
+    this.id,
+    this.name, [
+    this.unit,
+    this.description,
+    this.lastRecordId,
+  ]);
 }
 
 class PlainEventModel extends BaseEventModel {
   int time;
   double? sumVal;
 
-  PlainEventModel(int id, String name, String? unit, this.time,
-      [this.sumVal, String? description, int? lastRecordId])
-      : super(id, name, unit, description, lastRecordId);
+  PlainEventModel(
+    int id,
+    String name,
+    String? unit,
+    this.time, [
+    this.sumVal,
+    String? description,
+    int? lastRecordId,
+  ]) : super(id, name, unit, description, lastRecordId);
 }
 
 class TimingEventModel extends BaseEventModel {
@@ -32,9 +38,16 @@ class TimingEventModel extends BaseEventModel {
   double? sumVal;
 
   TimingEventModel(
-      int id, String name, String? unit, this.status, this.sumDuration,
-      [this.startTime, this.sumVal, String? description, int? lastRecordId])
-      : super(id, name, unit, description, lastRecordId);
+    int id,
+    String name,
+    String? unit,
+    this.status,
+    this.sumDuration, [
+    this.startTime,
+    this.sumVal,
+    String? description,
+    int? lastRecordId,
+  ]) : super(id, name, unit, description, lastRecordId);
 }
 
 class ActivityRecord {
@@ -54,20 +67,14 @@ class ActivityRecord {
 }
 
 class StatisticsActivity {
-  StatisticsActivity({
-    required this.id,
-    required this.name,
-  });
+  StatisticsActivity({required this.id, required this.name});
 
   final int id;
   final String name;
 }
 
 class ActivityUnit {
-  ActivityUnit({
-    required this.id,
-    required this.name,
-  });
+  ActivityUnit({required this.id, required this.name});
 
   final int id;
   final String name;

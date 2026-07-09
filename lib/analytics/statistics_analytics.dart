@@ -3,10 +3,7 @@ import 'dart:collection';
 import '../domain/activity_models.dart';
 
 class ActivityCount {
-  ActivityCount({
-    required this.activity,
-    required this.count,
-  });
+  ActivityCount({required this.activity, required this.count});
 
   final StatisticsActivity activity;
   final int count;
@@ -63,13 +60,17 @@ List<double> combineStatisticsAdjacentHourSlots(List<double> hourlyValues) {
 }
 
 StatisticsActivity _activityForRecord(
-    ActivityRecord record, Map<int, StatisticsActivity> eventsById) {
+  ActivityRecord record,
+  Map<int, StatisticsActivity> eventsById,
+) {
   final activity = _activityForId(record.eventId, eventsById);
   return activity;
 }
 
 StatisticsActivity _activityForId(
-    int activityId, Map<int, StatisticsActivity> eventsById) {
+  int activityId,
+  Map<int, StatisticsActivity> eventsById,
+) {
   final activity = eventsById[activityId];
   if (activity == null) {
     throw StateError('Missing activity $activityId.');

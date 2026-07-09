@@ -7,9 +7,9 @@ Bring this repo from a working prototype to a maintainable Flutter app that can 
 ## Current Baseline
 
 - Windows release build works.
-- `flutter analyze` is green under the initial legacy lint profile.
-- `flutter test` is green with bootstrap and persistence lifecycle tests.
-- Persistence is tightly coupled to UI and uses cached aggregate fields that can drift from records.
+- `flutter analyze` is green under Flutter 3.44 / Dart 3.12 with `flutter_lints` 6.
+- `flutter test` is green with bootstrap, repository, persistence lifecycle, analytics, and structural cleanup tests.
+- Persistence is mostly behind repository Modules; cached aggregate fields remain and are protected by record lifecycle tests.
 - Platform support is Windows-first with sqflite FFI; unused Firebase configuration has been removed.
 - `windows/` and `pubspec.lock` are tracked for reproducible desktop development.
 
@@ -28,8 +28,14 @@ Use the local verification script for repeatability:
 
 ```powershell
 .\tool\check.ps1
+.\tool\check.ps1 -Codegen
 .\tool\check.ps1 -WindowsBuild
 ```
+
+Use `.\tool\check.ps1 -Codegen` after changing Drift tables, `.drift` files,
+repository query shapes, or dependency versions that affect code generation.
+The current `build_runner` no longer accepts `--delete-conflicting-outputs`;
+run `dart run build_runner build` directly.
 
 If a gate is temporarily red, document the exact failure in this file before moving on.
 
@@ -144,6 +150,8 @@ Status: in progress
 - Moved route-level recording outcome handling behind `ActivityRecordingController`, leaving the activity-list Widget as a thin UI Adapter for prompts, refresh, and toast notifications.
 - Split broad Riverpod state ownership out of `stateProviders.dart` into focused modules under `lib/state/`, then removed the compatibility facade after active imports were migrated.
 - Made activity detail deletion return a route result so `EventList` is the single owner of activity-list refresh after deletion.
+- Migrated small mutable UI state from legacy Riverpod `StateProvider` to Riverpod 3 `NotifierProvider` through `MutableState`.
+- Migrated unit selection to Flutter's current `RadioGroup` Interface.
 - Standardized async loading, empty, error, and retry states behind `AsyncStateView`.
 - Replaced the heatmap calendar's global empty-date sentinel with typed placeholder cells produced by the calendar model.
 - Removed the old settings-page DB viewer, delete-all-data button, fake-data generator, and inactive step-count route.
@@ -154,18 +162,20 @@ Status: in progress
 
 - Removed unused Firebase dependency, generated options, and stale Firestore configuration.
 - Removed the single-use `sprintf` dependency after replacing it with Dart string interpolation.
-- Upgraded the current-SDK-compatible dependency batch: Drift 2.14, drift_sqflite 2.0, build_runner 2.4, Riverpod 2.4, sqflite/path_provider/sqlite libraries, and fluttertoast. Kept `fl_chart` pinned at 0.63 because 0.65 uses Flutter `TextScaler`, which is not available on Flutter 3.10.
+- Before the SDK upgrade, upgraded the last Flutter-3.10-compatible dependency batch: Drift 2.14, drift_sqflite 2.0, build_runner 2.4, Riverpod 2.4, sqflite/path_provider/sqlite libraries, and fluttertoast.
 - Removed unused `cupertino_icons` and stale launcher-icon config.
 - Renamed legacy `sql.moor` to `sql.drift` and regenerated Drift code with the Drift 2 generator.
 - Then evaluate Flutter SDK upgrade separately.
 - Removed unused `share` and discontinued `moor_db_viewer`.
+- Upgraded the local development toolchain to Flutter 3.44.5 / Dart 3.12.2 and raised the repo SDK constraint to Dart 3.12.
+- Upgraded previously SDK-blocked packages: Riverpod 3.3, fl_chart 1.2, fluttertoast 9.1, flutter_lints 6, Drift 2.34, build_runner 2.15, and current sqflite/path_provider stacks.
+- Kept `sqlite3_flutter_libs` on the Windows-compatible 0.5.x line; `0.6.0+eol` removes the Windows sqlite bundle and causes startup to fail before the first Flutter frame.
+- Regenerated Drift outputs with the current build_runner command and removed discontinued transitive packages from the lockfile, including `js`, `build_resolvers`, and `build_runner_core`.
 
-Next platform slice:
+Remaining:
 
-1. Upgrade Flutter stable and Dart together through the Flutter SDK.
-2. Raise the Dart SDK constraint only after the upgraded toolchain resolves dependencies.
-3. Revisit dependency versions that are blocked by Flutter 3.10 / Dart 3.0, especially chart and lint packages.
-4. Run `flutter analyze`, `flutter test`, `flutter build windows`, and a Windows visual smoke check before committing.
+- Android SDK is not installed on this workstation, so Android runtime verification remains unavailable locally.
+- Revisit any remaining outdated transitive versions only when a direct dependency or Flutter SDK release makes them resolvable.
 
 ## First Execution Slice
 

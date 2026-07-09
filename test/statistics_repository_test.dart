@@ -27,25 +27,14 @@ void main() {
   });
 
   test('repository loads range records with activities by id', () async {
-    final readId = await insertTestActivity(
-      db,
-      name: 'Read',
-      careTime: false,
-    );
-    final runId = await insertTestActivity(
-      db,
-      name: 'Run',
-      careTime: false,
-    );
+    final readId = await insertTestActivity(db, name: 'Read', careTime: false);
+    final runId = await insertTestActivity(db, name: 'Run', careTime: false);
 
     await lifecycle.addPlainRecord(readId, DateTime(2026, 1, 1, 8));
     await lifecycle.addPlainRecord(runId, DateTime(2026, 1, 2, 8));
 
     final data = await repository.getStatisticsData(
-      DateRange(
-        start: DateTime(2026, 1, 1),
-        end: DateTime(2026, 1, 3),
-      ),
+      DateRange(start: DateTime(2026, 1, 1), end: DateTime(2026, 1, 3)),
     );
 
     expect(data.records.map((record) => record.eventId), [readId, runId]);
@@ -54,20 +43,13 @@ void main() {
   });
 
   test('repository excludes records outside the requested range', () async {
-    final eventId = await insertTestActivity(
-      db,
-      name: 'Read',
-      careTime: false,
-    );
+    final eventId = await insertTestActivity(db, name: 'Read', careTime: false);
 
     await lifecycle.addPlainRecord(eventId, DateTime(2025, 12, 31, 8));
     await lifecycle.addPlainRecord(eventId, DateTime(2026, 1, 1, 8));
 
     final data = await repository.getStatisticsData(
-      DateRange(
-        start: DateTime(2026, 1, 1),
-        end: DateTime(2026, 1, 2),
-      ),
+      DateRange(start: DateTime(2026, 1, 1), end: DateTime(2026, 1, 2)),
     );
 
     expect(data.records, hasLength(1));

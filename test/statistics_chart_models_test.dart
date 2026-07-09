@@ -25,8 +25,10 @@ void main() {
     final hourNine = model.landscapeSlots.bars[9];
     expect(hourNine.x, 9);
     expect(hourNine.total, 2);
-    expect(hourNine.segments.map((segment) => segment.activityName),
-        ['Run', 'Read']);
+    expect(hourNine.segments.map((segment) => segment.activityName), [
+      'Run',
+      'Read',
+    ]);
     expect(hourNine.segments.map((segment) => segment.fromY), [0, 1]);
     expect(hourNine.segments.map((segment) => segment.toY), [1, 2]);
     expect(model.landscapeSlots.maxY, 2);
@@ -38,9 +40,7 @@ void main() {
         record(id: 1, eventId: 1, end: DateTime(2026, 1, 1, 8)),
         record(id: 2, eventId: 1, end: DateTime(2026, 1, 1, 9)),
       ],
-      activitiesById: {
-        1: activity(id: 1, name: 'Read'),
-      },
+      activitiesById: {1: activity(id: 1, name: 'Read')},
       colorCount: 10,
     );
 

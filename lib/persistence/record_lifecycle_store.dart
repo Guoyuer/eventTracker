@@ -14,7 +14,9 @@ class RecordLifecycleStore {
     double? value,
   }) {
     return _db.transaction(() async {
-      final recordId = await _db.into(_db.records).insert(
+      final recordId = await _db
+          .into(_db.records)
+          .insert(
             RecordsCompanion(
               eventId: Value(activityId),
               endTime: Value(endTime),
@@ -27,9 +29,9 @@ class RecordLifecycleStore {
         sumValue: activity.sumVal,
       ).addPlainRecord(value: value);
 
-      await (_db.update(_db.events)
-            ..where((event) => event.id.equals(activityId)))
-          .write(
+      await (_db.update(
+        _db.events,
+      )..where((event) => event.id.equals(activityId))).write(
         EventsCompanion(
           lastRecordId: Value(recordId),
           sumTime: Value(nextTotals.sumTime),
@@ -41,7 +43,9 @@ class RecordLifecycleStore {
 
   Future<int> startTimedRecord(int activityId, DateTime startTime) {
     return _db.transaction(() async {
-      final recordId = await _db.into(_db.records).insert(
+      final recordId = await _db
+          .into(_db.records)
+          .insert(
             RecordsCompanion(
               eventId: Value(activityId),
               startTime: Value(startTime),
@@ -72,18 +76,15 @@ class RecordLifecycleStore {
         sumValue: activity.sumVal,
       ).addTimedRecord(duration: duration, value: value);
 
-      await (_db.update(_db.records)
-            ..where((record) => record.id.equals(activeRecordId)))
-          .write(
-        RecordsCompanion(
-          endTime: Value(stoppedAt),
-          value: Value(value),
-        ),
+      await (_db.update(
+        _db.records,
+      )..where((record) => record.id.equals(activeRecordId))).write(
+        RecordsCompanion(endTime: Value(stoppedAt), value: Value(value)),
       );
 
-      await (_db.update(_db.events)
-            ..where((event) => event.id.equals(activityId)))
-          .write(
+      await (_db.update(
+        _db.events,
+      )..where((event) => event.id.equals(activityId))).write(
         EventsCompanion(
           sumTime: Value(nextTotals.sumTime),
           sumVal: Value(nextTotals.sumValue),
@@ -96,20 +97,21 @@ class RecordLifecycleStore {
     return _db.transaction(() async {
       final activeRecord = await _getActiveTimedRecord(activityId);
 
-      await (_db.delete(_db.records)
-            ..where((record) => record.id.equals(activeRecord.id)))
-          .go();
+      await (_db.delete(
+        _db.records,
+      )..where((record) => record.id.equals(activeRecord.id))).go();
 
-      final previousRecord = await (_db.select(_db.records)
-            ..where((record) => record.eventId.equals(activityId))
-            ..orderBy([
-              (record) => OrderingTerm(
+      final previousRecord =
+          await (_db.select(_db.records)
+                ..where((record) => record.eventId.equals(activityId))
+                ..orderBy([
+                  (record) => OrderingTerm(
                     expression: record.startTime,
                     mode: OrderingMode.desc,
                   ),
-            ])
-            ..limit(1))
-          .getSingleOrNull();
+                ])
+                ..limit(1))
+              .getSingleOrNull();
 
       await (_db.update(_db.events)
             ..where((event) => event.id.equals(activityId)))
@@ -135,14 +137,14 @@ class RecordLifecycleStore {
   }
 
   Future<Event> _activityById(int activityId) {
-    return (_db.select(_db.events)
-          ..where((activity) => activity.id.equals(activityId)))
-        .getSingle();
+    return (_db.select(
+      _db.events,
+    )..where((activity) => activity.id.equals(activityId))).getSingle();
   }
 
   Future<Record> _recordById(int recordId) {
-    return (_db.select(_db.records)
-          ..where((record) => record.id.equals(recordId)))
-        .getSingle();
+    return (_db.select(
+      _db.records,
+    )..where((record) => record.id.equals(recordId))).getSingle();
   }
 }

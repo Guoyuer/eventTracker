@@ -24,29 +24,31 @@ void main() {
     await db.close();
   });
 
-  test('plain records update aggregate count, value, and last record',
-      () async {
-    final eventId = await insertTestActivity(
-      db,
-      name: 'Push ups',
-      careTime: false,
-      unit: 'reps',
-    );
+  test(
+    'plain records update aggregate count, value, and last record',
+    () async {
+      final eventId = await insertTestActivity(
+        db,
+        name: 'Push ups',
+        careTime: false,
+        unit: 'reps',
+      );
 
-    await lifecycle.addPlainRecord(
-      eventId,
-      DateTime(2026, 1, 1, 8),
-      value: 20,
-    );
+      await lifecycle.addPlainRecord(
+        eventId,
+        DateTime(2026, 1, 1, 8),
+        value: 20,
+      );
 
-    final event = await getTestActivity(db, eventId);
-    final records = await getCompletedTestRecordsForActivity(db, eventId);
+      final event = await getTestActivity(db, eventId);
+      final records = await getCompletedTestRecordsForActivity(db, eventId);
 
-    expect(records, hasLength(1));
-    expect(event.lastRecordId, records.single.id);
-    expect(event.sumTime.inSeconds, 1);
-    expect(event.sumVal, 20);
-  });
+      expect(records, hasLength(1));
+      expect(event.lastRecordId, records.single.id);
+      expect(event.sumTime.inSeconds, 1);
+      expect(event.sumVal, 20);
+    },
+  );
 
   test('plain record aggregates accumulate across multiple records', () async {
     final eventId = await insertTestActivity(
@@ -56,16 +58,8 @@ void main() {
       unit: 'pages',
     );
 
-    await lifecycle.addPlainRecord(
-      eventId,
-      DateTime(2026, 1, 1, 8),
-      value: 12,
-    );
-    await lifecycle.addPlainRecord(
-      eventId,
-      DateTime(2026, 1, 2, 8),
-      value: 8,
-    );
+    await lifecycle.addPlainRecord(eventId, DateTime(2026, 1, 1, 8), value: 12);
+    await lifecycle.addPlainRecord(eventId, DateTime(2026, 1, 2, 8), value: 8);
 
     final event = await getTestActivity(db, eventId);
     final records = await getCompletedTestRecordsForActivity(db, eventId);
@@ -108,10 +102,7 @@ void main() {
       unit: 'km',
     );
 
-    await lifecycle.startTimedRecord(
-      eventId,
-      DateTime(2026, 1, 1, 8),
-    );
+    await lifecycle.startTimedRecord(eventId, DateTime(2026, 1, 1, 8));
     await lifecycle.stopActiveTimedRecord(
       eventId,
       DateTime(2026, 1, 1, 8, 20),
@@ -135,73 +126,60 @@ void main() {
     expect(event.sumVal, 8);
   });
 
-  test('canceling an active timed record restores previous last record',
-      () async {
-    final eventId = await insertTestActivity(
-      db,
-      name: 'Practice',
-      careTime: true,
-    );
+  test(
+    'canceling an active timed record restores previous last record',
+    () async {
+      final eventId = await insertTestActivity(
+        db,
+        name: 'Practice',
+        careTime: true,
+      );
 
-    final firstRecordId = await lifecycle.startTimedRecord(
-      eventId,
-      DateTime(2026, 1, 1, 8),
-    );
-    await lifecycle.stopActiveTimedRecord(
-      eventId,
-      DateTime(2026, 1, 1, 8, 10),
-    );
+      final firstRecordId = await lifecycle.startTimedRecord(
+        eventId,
+        DateTime(2026, 1, 1, 8),
+      );
+      await lifecycle.stopActiveTimedRecord(
+        eventId,
+        DateTime(2026, 1, 1, 8, 10),
+      );
 
-    final activeRecordId = await lifecycle.startTimedRecord(
-      eventId,
-      DateTime(2026, 1, 1, 9),
-    );
+      final activeRecordId = await lifecycle.startTimedRecord(
+        eventId,
+        DateTime(2026, 1, 1, 9),
+      );
 
-    await lifecycle.cancelActiveTimedRecord(eventId);
+      await lifecycle.cancelActiveTimedRecord(eventId);
 
-    final event = await getTestActivity(db, eventId);
-    final deletedRecord = await (db.select(db.records)
-          ..where((record) => record.id.equals(activeRecordId)))
-        .getSingleOrNull();
+      final event = await getTestActivity(db, eventId);
+      final deletedRecord = await (db.select(
+        db.records,
+      )..where((record) => record.id.equals(activeRecordId))).getSingleOrNull();
 
-    expect(deletedRecord, isNull);
-    expect(event.lastRecordId, firstRecordId);
-  });
+      expect(deletedRecord, isNull);
+      expect(event.lastRecordId, firstRecordId);
+    },
+  );
 
   test('default database executor uses explicit paths on desktop only', () {
     expect(
-      usesExplicitDatabasePathOnPlatform(
-        TargetPlatform.windows,
-        isWeb: false,
-      ),
+      usesExplicitDatabasePathOnPlatform(TargetPlatform.windows, isWeb: false),
       isTrue,
     );
     expect(
-      usesExplicitDatabasePathOnPlatform(
-        TargetPlatform.macOS,
-        isWeb: false,
-      ),
+      usesExplicitDatabasePathOnPlatform(TargetPlatform.macOS, isWeb: false),
       isTrue,
     );
     expect(
-      usesExplicitDatabasePathOnPlatform(
-        TargetPlatform.linux,
-        isWeb: false,
-      ),
+      usesExplicitDatabasePathOnPlatform(TargetPlatform.linux, isWeb: false),
       isTrue,
     );
     expect(
-      usesExplicitDatabasePathOnPlatform(
-        TargetPlatform.android,
-        isWeb: false,
-      ),
+      usesExplicitDatabasePathOnPlatform(TargetPlatform.android, isWeb: false),
       isFalse,
     );
     expect(
-      usesExplicitDatabasePathOnPlatform(
-        TargetPlatform.windows,
-        isWeb: true,
-      ),
+      usesExplicitDatabasePathOnPlatform(TargetPlatform.windows, isWeb: true),
       isFalse,
     );
   });

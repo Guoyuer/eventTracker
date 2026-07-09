@@ -22,10 +22,7 @@ void main() {
 
   test('rejects reversed ranges', () {
     expect(
-      () => DateRange(
-        start: DateTime(2026, 1, 2),
-        end: DateTime(2026, 1, 1),
-      ),
+      () => DateRange(start: DateTime(2026, 1, 2), end: DateTime(2026, 1, 1)),
       throwsArgumentError,
     );
   });
