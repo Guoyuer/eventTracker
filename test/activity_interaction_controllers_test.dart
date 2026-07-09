@@ -1,3 +1,4 @@
+import 'package:event_tracker/application/activity_list_controller.dart';
 import 'package:event_tracker/application/activity_detail_controller.dart';
 import 'package:event_tracker/application/activity_editor_controller.dart';
 import 'package:event_tracker/application/unit_management_controller.dart';
@@ -101,6 +102,52 @@ void main() {
       expect(exitEditingCount, 1);
     },
   );
+
+  test(
+    'activity list refreshes after a detail route deletes activity',
+    () async {
+      final activity = PlainEventModel(7, 'Read', null, 0);
+      var refreshCount = 0;
+      final shownActivities = <BaseEventModel>[];
+      final controller = ActivityListController(
+        repository: _FakeActivityRepository(),
+        refresh: () => refreshCount++,
+        notify: (_) {},
+      );
+
+      await controller.showActivityDetail(
+        activity,
+        showDetail: (activity) async {
+          shownActivities.add(activity);
+          return true;
+        },
+      );
+
+      expect(shownActivities, [activity]);
+      expect(refreshCount, 1);
+    },
+  );
+
+  test('activity list ignores non-delete detail route results', () async {
+    final activity = PlainEventModel(7, 'Read', null, 0);
+    var refreshCount = 0;
+    final controller = ActivityListController(
+      repository: _FakeActivityRepository(),
+      refresh: () => refreshCount++,
+      notify: (_) {},
+    );
+
+    await controller.showActivityDetail(
+      activity,
+      showDetail: (_) async => null,
+    );
+    await controller.showActivityDetail(
+      activity,
+      showDetail: (_) async => false,
+    );
+
+    expect(refreshCount, 0);
+  });
 
   test('unit add refreshes the unit list after success', () async {
     final repository = _FakeUnitRepository();

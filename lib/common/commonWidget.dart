@@ -1,11 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 
-ElevatedButton myRaisedButton(
-  Widget child,
-  void Function() onPressCallBack, [
-  void Function()? onLongPressCallBack,
-]) {
+ElevatedButton myRaisedButton(Widget child, void Function() onPressCallBack) {
   return ElevatedButton(
     style: ElevatedButton.styleFrom(
       backgroundColor: Colors.blue,
@@ -13,16 +9,14 @@ ElevatedButton myRaisedButton(
     ),
     child: child,
     onPressed: onPressCallBack,
-    onLongPress: onLongPressCallBack,
   );
 }
 
 Widget eventListButton(
   Icon icon,
   Widget label,
-  void Function() onPressCallBack, [
-  void Function()? onLongPressCallBack,
-]) {
+  void Function() onPressCallBack,
+) {
   return Container(
     margin: EdgeInsets.only(right: 7),
     child: ElevatedButton.icon(
@@ -36,7 +30,6 @@ Widget eventListButton(
       ),
       label: label,
       onPressed: onPressCallBack,
-      onLongPress: onLongPressCallBack,
     ),
   );
 }

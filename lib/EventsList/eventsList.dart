@@ -1,7 +1,7 @@
-import 'package:flutter/material.dart' hide DatePickerTheme;
+import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../application/activity_recording_controller.dart';
-import '../application/activity_recording_actions.dart';
+import '../application/activity_list_controller.dart';
 import '../common/async_state.dart';
 import '../common/commonWidget.dart';
 import '../domain/activity_models.dart';
@@ -10,14 +10,43 @@ import '../state/activity_list_providers.dart';
 
 import 'events_list_helpers.dart';
 
-class EventList extends ConsumerStatefulWidget {
+class EventList extends ConsumerWidget {
   EventList({Key? key}) : super(key: key);
 
   @override
-  ConsumerState<EventList> createState() => _EventListState();
+  Widget build(BuildContext context, WidgetRef ref) {
+    final events = ref.watch(activityListProvider);
+    return AsyncStateView<List<BaseEventModel>>(
+      value: events,
+      data: (events) => ActivityListView(
+        activities: events,
+        onScrollDirectionChanged: (direction) {
+          ref.read(eventListScrollDirProvider.notifier).set(direction);
+        },
+      ),
+      errorMessage: '加载项目失败',
+      emptyMessage: '暂无项目',
+      isEmpty: (events) => events.isEmpty,
+      onRetry: () => ref.invalidate(activityListProvider),
+    );
+  }
 }
 
-class _EventListState extends ConsumerState<EventList> {
+class ActivityListView extends StatefulWidget {
+  const ActivityListView({
+    super.key,
+    required this.activities,
+    required this.onScrollDirectionChanged,
+  });
+
+  final List<BaseEventModel> activities;
+  final ValueChanged<ScrollDirection> onScrollDirectionChanged;
+
+  @override
+  State<ActivityListView> createState() => _ActivityListViewState();
+}
+
+class _ActivityListViewState extends State<ActivityListView> {
   late final ScrollController _scrollController;
 
   @override
@@ -35,55 +64,46 @@ class _EventListState extends ConsumerState<EventList> {
   }
 
   void _updateScrollDirection() {
-    ref
-        .read(eventListScrollDirProvider.notifier)
-        .set(_scrollController.position.userScrollDirection);
+    widget.onScrollDirectionChanged(
+      _scrollController.position.userScrollDirection,
+    );
   }
 
   @override
   Widget build(BuildContext context) {
-    final events = ref.watch(activityListProvider);
-    return AsyncStateView<List<BaseEventModel>>(
-      value: events,
-      data: _buildEventList,
-      errorMessage: '加载项目失败',
-      emptyMessage: '暂无项目',
-      isEmpty: (events) => events.isEmpty,
-      onRetry: () => ref.invalidate(activityListProvider),
-    );
-  }
-
-  Widget _buildEventList(List<BaseEventModel> events) {
     return ListView.builder(
       controller: _scrollController,
-      itemCount: events.length,
+      itemCount: widget.activities.length,
       itemBuilder: (ctx, idx) {
-        return EventDataHolder(event: events[idx], child: EventTile());
+        return EventTile(activity: widget.activities[idx]);
       },
     );
   }
 }
 
 class EventTileButton extends ConsumerWidget {
+  const EventTileButton({super.key, required this.activity});
+
+  final BaseEventModel activity;
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    BaseEventModel event = EventDataHolder.of(context).event;
-    EventStatus status = getEventStatus(event);
+    EventStatus status = getEventStatus(activity);
     switch (status) {
       case EventStatus.plain:
         return eventListButton(Icon(Icons.add_rounded), Text("新记录"), () {
-          _submitRecording(context, ref, event, DateTime.now());
+          _submitRecording(context, ref, activity, DateTime.now());
         });
       case EventStatus.notActive:
         return eventListButton(Icon(Icons.play_arrow_outlined), Text("开始"), () {
-          _submitRecording(context, ref, event, DateTime.now());
+          _submitRecording(context, ref, activity, DateTime.now());
         });
       case EventStatus.active:
         return eventListButton(
           Icon(Icons.stop_circle_outlined),
           Text("停止"),
           () {
-            _submitRecording(context, ref, event, DateTime.now());
+            _submitRecording(context, ref, activity, DateTime.now());
           },
         );
       default:
@@ -101,13 +121,13 @@ class EventTileButton extends ConsumerWidget {
     BaseEventModel event,
     DateTime recordedAt,
   ) {
-    final controller = ActivityRecordingController(
-      actions: ActivityRecordingActions(ref.read(activityRepositoryProvider)),
+    final controller = ActivityListController(
+      repository: ref.read(activityRepositoryProvider),
       refresh: () => ref.invalidate(activityListProvider),
       notify: showToast,
     );
 
-    return controller.record(
+    return controller.recordActivity(
       event,
       recordedAt,
       requestValue: (unit) => inputValDialog(context, unit),
@@ -115,29 +135,17 @@ class EventTileButton extends ConsumerWidget {
   }
 }
 
-class EventDataHolder extends InheritedWidget {
-  final BaseEventModel event;
-
-  EventDataHolder({required this.event, required Widget child})
-    : super(child: child);
-
-  @override
-  bool updateShouldNotify(EventDataHolder oldWidget) {
-    return event.id != oldWidget.event.id;
-  }
-
-  static EventDataHolder of(BuildContext context) {
-    return context.dependOnInheritedWidgetOfExactType<EventDataHolder>()!;
-  }
-}
-
 class EventTile extends ConsumerWidget {
+  const EventTile({super.key, required this.activity});
+
+  final BaseEventModel activity;
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    BaseEventModel event = EventDataHolder.of(context).event;
-    final eventInfo = EventTileInfo(event);
+    final activity = this.activity;
+    final eventInfo = EventTileInfo(activity);
     final isActive =
-        event is TimingEventModel && event.status == EventStatus.active;
+        activity is TimingEventModel && activity.status == EventStatus.active;
 
     return Card(
       elevation: 8,
@@ -146,14 +154,20 @@ class EventTile extends ConsumerWidget {
           if (isActive) Positioned.fill(child: ActiveTimingHighlight()),
           InkWell(
             onTap: () async {
-              bool? deleted =
-                  await Navigator.of(
+              final controller = ActivityListController(
+                repository: ref.read(activityRepositoryProvider),
+                refresh: () => ref.invalidate(activityListProvider),
+                notify: showToast,
+              );
+              await controller.showActivityDetail(
+                activity,
+                showDetail: (activity) async {
+                  return await Navigator.of(
                         context,
-                      ).pushNamed("EventDetails", arguments: event)
+                      ).pushNamed("EventDetails", arguments: activity)
                       as bool?;
-              if (deleted != null && deleted) {
-                ref.invalidate(activityListProvider);
-              }
+                },
+              );
             },
             child: Container(
               margin: EdgeInsets.only(left: 10, top: 10),
@@ -162,7 +176,7 @@ class EventTile extends ConsumerWidget {
                 children: [
                   Align(
                     alignment: Alignment.topLeft,
-                    child: Text(event.name, style: TextStyle(fontSize: 17)),
+                    child: Text(activity.name, style: TextStyle(fontSize: 17)),
                   ),
                   Expanded(
                     child: Container(
@@ -177,7 +191,7 @@ class EventTile extends ConsumerWidget {
           Positioned.fill(
             child: Container(
               alignment: Alignment.centerRight,
-              child: EventTileButton(),
+              child: EventTileButton(activity: activity),
             ),
           ),
         ],

@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart' hide DatePickerTheme;
+import 'package:flutter/material.dart';
 
 import '../common/commonWidget.dart';
 import '../domain/activity_models.dart';

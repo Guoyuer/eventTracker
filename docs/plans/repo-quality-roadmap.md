@@ -156,6 +156,9 @@ Status: in progress
 - Migrated unit selection to Flutter's current `RadioGroup` Interface.
 - Standardized async loading, empty, error, and retry states behind `AsyncStateView`.
 - Moved add-activity, activity-detail deletion/description-save, and unit-management mutation/refresh/notification policy behind tested application controllers.
+- Deepened `ActivityListController` so activity-list recording and detail-route refresh policy sit behind one application Module, leaving `EventList` to supply UI adapters for prompts, navigation, notifications, and provider invalidation.
+- Removed the pass-through `EventDataHolder` inherited widget and passed activity models directly to list tiles.
+- Removed unused long-press callback surface from shared button helpers after the incomplete manual-time-entry controls were retired.
 - Replaced the heatmap calendar's global empty-date sentinel with typed placeholder cells produced by the calendar model.
 - Removed the old settings-page DB viewer, delete-all-data button, fake-data generator, and inactive step-count route.
 

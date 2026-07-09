@@ -345,6 +345,9 @@ void main() {
     final controller = File(
       'lib/application/activity_recording_controller.dart',
     ).readAsStringSync();
+    final listController = File(
+      'lib/application/activity_list_controller.dart',
+    ).readAsStringSync();
     final actions = File(
       'lib/application/activity_recording_actions.dart',
     ).readAsStringSync();
@@ -352,10 +355,14 @@ void main() {
       'lib/persistence/activity_repository.dart',
     ).readAsStringSync();
 
-    expect(eventsList, contains('ActivityRecordingController'));
+    expect(eventsList, contains('ActivityListController'));
+    expect(eventsList, isNot(contains('ActivityRecordingActions')));
     expect(eventsList, isNot(contains('recordActivity(context')));
     expect(eventsList, isNot(contains('switch (outcome)')));
     expect(listHelpers, isNot(contains('WidgetRef')));
+    expect(listController, contains('ActivityRecordingController'));
+    expect(listController, contains('ActivityRecordingActions'));
+    expect(listController, contains('recordActivity'));
     expect(controller, contains('ActivityRecordingActions'));
     expect(controller, isNot(contains('BuildContext')));
     expect(controller, isNot(contains('WidgetRef')));
@@ -375,10 +382,17 @@ void main() {
     final eventsList = File(
       'lib/EventsList/eventsList.dart',
     ).readAsStringSync();
+    final listController = File(
+      'lib/application/activity_list_controller.dart',
+    ).readAsStringSync();
 
     expect(details, isNot(contains('activityListProvider')));
     expect(details, isNot(contains('ref.invalidate(activityListProvider)')));
     expect(eventsList, contains('ref.invalidate(activityListProvider)'));
+    expect(eventsList, contains('ActivityListController'));
+    expect(eventsList, isNot(contains('deleted != null && deleted')));
+    expect(eventsList, isNot(contains('class EventDataHolder')));
+    expect(listController, contains('showActivityDetail'));
   });
 
   test('route mutation policy lives in application controllers', () {
@@ -422,6 +436,7 @@ void main() {
     );
 
     for (final path in [
+      'lib/application/activity_list_controller.dart',
       'lib/application/activity_editor_controller.dart',
       'lib/application/activity_detail_controller.dart',
       'lib/application/unit_management_controller.dart',
@@ -458,6 +473,11 @@ void main() {
       activityList,
       isNot(contains('class EventTile extends ConsumerStatefulWidget')),
     );
+    expect(activityList, contains('class EventList extends ConsumerWidget'));
+    expect(
+      activityList,
+      contains('class ActivityListView extends StatefulWidget'),
+    );
     expect(activityList, isNot(contains('Timer.periodic')));
     expect(activityList, isNot(contains('class _LapsedTimeStrState')));
     expect(activityList, contains('class ActiveTimingHighlight'));
@@ -472,6 +492,7 @@ void main() {
     final common = File('lib/common/commonWidget.dart').readAsStringSync();
 
     expect(common, isNot(contains('DividerWithText')));
+    expect(common, isNot(contains('onLongPressCallBack')));
   });
 
   test('statistics page keeps selected range in Riverpod state', () {

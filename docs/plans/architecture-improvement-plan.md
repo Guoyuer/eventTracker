@@ -175,6 +175,8 @@ Current status:
 - Small mutable UI state now uses Riverpod 3 `NotifierProvider` through `MutableState` instead of legacy `StateProvider`.
 - Async loading, empty, error, and retry rendering now goes through `AsyncStateView` instead of page-local `.when` branches.
 - Add-activity, activity-detail deletion/description-save, and unit-management mutation policy now lives behind small application controllers, leaving route Widgets as UI Adapters for forms, dialogs, and navigation.
+- Activity-list recording and detail-route refresh policy now live behind `ActivityListController`; `EventList` supplies UI adapters for value prompts, route navigation, notifications, and provider invalidation.
+- `EventList` no longer uses the pass-through `EventDataHolder` inherited widget, and shared button helpers no longer expose unused long-press callbacks from retired manual-time-entry controls.
 
 Target shape:
 
@@ -237,7 +239,7 @@ Rule:
 
 Recommended order from here:
 
-1. Continue shrinking route Widgets by extracting remaining interaction coordinators.
+1. Continue shrinking route Widgets where `eventEditor.dart`, `eventDetails.dart`, and `unitsManagerPage.dart` still construct controllers or own confirmation/navigation policy.
 2. Revisit cached aggregate repair/rebuild options and decide whether aggregates should be repairable or recomputed.
 3. Audit platform support after Android SDK installation or CI coverage is available.
 
