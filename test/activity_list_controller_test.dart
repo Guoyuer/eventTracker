@@ -59,7 +59,7 @@ void main() {
     final startedAt = DateTime(2026, 1, 1, 8);
 
     await harness.controller.recordActivity(
-      _timedActivity(status: EventStatus.notActive),
+      _inactiveTimedActivity(),
       startedAt,
       requestValue: (_) => throw StateError('value prompt should not open'),
     );
@@ -75,7 +75,7 @@ void main() {
     final startTime = DateTime(2026, 1, 1, 8);
 
     await harness.controller.recordActivity(
-      _timedActivity(status: EventStatus.active, startTime: startTime),
+      _activeTimedActivity(startedAt: startTime),
       startTime.add(const Duration(seconds: 4)),
       requestValue: (_) => throw StateError('value prompt should not open'),
     );
@@ -92,7 +92,7 @@ void main() {
     final stoppedAt = startTime.add(const Duration(seconds: 5));
 
     await harness.controller.recordActivity(
-      _timedActivity(status: EventStatus.active, startTime: startTime),
+      _activeTimedActivity(startedAt: startTime),
       stoppedAt,
       requestValue: (_) => throw StateError('value prompt should not open'),
     );
@@ -110,11 +110,7 @@ void main() {
     final stoppedAt = startTime.add(const Duration(minutes: 20));
 
     await harness.controller.recordActivity(
-      _timedActivity(
-        status: EventStatus.active,
-        startTime: startTime,
-        unit: 'km',
-      ),
+      _activeTimedActivity(startedAt: startTime, unit: 'km'),
       stoppedAt,
       requestValue: (unit) async {
         expect(unit, 'km');
@@ -145,25 +141,36 @@ class _ActivityListHarness {
   final notifications = <String>[];
 }
 
-PlainEventModel _plainActivity({String? unit}) {
-  return PlainEventModel(1, 'Read', unit, 0, 0, null, null);
+PlainActivity _plainActivity({String? unit}) {
+  return PlainActivity(
+    id: 1,
+    name: 'Read',
+    unit: unit,
+    occurrenceCount: 0,
+    totalValue: 0,
+  );
 }
 
-TimingEventModel _timedActivity({
-  required EventStatus status,
-  DateTime? startTime,
+InactiveTimedActivity _inactiveTimedActivity() {
+  return const InactiveTimedActivity(
+    id: 2,
+    name: 'Run',
+    totalDuration: Duration.zero,
+    totalValue: 0,
+  );
+}
+
+ActiveTimedActivity _activeTimedActivity({
+  required DateTime startedAt,
   String? unit,
 }) {
-  return TimingEventModel(
-    2,
-    'Run',
-    unit,
-    status,
-    Duration.zero,
-    startTime,
-    0,
-    null,
-    null,
+  return ActiveTimedActivity(
+    id: 2,
+    name: 'Run',
+    unit: unit,
+    startedAt: startedAt,
+    totalDuration: Duration.zero,
+    totalValue: 0,
   );
 }
 

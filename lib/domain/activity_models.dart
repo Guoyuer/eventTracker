@@ -1,57 +1,76 @@
-enum EventStatus { plain, active, paused, notActive }
-
-class BaseEventModel {
-  int id;
-  String name;
-  String? unit;
-  String? description;
-  int? lastRecordId;
-
-  BaseEventModel(
-    this.id,
-    this.name, [
+sealed class Activity {
+  const Activity({
+    required this.id,
+    required this.name,
+    required this.totalValue,
     this.unit,
     this.description,
-    this.lastRecordId,
-  ]);
+  });
+
+  final int id;
+  final String name;
+  final String? unit;
+  final String? description;
+  final double totalValue;
+
+  String get requiredUnit {
+    return unit ?? (throw StateError('Activity $id has no unit'));
+  }
 }
 
-class PlainEventModel extends BaseEventModel {
-  int time;
-  double? sumVal;
+final class PlainActivity extends Activity {
+  const PlainActivity({
+    required super.id,
+    required super.name,
+    required this.occurrenceCount,
+    required super.totalValue,
+    super.unit,
+    super.description,
+  });
 
-  PlainEventModel(
-    int id,
-    String name,
-    String? unit,
-    this.time, [
-    this.sumVal,
-    String? description,
-    int? lastRecordId,
-  ]) : super(id, name, unit, description, lastRecordId);
+  final int occurrenceCount;
 }
 
-class TimingEventModel extends BaseEventModel {
-  EventStatus status;
-  DateTime? startTime;
-  Duration sumDuration;
-  double? sumVal;
+sealed class TimedActivity extends Activity {
+  const TimedActivity({
+    required super.id,
+    required super.name,
+    required this.totalDuration,
+    required super.totalValue,
+    super.unit,
+    super.description,
+  });
 
-  TimingEventModel(
-    int id,
-    String name,
-    String? unit,
-    this.status,
-    this.sumDuration, [
-    this.startTime,
-    this.sumVal,
-    String? description,
-    int? lastRecordId,
-  ]) : super(id, name, unit, description, lastRecordId);
+  final Duration totalDuration;
+}
+
+final class InactiveTimedActivity extends TimedActivity {
+  const InactiveTimedActivity({
+    required super.id,
+    required super.name,
+    required super.totalDuration,
+    required super.totalValue,
+    super.unit,
+    super.description,
+  });
+}
+
+final class ActiveTimedActivity extends TimedActivity {
+  const ActiveTimedActivity({
+    required super.id,
+    required super.name,
+    required this.startedAt,
+    required super.totalDuration,
+    required super.totalValue,
+    super.unit,
+    super.description,
+  });
+
+  final DateTime startedAt;
 }
 
 class ActivityRecord {
-  ActivityRecord({
+  const ActivityRecord({
     required this.id,
     required this.eventId,
     required this.endTime,
@@ -64,17 +83,26 @@ class ActivityRecord {
   final DateTime? startTime;
   final DateTime endTime;
   final double? value;
+
+  DateTime get requiredStartTime {
+    return startTime ??
+        (throw StateError('Timed Record $id has no start time'));
+  }
+
+  double get requiredValue {
+    return value ?? (throw StateError('Record $id has no value'));
+  }
 }
 
 class StatisticsActivity {
-  StatisticsActivity({required this.id, required this.name});
+  const StatisticsActivity({required this.id, required this.name});
 
   final int id;
   final String name;
 }
 
 class ActivityUnit {
-  ActivityUnit({required this.id, required this.name});
+  const ActivityUnit({required this.id, required this.name});
 
   final int id;
   final String name;

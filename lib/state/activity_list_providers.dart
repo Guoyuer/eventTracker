@@ -22,6 +22,6 @@ final elapsedDurationProvider = StreamProvider.family<Duration, DateTime>((
   }
 });
 
-final activityListProvider = FutureProvider<List<BaseEventModel>>((ref) {
+final activityListProvider = FutureProvider<List<Activity>>((ref) {
   return ref.watch(activityReaderProvider).getActivities();
 });

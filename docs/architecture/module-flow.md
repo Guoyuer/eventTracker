@@ -33,6 +33,7 @@ flowchart LR
 
   subgraph State["Riverpod state and adapter wiring"]
     ActivityListProvider["activityListProvider"]
+    ActivitySnapshotProvider["activitySnapshotProvider"]
     ActivityRecordsProvider["activityRecordsProvider"]
     ActivityReaderProvider["activityReaderProvider"]
     ActivityWriterProvider["activityWriterProvider"]
@@ -44,6 +45,7 @@ flowchart LR
 
   subgraph Persistence["Persistence implementation"]
     DriftActivityRepository["DriftActivityRepository"]
+    ActivitySnapshotStore["ActivitySnapshotStore"]
     DriftUnitRepository["DriftUnitRepository"]
     DriftStatisticsRepository["DriftStatisticsRepository"]
     RecordLifecycleStore["RecordLifecycleStore"]
@@ -56,6 +58,7 @@ flowchart LR
   EventList --> ActivityListController
   EventEditor --> ActivityEditorController
   EventDetails --> ActivityDetailController
+  EventDetails --> ActivitySnapshotProvider
   UnitManager --> UnitManagementController
   Statistics --> StatisticsProvider
 
@@ -65,6 +68,7 @@ flowchart LR
   UnitManagementController --> UnitRepository
 
   ActivityListProvider --> ActivityReaderProvider
+  ActivitySnapshotProvider --> ActivityReaderProvider
   ActivityRecordsProvider --> ActivityReaderProvider
   ActivityReaderProvider --> ActivityReader
   ActivityWriterProvider --> ActivityWriter
@@ -79,8 +83,10 @@ flowchart LR
   UnitRepository --> DriftUnitRepository
   StatisticsRepository --> DriftStatisticsRepository
   DriftActivityRepository --> RecordLifecycleStore
+  DriftActivityRepository --> ActivitySnapshotStore
   RecordLifecycleStore --> AggregateStore
   AggregateStore --> AggregateRules
+  ActivitySnapshotStore --> AppDatabase
   DriftActivityRepository --> AppDatabase
   DriftUnitRepository --> AppDatabase
   DriftStatisticsRepository --> AppDatabase
@@ -118,7 +124,7 @@ flowchart TB
   Broad --> Fake3["description fake: 5 unused methods"]
 
   Narrow["After: domain-owned interfaces"]
-  Narrow --> Reader["ActivityReader: 3 methods"]
+  Narrow --> Reader["ActivityReader: 4 methods"]
   Narrow --> Writer["ActivityWriter: 3 methods"]
   Narrow --> Lifecycle["RecordLifecycle: 4 methods"]
   Reader --> Drift["one Drift adapter"]
@@ -128,17 +134,27 @@ flowchart TB
 
 Production wiring projects one `DriftActivityRepository` Adapter through three narrow Interfaces. Tests use purpose-built in-memory Adapters without unrelated `UnimplementedError` methods.
 
+## Deepened Activity Snapshot
+
+```mermaid
+flowchart LR
+  Before["Events query"] --> N1["N last-record queries"]
+  N1 --> Mutable["mutable model + EventStatus"]
+  Mutable --> Stale["detail receives stale snapshot"]
+
+  After["one Events / active Records join"] --> Snapshot["ActivitySnapshotStore"]
+  Snapshot --> Sealed["sealed immutable Activity types"]
+  Sealed --> Route["detail route passes ID and reloads"]
+```
+
+Active state now comes from active Records rather than cached `lastRecordId`, malformed histories fail at one Interface, and the domain model cannot represent an active Timed Activity without a start time.
+
 ## Next Deepening
 
 ```mermaid
 flowchart LR
-  ActivityRead["Activity list read"] --> N1["N+1 last-record queries"]
-  ActivityRead --> Stale["detail receives stale list snapshot"]
-  N1 --> Snapshot["one consistent Activity Snapshot query"]
-  Stale --> Snapshot
-
   StatisticsRange["Statistics date selection"] --> Inclusive["inclusive next-day midnight"]
   Inclusive --> HalfOpen["half-open DateRange"]
 ```
 
-The next slice should deepen the Activity Snapshot read first, then make Statistics interval semantics explicit.
+The next slice should make Statistics interval semantics explicit and keep its Records/Activities read consistent.

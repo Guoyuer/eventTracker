@@ -10,7 +10,7 @@ void main() {
   testWidgets(
     'description editor loads and updates through repository provider',
     (tester) async {
-      final repository = _FakeActivityRepository(description: 'Initial');
+      final repository = _FakeActivityAccess(description: 'Initial');
 
       await tester.pumpWidget(
         ProviderScope(
@@ -41,16 +41,27 @@ void main() {
   );
 }
 
-class _FakeActivityRepository implements ActivityReader, ActivityWriter {
-  _FakeActivityRepository({String? description}) : this._(description);
+class _FakeActivityAccess implements ActivityReader, ActivityWriter {
+  _FakeActivityAccess({String? description}) : this._(description);
 
-  _FakeActivityRepository._(this._description);
+  _FakeActivityAccess._(this._description);
 
   String? _description;
   final Map<int, String> updatedDescriptions = {};
 
   @override
-  Future<List<BaseEventModel>> getActivities() async => [];
+  Future<List<Activity>> getActivities() async => [];
+
+  @override
+  Future<Activity> getActivity(int activityId) async {
+    return PlainActivity(
+      id: activityId,
+      name: 'Test',
+      description: _description,
+      occurrenceCount: 0,
+      totalValue: 0,
+    );
+  }
 
   @override
   Future<List<ActivityRecord>> getActivityRecords(int activityId) async => [];

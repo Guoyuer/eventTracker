@@ -3,7 +3,7 @@ import '../domain/activity_repository.dart';
 
 typedef ActivityListRefresh = void Function();
 typedef ActivityNotification = void Function(String message);
-typedef ActivityDetailRoute = Future<bool?> Function(BaseEventModel activity);
+typedef ActivityDetailRoute = Future<bool?> Function(int activityId);
 typedef ActivityValuePrompt = Future<double?> Function(String unit);
 
 class ActivityListController {
@@ -34,40 +34,33 @@ class ActivityListController {
   final Duration accidentalTimedRecordThreshold;
 
   Future<void> recordActivity(
-    BaseEventModel activity,
+    Activity activity,
     DateTime recordedAt, {
     required ActivityValuePrompt requestValue,
   }) async {
-    if (activity is PlainEventModel) {
-      await _addPlainRecord(activity, recordedAt, requestValue);
-      return;
+    switch (activity) {
+      case PlainActivity():
+        await _addPlainRecord(activity, recordedAt, requestValue);
+      case ActiveTimedActivity():
+        await _stopTimedRecord(activity, recordedAt, requestValue);
+      case InactiveTimedActivity():
+        await _recordLifecycle.startTimedRecord(activity.id, recordedAt);
+        _refresh();
     }
-
-    if (activity is! TimingEventModel) {
-      return;
-    }
-
-    if (activity.status == EventStatus.active) {
-      await _stopTimedRecord(activity, recordedAt, requestValue);
-      return;
-    }
-
-    await _recordLifecycle.startTimedRecord(activity.id, recordedAt);
-    _refresh();
   }
 
   Future<void> showActivityDetail(
-    BaseEventModel activity, {
+    int activityId, {
     required ActivityDetailRoute showDetail,
   }) async {
-    final deleted = await showDetail(activity);
+    final deleted = await showDetail(activityId);
     if (deleted == true) {
       _refresh();
     }
   }
 
   Future<void> _addPlainRecord(
-    PlainEventModel activity,
+    PlainActivity activity,
     DateTime recordedAt,
     ActivityValuePrompt requestValue,
   ) async {
@@ -85,11 +78,11 @@ class ActivityListController {
   }
 
   Future<void> _stopTimedRecord(
-    TimingEventModel activity,
+    ActiveTimedActivity activity,
     DateTime stoppedAt,
     ActivityValuePrompt requestValue,
   ) async {
-    final duration = stoppedAt.difference(activity.startTime!);
+    final duration = stoppedAt.difference(activity.startedAt);
     if (duration < accidentalTimedRecordThreshold) {
       await _recordLifecycle.cancelActiveTimedRecord(activity.id);
       _refresh();

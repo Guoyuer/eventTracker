@@ -7,6 +7,7 @@
 ## Domain Terms
 
 - **Activity**: A user-defined thing to track, currently stored in the `events` table and displayed as a project in the UI.
+- **Activity Snapshot**: An immutable Activity read model. Plain, inactive Timed, and active Timed states are separate types; active state is derived from Records rather than Aggregate Totals cache fields.
 - **Record**: One occurrence of an activity. A record can have an `endTime`, optional `startTime`, and optional numeric `value`.
 - **Timed Activity**: An activity where duration matters. It creates an active record at start and completes that record at stop.
 - **Plain Activity**: An activity where only occurrence time matters. It creates a completed record immediately.
@@ -23,6 +24,7 @@
 - Application interaction policy: `lib/application/`
 - Local persistence: Drift over sqflite in `lib/persistence/database/`
 - Drift repository Adapters: `lib/persistence/drift_*_repository.dart`
+- Activity Snapshot query and validation: `lib/persistence/activity_snapshot_store.dart`
 - Activity list and recording flow: `lib/EventsList/`
 - Activity detail analytics: `lib/EventsDetails/`
 - Cross-activity statistics: `lib/Statistics/`

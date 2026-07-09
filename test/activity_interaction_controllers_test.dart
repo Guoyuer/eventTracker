@@ -186,9 +186,14 @@ void main() {
   test(
     'activity list refreshes after a detail route deletes activity',
     () async {
-      final activity = PlainEventModel(7, 'Read', null, 0);
+      final activity = PlainActivity(
+        id: 7,
+        name: 'Read',
+        occurrenceCount: 0,
+        totalValue: 0,
+      );
       var refreshCount = 0;
-      final shownActivities = <BaseEventModel>[];
+      final shownActivityIds = <int>[];
       final controller = ActivityListController(
         recordLifecycle: _UnusedRecordLifecycle(),
         refresh: () => refreshCount++,
@@ -196,20 +201,25 @@ void main() {
       );
 
       await controller.showActivityDetail(
-        activity,
-        showDetail: (activity) async {
-          shownActivities.add(activity);
+        activity.id,
+        showDetail: (activityId) async {
+          shownActivityIds.add(activityId);
           return true;
         },
       );
 
-      expect(shownActivities, [activity]);
+      expect(shownActivityIds, [activity.id]);
       expect(refreshCount, 1);
     },
   );
 
   test('activity list ignores non-delete detail route results', () async {
-    final activity = PlainEventModel(7, 'Read', null, 0);
+    final activity = PlainActivity(
+      id: 7,
+      name: 'Read',
+      occurrenceCount: 0,
+      totalValue: 0,
+    );
     var refreshCount = 0;
     final controller = ActivityListController(
       recordLifecycle: _UnusedRecordLifecycle(),
@@ -218,11 +228,11 @@ void main() {
     );
 
     await controller.showActivityDetail(
-      activity,
+      activity.id,
       showDetail: (_) async => null,
     );
     await controller.showActivityDetail(
-      activity,
+      activity.id,
       showDetail: (_) async => false,
     );
 

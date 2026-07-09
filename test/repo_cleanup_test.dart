@@ -89,7 +89,11 @@ void main() {
     final constants = File('lib/common/const.dart').readAsStringSync();
 
     expect(models, isNot(contains('common/const.dart')));
-    expect(models, contains('enum EventStatus'));
+    expect(models, contains('sealed class Activity'));
+    expect(models, contains('final class ActiveTimedActivity'));
+    expect(models, contains('final class InactiveTimedActivity'));
+    expect(models, isNot(contains('EventStatus')));
+    expect(models, isNot(contains('lastRecordId')));
     expect(constants, isNot(contains('enum EventStatus')));
   });
 
@@ -265,6 +269,9 @@ void main() {
     final repository = File(
       'lib/persistence/drift_activity_repository.dart',
     ).readAsStringSync();
+    final snapshots = File(
+      'lib/persistence/activity_snapshot_store.dart',
+    ).readAsStringSync();
 
     expect(database, isNot(contains('activity_models.dart')));
     expect(database, isNot(contains('BaseEventModel')));
@@ -273,9 +280,13 @@ void main() {
     expect(database, isNot(contains('EventStatus')));
     expect(database, isNot(contains('getEventsProfile')));
     expect(database, isNot(contains('_eventProcessor')));
-    expect(repository, contains('BaseEventModel'));
-    expect(repository, contains('TimingEventModel'));
-    expect(repository, contains('PlainEventModel'));
+    expect(repository, contains('ActivitySnapshotStore'));
+    expect(repository, isNot(contains('_recordById')));
+    expect(snapshots, contains('leftOuterJoin'));
+    expect(snapshots, contains('ActiveTimedActivity'));
+    expect(snapshots, contains('InactiveTimedActivity'));
+    expect(snapshots, contains('PlainActivity'));
+    expect(snapshots, isNot(contains('lastRecordId')));
   });
 
   test('app database does not own repository-specific query helpers', () {
@@ -578,6 +589,9 @@ void main() {
     expect(details, isNot(contains('activity_detail_analytics.dart')));
     expect(details, isNot(contains('ConsumerStatefulWidget')));
     expect(details, contains('ActivityDetailCharts'));
+    expect(details, contains('activitySnapshotProvider'));
+    expect(details, contains('arguments is! int'));
+    expect(details, isNot(contains('as BaseEventModel')));
     expect(charts, contains('fl_chart'));
     expect(charts, contains('HeatMapCalendar'));
     expect(charts, contains('buildActivityDetailChartModel'));

@@ -33,7 +33,7 @@ class ActivityTimeSlotBar {
 }
 
 ActivityDetailChartModel buildActivityDetailChartModel({
-  required BaseEventModel activity,
+  required Activity activity,
   required List<ActivityRecord> records,
   required int selectedMetricIndex,
   required DateTime? selectedMonth,
@@ -81,10 +81,10 @@ ActivityDetailChartModel buildActivityDetailChartModel({
   );
 }
 
-List<String> activityDetailMetricLabels(BaseEventModel activity) {
+List<String> activityDetailMetricLabels(Activity activity) {
   return [
-    if (activity is TimingEventModel) '时长' else '次数',
-    if (activity.unit != null) activity.unit!,
+    if (activity is TimedActivity) '时长' else '次数',
+    if (activity.unit != null) activity.requiredUnit,
   ];
 }
 
@@ -96,7 +96,7 @@ String activityRecordCountHeading(DateTime? selectedMonth) {
 }
 
 List<String> activityRecordLabelsForDay({
-  required BaseEventModel activity,
+  required Activity activity,
   required List<ActivityRecord> records,
   required DateTime day,
 }) {
@@ -107,21 +107,23 @@ List<String> activityRecordLabelsForDay({
 }
 
 String activityRecordLabel({
-  required BaseEventModel activity,
+  required Activity activity,
   required ActivityRecord record,
 }) {
-  if (activity is TimingEventModel) {
-    final startTimeStr = DateFormat('MM-dd kk:mm').format(record.startTime!);
+  if (activity is TimedActivity) {
+    final startTimeStr = DateFormat(
+      'MM-dd kk:mm',
+    ).format(record.requiredStartTime);
     final endTimeStr = DateFormat('MM-dd kk:mm').format(record.endTime);
     if (activity.unit != null) {
-      return '$startTimeStr ~ $endTimeStr, ${record.value!.toInt()}${activity.unit!}  ';
+      return '$startTimeStr ~ $endTimeStr, ${record.requiredValue.toInt()}${activity.requiredUnit}  ';
     }
     return '$startTimeStr ~ $endTimeStr  ';
   }
 
   final endTimeStr = DateFormat('kk:mm').format(record.endTime);
   if (activity.unit != null) {
-    return '$endTimeStr, ${record.value!.toInt()}${activity.unit!}  ';
+    return '$endTimeStr, ${record.requiredValue.toInt()}${activity.requiredUnit}  ';
   }
   return '$endTimeStr  ';
 }

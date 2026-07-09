@@ -16,7 +16,7 @@ class EventList extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final events = ref.watch(activityListProvider);
-    return AsyncStateView<List<BaseEventModel>>(
+    return AsyncStateView<List<Activity>>(
       value: events,
       data: (events) => ActivityListView(
         activities: events,
@@ -39,7 +39,7 @@ class ActivityListView extends StatefulWidget {
     required this.onScrollDirectionChanged,
   });
 
-  final List<BaseEventModel> activities;
+  final List<Activity> activities;
   final ValueChanged<ScrollDirection> onScrollDirectionChanged;
 
   @override
@@ -84,41 +84,24 @@ class _ActivityListViewState extends State<ActivityListView> {
 class EventTileButton extends ConsumerWidget {
   const EventTileButton({super.key, required this.activity});
 
-  final BaseEventModel activity;
+  final Activity activity;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    EventStatus status = getEventStatus(activity);
-    switch (status) {
-      case EventStatus.plain:
-        return eventListButton(Icon(Icons.add_rounded), Text("新记录"), () {
-          _submitRecording(context, ref, activity, DateTime.now());
-        });
-      case EventStatus.notActive:
-        return eventListButton(Icon(Icons.play_arrow_outlined), Text("开始"), () {
-          _submitRecording(context, ref, activity, DateTime.now());
-        });
-      case EventStatus.active:
-        return eventListButton(
-          Icon(Icons.stop_circle_outlined),
-          Text("停止"),
-          () {
-            _submitRecording(context, ref, activity, DateTime.now());
-          },
-        );
-      default:
-        return eventListButton(
-          Icon(Icons.help_outline_rounded),
-          Text("???"),
-          () {},
-        );
-    }
+    final (icon, label) = switch (activity) {
+      PlainActivity() => (Icons.add_rounded, '新记录'),
+      InactiveTimedActivity() => (Icons.play_arrow_outlined, '开始'),
+      ActiveTimedActivity() => (Icons.stop_circle_outlined, '停止'),
+    };
+    return eventListButton(Icon(icon), Text(label), () {
+      _submitRecording(context, ref, activity, DateTime.now());
+    });
   }
 
   Future<void> _submitRecording(
     BuildContext context,
     WidgetRef ref,
-    BaseEventModel event,
+    Activity event,
     DateTime recordedAt,
   ) {
     final controller = ActivityListController(
@@ -138,14 +121,13 @@ class EventTileButton extends ConsumerWidget {
 class EventTile extends ConsumerWidget {
   const EventTile({super.key, required this.activity});
 
-  final BaseEventModel activity;
+  final Activity activity;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final activity = this.activity;
     final eventInfo = EventTileInfo(activity);
-    final isActive =
-        activity is TimingEventModel && activity.status == EventStatus.active;
+    final isActive = activity is ActiveTimedActivity;
 
     return Card(
       elevation: 8,
@@ -160,11 +142,11 @@ class EventTile extends ConsumerWidget {
                 notify: showToast,
               );
               await controller.showActivityDetail(
-                activity,
-                showDetail: (activity) async {
+                activity.id,
+                showDetail: (activityId) async {
                   return await Navigator.of(
                         context,
-                      ).pushNamed("EventDetails", arguments: activity)
+                      ).pushNamed("EventDetails", arguments: activityId)
                       as bool?;
                 },
               );
@@ -237,35 +219,33 @@ class _ActiveTimingHighlightState extends State<ActiveTimingHighlight>
 }
 
 class EventTileInfo extends StatelessWidget {
-  final BaseEventModel event;
+  final Activity event;
 
   EventTileInfo(this.event);
 
   @override
   Widget build(BuildContext context) {
-    if (event is TimingEventModel) {
-      return _timingInfo(event as TimingEventModel);
-    }
-
-    return _plainInfo(event as PlainEventModel);
+    return switch (event) {
+      ActiveTimedActivity active => LapsedTimeStr(startTime: active.startedAt),
+      TimedActivity timed => _timingInfo(timed),
+      PlainActivity plain => _plainInfo(plain),
+    };
   }
 
-  Widget _timingInfo(TimingEventModel event) {
-    if (event.status == EventStatus.active) {
-      return LapsedTimeStr(startTime: event.startTime!);
-    }
-
+  Widget _timingInfo(TimedActivity event) {
     var summary = "尚未开始";
-    if (event.sumDuration.inMicroseconds != 0) {
-      summary = "共进行${formatDuration(event.sumDuration)}";
+    if (event.totalDuration.inMicroseconds != 0) {
+      summary = "共进行${formatDuration(event.totalDuration)}";
     }
 
-    return _summaryInfo(summary, event.unit, event.sumVal);
+    return _summaryInfo(summary, event.unit, event.totalValue);
   }
 
-  Widget _plainInfo(PlainEventModel event) {
-    final summary = event.time == 0 ? "尚未开始" : "已进行 ${event.time} 次";
-    return _summaryInfo(summary, event.unit, event.sumVal);
+  Widget _plainInfo(PlainActivity event) {
+    final summary = event.occurrenceCount == 0
+        ? "尚未开始"
+        : "已进行 ${event.occurrenceCount} 次";
+    return _summaryInfo(summary, event.unit, event.totalValue);
   }
 
   Widget _summaryInfo(String summary, String? unit, double? value) {

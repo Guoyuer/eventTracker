@@ -126,7 +126,7 @@ Status: in progress
 - Moved statistics activity-count and time-slot aggregation out of Widgets into `statistics_analytics.dart`.
 - Dropped legacy step tables and record sentinel assumptions from the active schema through a tested v3 migration.
 - Moved activity display models and analytics read models into `lib/domain/` so analytics no longer imports Drift generated row types.
-- Moved `EventStatus` into `lib/domain/activity_models.dart` so domain models no longer depend on UI constants.
+- Replaced mutable activity models plus `EventStatus` with immutable sealed `PlainActivity`, `InactiveTimedActivity`, and `ActiveTimedActivity` snapshots, making an active Timed Activity's start time non-null by construction.
 - Added a pure `DateRange` value object so persistence and analytics modules no longer depend on Flutter `DateTimeRange`.
 - Extracted statistics chart rendering and `fl_chart` adapters out of the statistics page route.
 - Moved activity-detail and statistics chart view-model construction out of chart adapters and into tested analytics modules.
@@ -134,6 +134,8 @@ Status: in progress
 - Added explicit `ActivityAggregateTotals` invariants for plain and timed record accumulation.
 - Added `ActivityAggregateSnapshot` rebuild rules for cached `lastRecordId`, `sumTime`, and `sumVal`.
 - Added active Timed Activity snapshot rules so Aggregate Totals repair keeps the active record as `lastRecordId` without counting it in completed totals.
+- Added `ActivitySnapshotStore`: activity list reads now use one Events-to-active-Records join instead of N+1 last-record queries, fail fast on malformed active histories, and do not expose `lastRecordId` outside persistence.
+- Changed Activity detail navigation to pass only an Activity ID and reload a fresh Activity Snapshot, removing the stale list-snapshot contract.
 - Define invariants for timed records, plain records, values, and units.
 
 ## Phase 4: UI Composition

@@ -4,14 +4,20 @@ import 'package:flutter_test/flutter_test.dart';
 
 void main() {
   test('selection maps to the expected activity detail metric', () {
-    final timed = TimingEventModel(
-      1,
-      'Run',
-      'km',
-      EventStatus.notActive,
-      Duration.zero,
+    final timed = InactiveTimedActivity(
+      id: 1,
+      name: 'Run',
+      unit: 'km',
+      totalDuration: Duration.zero,
+      totalValue: 0,
     );
-    final plain = PlainEventModel(2, 'Read', 'pages', 0);
+    final plain = PlainActivity(
+      id: 2,
+      name: 'Read',
+      unit: 'pages',
+      occurrenceCount: 0,
+      totalValue: 0,
+    );
 
     expect(metricForActivitySelection(timed, 0), ActivityDetailMetric.duration);
     expect(metricForActivitySelection(timed, 1), ActivityDetailMetric.value);
@@ -22,12 +28,11 @@ void main() {
   test(
     'heatmap series aggregates timed activity duration by day in minutes',
     () {
-      final activity = TimingEventModel(
-        1,
-        'Run',
-        null,
-        EventStatus.notActive,
-        Duration.zero,
+      final activity = InactiveTimedActivity(
+        id: 1,
+        name: 'Run',
+        totalDuration: Duration.zero,
+        totalValue: 0,
       );
       final records = [
         record(
@@ -62,7 +67,13 @@ void main() {
   );
 
   test('heatmap series aggregates plain activity count and value by day', () {
-    final activity = PlainEventModel(1, 'Read', 'pages', 0);
+    final activity = PlainActivity(
+      id: 1,
+      name: 'Read',
+      unit: 'pages',
+      occurrenceCount: 0,
+      totalValue: 0,
+    );
     final records = [
       record(id: 1, end: DateTime(2026, 1, 1, 8), value: 10),
       record(id: 2, end: DateTime(2026, 1, 1, 9), value: 15),
@@ -95,12 +106,11 @@ void main() {
   });
 
   test('time slot series splits timed duration across occupied hours', () {
-    final activity = TimingEventModel(
-      1,
-      'Run',
-      null,
-      EventStatus.notActive,
-      Duration.zero,
+    final activity = InactiveTimedActivity(
+      id: 1,
+      name: 'Run',
+      totalDuration: Duration.zero,
+      totalValue: 0,
     );
     final records = [
       record(

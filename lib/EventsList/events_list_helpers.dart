@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 
 import '../common/commonWidget.dart';
-import '../domain/activity_models.dart';
 
 Future<double?> inputValDialog(BuildContext ctx, String unit) async {
   final controller = TextEditingController();
@@ -49,16 +48,6 @@ Future<double?> inputValDialog(BuildContext ctx, String unit) async {
   } finally {
     controller.dispose();
   }
-}
-
-EventStatus getEventStatus(BaseEventModel event) {
-  if (event is TimingEventModel) {
-    return event.status;
-  }
-  if (event is PlainEventModel) {
-    return EventStatus.plain;
-  }
-  return EventStatus.plain;
 }
 
 String formatDuration(Duration duration) {

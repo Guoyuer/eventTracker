@@ -3,18 +3,21 @@ import 'package:drift/drift.dart';
 import '../domain/activity_models.dart';
 import '../domain/activity_repository.dart';
 import 'activity_aggregate_store.dart';
+import 'activity_snapshot_store.dart';
 import 'database/app_database.dart';
 import 'record_lifecycle_store.dart';
 
 class DriftActivityRepository implements ActivityRepository {
   DriftActivityRepository(AppDatabase db)
-    : this._(db, ActivityAggregateStore(db));
+    : this._(db, ActivityAggregateStore(db), ActivitySnapshotStore(db));
 
   DriftActivityRepository._(
     AppDatabase db,
     ActivityAggregateStore aggregateStore,
+    ActivitySnapshotStore activitySnapshots,
   ) : _db = db,
       _aggregateStore = aggregateStore,
+      _activitySnapshots = activitySnapshots,
       _recordLifecycle = RecordLifecycleStore(
         db,
         aggregateStore: aggregateStore,
@@ -22,13 +25,15 @@ class DriftActivityRepository implements ActivityRepository {
 
   final AppDatabase _db;
   final ActivityAggregateStore _aggregateStore;
+  final ActivitySnapshotStore _activitySnapshots;
   final RecordLifecycleStore _recordLifecycle;
 
   @override
-  Future<List<BaseEventModel>> getActivities() async {
-    final events = await _db.select(_db.events).get();
-    return [for (final event in events) await _toActivityModel(event)];
-  }
+  Future<List<Activity>> getActivities() => _activitySnapshots.getActivities();
+
+  @override
+  Future<Activity> getActivity(int activityId) =>
+      _activitySnapshots.getActivity(activityId);
 
   @override
   Future<List<ActivityRecord>> getActivityRecords(int activityId) async {
@@ -137,64 +142,5 @@ class DriftActivityRepository implements ActivityRepository {
   @override
   Future<void> repairAggregateTotals() {
     return _db.transaction(_aggregateStore.rebuildAllActivitySnapshots);
-  }
-
-  Future<BaseEventModel> _toActivityModel(Event event) {
-    if (event.careTime) {
-      return _toTimedActivity(event);
-    }
-
-    return Future.value(_toPlainActivity(event));
-  }
-
-  PlainEventModel _toPlainActivity(Event event) {
-    return PlainEventModel(
-      event.id,
-      event.name,
-      event.unit,
-      event.sumTime.inSeconds,
-      event.sumVal,
-      event.description,
-      event.lastRecordId,
-    );
-  }
-
-  Future<TimingEventModel> _toTimedActivity(Event event) async {
-    if (event.lastRecordId == null) {
-      return TimingEventModel(
-        event.id,
-        event.name,
-        event.unit,
-        EventStatus.notActive,
-        Duration.zero,
-        null,
-        0,
-        event.description,
-        event.lastRecordId,
-      );
-    }
-
-    final record = await _recordById(event.lastRecordId!);
-    final status = record.endTime == null
-        ? EventStatus.active
-        : EventStatus.notActive;
-
-    return TimingEventModel(
-      event.id,
-      event.name,
-      event.unit,
-      status,
-      event.sumTime,
-      record.startTime,
-      event.sumVal,
-      event.description,
-      event.lastRecordId,
-    );
-  }
-
-  Future<Record> _recordById(int id) {
-    return (_db.select(
-      _db.records,
-    )..where((record) => record.id.equals(id))).getSingle();
   }
 }

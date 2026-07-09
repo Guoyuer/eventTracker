@@ -121,6 +121,9 @@ Current status:
 - Moved remaining activity-specific table helpers into `ActivityRepository` and `RecordLifecycleStore`, leaving `AppDatabase` to expose generated Drift access, schema, migrations, and bootstrap wiring.
 - Moved Repository Interfaces to `lib/domain/` and kept concrete Drift Adapters in explicitly named `lib/persistence/drift_*_repository.dart` files.
 - Split the broad Activity Repository seam into `ActivityReader`, `ActivityWriter`, and `RecordLifecycle` Interfaces for application/state callers while retaining one composite production Adapter internally.
+- Added `ActivitySnapshotStore`, which reads Events and active Records in one joined query and is the single owner of Activity read-model validation.
+- Replaced mutable activity models and `EventStatus` with immutable sealed Activity Snapshot types, so active Timed Activities always have a start time.
+- Activity detail routes now carry an Activity ID and reload through `activitySnapshotProvider` instead of receiving a stale list snapshot.
 
 Target modules:
 
@@ -246,10 +249,9 @@ Rule:
 
 Recommended order from here:
 
-1. Replace the Activity list N+1 read with one consistent Activity Snapshot query and make invalid Timed Activity states unrepresentable.
-2. Define Statistics date ranges as half-open intervals and test next-day-midnight exclusion plus consistent reads.
-3. Continue hardening Aggregate Totals invariants around malformed record histories and any remaining direct cached-field reads.
-4. Audit platform support after Android SDK installation or CI coverage is available.
+1. Define Statistics date ranges as half-open intervals and test next-day-midnight exclusion plus consistent reads.
+2. Continue hardening Aggregate Totals invariants around malformed record histories and any remaining direct cached-field reads.
+3. Audit platform support after Android SDK installation or CI coverage is available.
 
 ## Definition of Done for Each Slice
 

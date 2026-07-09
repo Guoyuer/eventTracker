@@ -1,7 +1,9 @@
 import 'activity_models.dart';
 
 abstract interface class ActivityReader {
-  Future<List<BaseEventModel>> getActivities();
+  Future<List<Activity>> getActivities();
+
+  Future<Activity> getActivity(int activityId);
 
   Future<List<ActivityRecord>> getActivityRecords(int activityId);
 

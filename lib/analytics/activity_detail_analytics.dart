@@ -26,10 +26,10 @@ class ActivityTimeSlotSeries {
 }
 
 ActivityDetailMetric metricForActivitySelection(
-  BaseEventModel activity,
+  Activity activity,
   int selectedIndex,
 ) {
-  if (activity is TimingEventModel && selectedIndex == 0) {
+  if (activity is TimedActivity && selectedIndex == 0) {
     return ActivityDetailMetric.duration;
   }
   if (selectedIndex == 0) {
@@ -40,7 +40,7 @@ ActivityDetailMetric metricForActivitySelection(
 
 ActivityHeatmapSeries buildActivityHeatmapSeries({
   required List<ActivityRecord> records,
-  required BaseEventModel activity,
+  required Activity activity,
   required ActivityDetailMetric metric,
   required DateTime now,
 }) {
@@ -64,7 +64,7 @@ ActivityHeatmapSeries buildActivityHeatmapSeries({
 
 ActivityTimeSlotSeries buildActivityTimeSlotSeries({
   required List<ActivityRecord> records,
-  required BaseEventModel activity,
+  required Activity activity,
   required ActivityDetailMetric metric,
 }) {
   if (metric == ActivityDetailMetric.duration) {
@@ -116,11 +116,14 @@ List<double> combineAdjacentHourSlots(List<double> hourlyValues) {
 double _dailyRecordValue(ActivityRecord record, ActivityDetailMetric metric) {
   switch (metric) {
     case ActivityDetailMetric.duration:
-      return record.endTime.difference(record.startTime!).inMinutes.toDouble();
+      return record.endTime
+          .difference(record.requiredStartTime)
+          .inMinutes
+          .toDouble();
     case ActivityDetailMetric.count:
       return 1;
     case ActivityDetailMetric.value:
-      return record.value!;
+      return record.requiredValue;
   }
 }
 
@@ -134,7 +137,7 @@ double _timeSlotRecordValue(
     case ActivityDetailMetric.count:
       return 1;
     case ActivityDetailMetric.value:
-      return record.value!;
+      return record.requiredValue;
   }
 }
 
@@ -146,7 +149,7 @@ ActivityTimeSlotSeries _buildDurationTimeSlotSeries(
   for (final record in records) {
     _addDurationByHour(
       seconds,
-      DateRange(start: record.startTime!, end: record.endTime),
+      DateRange(start: record.requiredStartTime, end: record.endTime),
     );
   }
 
@@ -198,24 +201,24 @@ void _addDurationByHour(List<double> seconds, DateRange range) {
   }
 }
 
-String _heatmapUnit(BaseEventModel activity, ActivityDetailMetric metric) {
+String _heatmapUnit(Activity activity, ActivityDetailMetric metric) {
   switch (metric) {
     case ActivityDetailMetric.duration:
       return '分钟';
     case ActivityDetailMetric.count:
       return '次数';
     case ActivityDetailMetric.value:
-      return activity.unit!;
+      return activity.requiredUnit;
   }
 }
 
-String _timeSlotUnit(BaseEventModel activity, ActivityDetailMetric metric) {
+String _timeSlotUnit(Activity activity, ActivityDetailMetric metric) {
   switch (metric) {
     case ActivityDetailMetric.duration:
       return '秒';
     case ActivityDetailMetric.count:
       return '次数';
     case ActivityDetailMetric.value:
-      return activity.unit!;
+      return activity.requiredUnit;
   }
 }

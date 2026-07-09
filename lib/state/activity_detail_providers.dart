@@ -4,6 +4,13 @@ import '../domain/activity_models.dart';
 import '../persistence/persistence_providers.dart';
 import 'mutable_state.dart';
 
+final activitySnapshotProvider = FutureProvider.family<Activity, int>((
+  ref,
+  activityId,
+) {
+  return ref.watch(activityReaderProvider).getActivity(activityId);
+});
+
 final activityRecordsProvider =
     FutureProvider.family<List<ActivityRecord>, int>((ref, activityId) {
       return ref.watch(activityReaderProvider).getActivityRecords(activityId);

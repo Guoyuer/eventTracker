@@ -7,7 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
 class ActivityDetailCharts extends StatefulWidget {
-  final BaseEventModel activity;
+  final Activity activity;
   final List<ActivityRecord> records;
 
   const ActivityDetailCharts({
