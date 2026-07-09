@@ -149,6 +149,7 @@ Current status:
 - Added `activityListProvider`.
 - `EventList` watches the provider instead of owning a one-shot future.
 - `ReloadEventsN` now invalidates `activityListProvider` instead of popping and pushing `MainPage`.
+- `ActivityDescriptionEditor` reads and writes descriptions through `activityDescriptionProvider` instead of creating repositories inside shared common widgets.
 
 Target shape:
 

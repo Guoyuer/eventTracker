@@ -65,6 +65,14 @@ void main() {
     }
   });
 
+  test('shared common widgets do not create persistence repositories', () {
+    final source = File('lib/common/commonWidget.dart').readAsStringSync();
+
+    expect(source, isNot(contains('activity_repository.dart')));
+    expect(source, isNot(contains('activityRepository()')));
+    expect(source, isNot(contains('FutureBuilder<String?>')));
+  });
+
   test('database module does not expose record lifecycle convenience methods',
       () {
     final database =

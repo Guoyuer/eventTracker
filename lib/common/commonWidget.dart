@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 
-import '../persistence/activity_repository.dart';
-
 ElevatedButton myRaisedButton(Widget child, void Function() onPressCallBack,
     [void Function()? onLongPressCallBack]) {
   return ElevatedButton(
@@ -107,92 +105,5 @@ class DividerWithText extends StatelessWidget {
         ))
       ]),
     );
-  }
-}
-
-class DescEditable extends StatefulWidget {
-  final int eventId;
-
-  DescEditable(this.eventId);
-
-  @override
-  _EditableTextState createState() => _EditableTextState();
-}
-
-class _EditableTextState extends State<DescEditable> {
-  bool _isEditingText = false;
-  late TextEditingController _c;
-  final ActivityRepository _repository = activityRepository();
-  late Future<String?> _desc;
-  late String desc;
-
-  @override
-  void initState() {
-    super.initState();
-    _desc = _repository.getActivityDescription(widget.eventId);
-    _c = TextEditingController();
-  }
-
-  @override
-  void dispose() {
-    _c.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    if (_isEditingText) {
-      _c.text = desc;
-      return Center(
-        child: TextField(
-          textAlign: TextAlign.center,
-          onSubmitted: (newValue) {
-            setState(() {
-              // initialText = newValue;
-              desc = newValue;
-              _repository.updateActivityDescription(widget.eventId, newValue);
-              _isEditingText = false;
-            });
-          },
-          autofocus: true,
-          controller: _c,
-        ),
-      );
-    } else {
-      _desc = _repository.getActivityDescription(widget.eventId);
-      return InkWell(
-          onTap: () {
-            setState(() {
-              _isEditingText = true;
-            });
-          },
-          child: FutureBuilder<String?>(
-              future: _desc,
-              builder: (ctx, snapshot) {
-                switch (snapshot.connectionState) {
-                  case ConnectionState.done:
-                    String? tmp = snapshot.data;
-                    if (tmp == null || tmp.isEmpty) {
-                      desc = "无描述";
-                    } else {
-                      desc = tmp;
-                    }
-                    var style;
-                    if (desc == "无描述") {
-                      style = TextStyle(
-                        color: Colors.black38,
-                        fontSize: 18.0,
-                      );
-                    } else {
-                      style = TextStyle(
-                        fontSize: 18.0,
-                      );
-                    }
-                    return Text(desc, style: style);
-                  default:
-                    return Text("加载中");
-                }
-              }));
-    }
   }
 }

@@ -120,6 +120,7 @@ Status: in progress
 - Split large widgets into route, view model, and small render widgets.
 - Make loading, empty, and error states consistent across list/detail/statistics views.
 - Replaced the route pop/push activity-list refresh hack with `activityListProvider` invalidation.
+- Moved activity description editing out of shared common widgets and behind `activityDescriptionProvider`.
 - Removed the old settings-page DB viewer, delete-all-data button, fake-data generator, and inactive step-count route.
 
 ## Phase 5: Dependency and Platform Modernization

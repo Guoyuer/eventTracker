@@ -11,6 +11,7 @@ import 'package:sprintf/sprintf.dart';
 import '../domain/activity_models.dart';
 import '../heatmap_calendar/heatMap.dart';
 import '../stateProviders.dart';
+import 'activity_description_editor.dart';
 
 class EventDetailsWrapper extends StatelessWidget {
   @override
@@ -80,7 +81,7 @@ class _EventDetailsState extends ConsumerState<EventDetails> {
                 )),
             Align(
                 alignment: Alignment.center,
-                child: DescEditable(widget.event.id))
+                child: ActivityDescriptionEditor(activityId: widget.event.id))
           ],
         ));
   }

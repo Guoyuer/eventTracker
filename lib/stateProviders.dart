@@ -27,6 +27,13 @@ final activityRecordsProvider =
   return ref.watch(activityRepositoryProvider).getActivityRecords(activityId);
 });
 
+final activityDescriptionProvider =
+    FutureProvider.family<String?, int>((ref, activityId) {
+  return ref
+      .watch(activityRepositoryProvider)
+      .getActivityDescription(activityId);
+});
+
 final unitListProvider = FutureProvider<List<ActivityUnit>>((ref) {
   return unitRepository().getUnits();
 });
