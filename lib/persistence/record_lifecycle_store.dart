@@ -21,7 +21,7 @@ class RecordLifecycleStore {
               value: Value(value),
             ),
           );
-      final activity = await _db.getEventById(activityId);
+      final activity = await _activityById(activityId);
       final nextTotals = ActivityAggregateTotals(
         sumTime: activity.sumTime,
         sumValue: activity.sumVal,
@@ -62,7 +62,7 @@ class RecordLifecycleStore {
     double? value,
   }) {
     return _db.transaction(() async {
-      final activity = await _db.getEventById(activityId);
+      final activity = await _activityById(activityId);
       final activeRecord = await _getActiveTimedRecord(activityId);
       final activeRecordId = activeRecord.id;
 
@@ -118,13 +118,13 @@ class RecordLifecycleStore {
   }
 
   Future<Record> _getActiveTimedRecord(int activityId) async {
-    final activity = await _db.getEventById(activityId);
+    final activity = await _activityById(activityId);
     final activeRecordId = activity.lastRecordId;
     if (activeRecordId == null) {
       throw StateError('Activity $activityId has no active timed record.');
     }
 
-    final activeRecord = await _db.getRecordById(activeRecordId);
+    final activeRecord = await _recordById(activeRecordId);
     if (activeRecord.eventId != activityId ||
         activeRecord.startTime == null ||
         activeRecord.endTime != null) {
@@ -132,5 +132,17 @@ class RecordLifecycleStore {
     }
 
     return activeRecord;
+  }
+
+  Future<Event> _activityById(int activityId) {
+    return (_db.select(_db.events)
+          ..where((activity) => activity.id.equals(activityId)))
+        .getSingle();
+  }
+
+  Future<Record> _recordById(int recordId) {
+    return (_db.select(_db.records)
+          ..where((record) => record.id.equals(recordId)))
+        .getSingle();
   }
 }

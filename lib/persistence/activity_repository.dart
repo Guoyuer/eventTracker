@@ -50,7 +50,7 @@ class DriftActivityRepository implements ActivityRepository {
 
   @override
   Future<List<BaseEventModel>> getActivities() async {
-    final events = await _db.getRawEvents();
+    final events = await _db.select(_db.events).get();
     return [
       for (final event in events) await _toActivityModel(event),
     ];
@@ -58,7 +58,11 @@ class DriftActivityRepository implements ActivityRepository {
 
   @override
   Future<List<ActivityRecord>> getActivityRecords(int activityId) async {
-    final records = await _db.getRecordsByEventId(activityId);
+    final records = await (_db.select(_db.records)
+          ..orderBy([(record) => OrderingTerm(expression: record.endTime)])
+          ..where((record) =>
+              record.eventId.equals(activityId) & record.endTime.isNotNull()))
+        .get();
     return [
       for (final record in records)
         ActivityRecord(
@@ -78,24 +82,34 @@ class DriftActivityRepository implements ActivityRepository {
     String? unit,
     String? description,
   }) {
-    return _db.addEventInDB(
-      EventsCompanion(
-        name: Value(name),
-        careTime: Value(careTime),
-        unit: Value(unit),
-        description: Value(description),
-      ),
-    );
+    return _db.into(_db.events).insert(
+          EventsCompanion(
+            name: Value(name),
+            careTime: Value(careTime),
+            unit: Value(unit),
+            description: Value(description),
+          ),
+        );
   }
 
   @override
-  Future<String?> getActivityUnit(int activityId) {
-    return _db.getEventUnit(activityId);
+  Future<String?> getActivityUnit(int activityId) async {
+    final query = _db.selectOnly(_db.events)
+      ..addColumns([_db.events.unit])
+      ..where(_db.events.id.equals(activityId));
+
+    return query.map((row) => row.read(_db.events.unit)).getSingleOrNull();
   }
 
   @override
-  Future<String?> getActivityDescription(int activityId) {
-    return _db.getEventDesc(activityId);
+  Future<String?> getActivityDescription(int activityId) async {
+    final query = _db.selectOnly(_db.events)
+      ..addColumns([_db.events.description])
+      ..where(_db.events.id.equals(activityId));
+
+    return query
+        .map((row) => row.read(_db.events.description))
+        .getSingleOrNull();
   }
 
   @override
@@ -103,7 +117,9 @@ class DriftActivityRepository implements ActivityRepository {
     int activityId,
     String description,
   ) {
-    return _db.updateEventDescription(activityId, description);
+    return (_db.update(_db.events)
+          ..where((activity) => activity.id.equals(activityId)))
+        .write(EventsCompanion(description: Value(description)));
   }
 
   @override
@@ -143,8 +159,15 @@ class DriftActivityRepository implements ActivityRepository {
   }
 
   @override
-  Future<void> deleteActivity(int activityId) {
-    return _db.deleteEvent(activityId);
+  Future<void> deleteActivity(int activityId) async {
+    return _db.transaction(() async {
+      await (_db.delete(_db.records)
+            ..where((record) => record.eventId.equals(activityId)))
+          .go();
+      await (_db.delete(_db.events)
+            ..where((activity) => activity.id.equals(activityId)))
+          .go();
+    });
   }
 
   Future<BaseEventModel> _toActivityModel(Event event) {
@@ -182,7 +205,7 @@ class DriftActivityRepository implements ActivityRepository {
       );
     }
 
-    final record = await _db.getRecordById(event.lastRecordId!);
+    final record = await _recordById(event.lastRecordId!);
     final status =
         record.endTime == null ? EventStatus.active : EventStatus.notActive;
 
@@ -197,5 +220,10 @@ class DriftActivityRepository implements ActivityRepository {
       event.description,
       event.lastRecordId,
     );
+  }
+
+  Future<Record> _recordById(int id) {
+    return (_db.select(_db.records)..where((record) => record.id.equals(id)))
+        .getSingle();
   }
 }

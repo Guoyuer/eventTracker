@@ -34,6 +34,7 @@ flowchart LR
   subgraph Persistence["Persistence module"]
     DatabaseBootstrap["DatabaseBootstrap"]
     ActivityRepository["ActivityRepository"]
+    RecordLifecycleStore["RecordLifecycleStore"]
     UnitRepository["UnitRepository"]
     StatisticsRepository["StatisticsRepository"]
     AppDatabase["AppDatabase / Drift"]
@@ -53,6 +54,8 @@ flowchart LR
   EventDetails --> ActivityRepositoryProvider
   Statistics --> StatisticsAnalytics
   ActivityRepositoryProvider --> ActivityRepository
+  ActivityRepository --> RecordLifecycleStore
+  RecordLifecycleStore --> AppDatabase
   UnitRepositoryProvider --> UnitRepository
   StatisticsRepositoryProvider --> StatisticsRepository
   ActivityRepositoryProvider --> AppDatabaseProvider
@@ -115,10 +118,10 @@ The direction is to keep record and activity rules in pure modules or repositori
 
 ```mermaid
 flowchart LR
-  DirectDB["Remaining broad AppDatabase surface"]
-  DirectDB --> Persistence["Keep active product routes behind repository providers"]
+  RecordingFlow["Shallow activity recording flow"]
+  RecordingFlow --> Persistence["Keep product actions behind testable modules"]
 
   Next["Next deepening candidates"]
-  Next --> Helpers["Move remaining activity-specific helpers behind ActivityRepository"]
-  Next --> Queries["Shrink AppDatabase toward low-level Drift queries"]
+  Next --> Recording["Extract activity recording actions from EventsList util"]
+  Next --> Providers["Split broad feature providers out of stateProviders.dart"]
 ```

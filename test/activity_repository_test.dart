@@ -1,9 +1,9 @@
-import 'package:drift/drift.dart' hide isNotNull, isNull;
 import 'package:event_tracker/domain/activity_models.dart';
 import 'package:event_tracker/persistence/database/app_database.dart';
 import 'package:event_tracker/persistence/activity_repository.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import 'support/database_test_helpers.dart';
 import 'support/database_test_harness.dart';
 
 void main() {
@@ -26,12 +26,11 @@ void main() {
   test(
       'repository records a plain activity without exposing database companions',
       () async {
-    final activityId = await db.addEventInDB(
-      EventsCompanion(
-        name: const Value('Questions'),
-        careTime: const Value(false),
-        unit: const Value('questions'),
-      ),
+    final activityId = await insertTestActivity(
+      db,
+      name: 'Questions',
+      careTime: false,
+      unit: 'questions',
     );
 
     await repository.addPlainRecord(
@@ -57,7 +56,7 @@ void main() {
       description: 'Books and articles',
     );
 
-    final activity = await db.getEventById(activityId);
+    final activity = await getTestActivity(db, activityId);
 
     expect(activity.name, 'Read');
     expect(activity.careTime, false);
@@ -123,19 +122,18 @@ void main() {
 
     await repository.deleteActivity(activityId);
 
-    expect(() => db.getEventById(activityId), throwsA(anything));
+    expect(() => getTestActivity(db, activityId), throwsA(anything));
     expect(await repository.getActivityRecords(activityId), isEmpty);
   });
 
   test(
       'repository completes a timed activity without exposing database companions',
       () async {
-    final activityId = await db.addEventInDB(
-      EventsCompanion(
-        name: const Value('Run'),
-        careTime: const Value(true),
-        unit: const Value('km'),
-      ),
+    final activityId = await insertTestActivity(
+      db,
+      name: 'Run',
+      careTime: true,
+      unit: 'km',
     );
     final start = DateTime(2026, 1, 1, 8);
     final end = DateTime(2026, 1, 1, 8, 25);

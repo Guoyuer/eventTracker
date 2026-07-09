@@ -1,10 +1,10 @@
-import 'package:drift/drift.dart' hide isNotNull, isNull;
 import 'package:event_tracker/persistence/database/app_database.dart';
 import 'package:event_tracker/persistence/database/database_bootstrap.dart';
 import 'package:event_tracker/persistence/record_lifecycle_store.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import 'support/database_test_helpers.dart';
 import 'support/database_test_harness.dart';
 
 void main() {
@@ -26,12 +26,11 @@ void main() {
 
   test('plain records update aggregate count, value, and last record',
       () async {
-    final eventId = await db.addEventInDB(
-      EventsCompanion(
-        name: const Value('Push ups'),
-        careTime: const Value(false),
-        unit: const Value('reps'),
-      ),
+    final eventId = await insertTestActivity(
+      db,
+      name: 'Push ups',
+      careTime: false,
+      unit: 'reps',
     );
 
     await lifecycle.addPlainRecord(
@@ -40,8 +39,8 @@ void main() {
       value: 20,
     );
 
-    final event = await db.getEventById(eventId);
-    final records = await db.getRecordsByEventId(eventId);
+    final event = await getTestActivity(db, eventId);
+    final records = await getCompletedTestRecordsForActivity(db, eventId);
 
     expect(records, hasLength(1));
     expect(event.lastRecordId, records.single.id);
@@ -50,12 +49,11 @@ void main() {
   });
 
   test('plain record aggregates accumulate across multiple records', () async {
-    final eventId = await db.addEventInDB(
-      EventsCompanion(
-        name: const Value('Pages'),
-        careTime: const Value(false),
-        unit: const Value('pages'),
-      ),
+    final eventId = await insertTestActivity(
+      db,
+      name: 'Pages',
+      careTime: false,
+      unit: 'pages',
     );
 
     await lifecycle.addPlainRecord(
@@ -69,8 +67,8 @@ void main() {
       value: 8,
     );
 
-    final event = await db.getEventById(eventId);
-    final records = await db.getRecordsByEventId(eventId);
+    final event = await getTestActivity(db, eventId);
+    final records = await getCompletedTestRecordsForActivity(db, eventId);
 
     expect(records, hasLength(2));
     expect(event.lastRecordId, records.last.id);
@@ -79,37 +77,35 @@ void main() {
   });
 
   test('timed record start and stop update active state and totals', () async {
-    final eventId = await db.addEventInDB(
-      EventsCompanion(
-        name: const Value('Reading'),
-        careTime: const Value(true),
-      ),
+    final eventId = await insertTestActivity(
+      db,
+      name: 'Reading',
+      careTime: true,
     );
     final start = DateTime(2026, 1, 1, 8);
     final end = DateTime(2026, 1, 1, 8, 30);
 
     final recordId = await lifecycle.startTimedRecord(eventId, start);
 
-    var event = await db.getEventById(eventId);
-    var record = await db.getRecordById(recordId);
+    var event = await getTestActivity(db, eventId);
+    var record = await getTestRecord(db, recordId);
     expect(event.lastRecordId, recordId);
     expect(record.endTime, isNull);
 
     await lifecycle.stopActiveTimedRecord(eventId, end);
 
-    event = await db.getEventById(eventId);
-    record = await db.getRecordById(recordId);
+    event = await getTestActivity(db, eventId);
+    record = await getTestRecord(db, recordId);
     expect(record.endTime, end);
     expect(event.sumTime, end.difference(start));
   });
 
   test('timed record stop accumulates duration and value', () async {
-    final eventId = await db.addEventInDB(
-      EventsCompanion(
-        name: const Value('Running'),
-        careTime: const Value(true),
-        unit: const Value('km'),
-      ),
+    final eventId = await insertTestActivity(
+      db,
+      name: 'Running',
+      careTime: true,
+      unit: 'km',
     );
 
     await lifecycle.startTimedRecord(
@@ -132,7 +128,7 @@ void main() {
       value: 5,
     );
 
-    final event = await db.getEventById(eventId);
+    final event = await getTestActivity(db, eventId);
 
     expect(event.lastRecordId, secondRecordId);
     expect(event.sumTime, const Duration(minutes: 50));
@@ -141,11 +137,10 @@ void main() {
 
   test('canceling an active timed record restores previous last record',
       () async {
-    final eventId = await db.addEventInDB(
-      EventsCompanion(
-        name: const Value('Practice'),
-        careTime: const Value(true),
-      ),
+    final eventId = await insertTestActivity(
+      db,
+      name: 'Practice',
+      careTime: true,
     );
 
     final firstRecordId = await lifecycle.startTimedRecord(
@@ -164,7 +159,7 @@ void main() {
 
     await lifecycle.cancelActiveTimedRecord(eventId);
 
-    final event = await db.getEventById(eventId);
+    final event = await getTestActivity(db, eventId);
     final deletedRecord = await (db.select(db.records)
           ..where((record) => record.id.equals(activeRecordId)))
         .getSingleOrNull();

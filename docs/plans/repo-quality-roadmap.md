@@ -94,6 +94,7 @@ Status: in progress
 - Moved platform-specific sqflite executor setup out of `app_database.dart` and into a database bootstrap module.
 - Moved activity display-model shaping out of `AppDatabase` and into `ActivityRepository`.
 - Moved unit and statistics table-specific query helpers out of `AppDatabase` and into their repositories.
+- Moved remaining activity-specific table helpers out of `AppDatabase` and into `ActivityRepository` / `RecordLifecycleStore`.
 - Added tests around record lifecycle, aggregate totals, latest step lookup, repository activity creation, and repository activity recording.
 - Added tests for unit add/list/delete and duplicate-name protection through the repository.
 - Removed inactive step-count and debug/fake-data database methods from the active persistence API.
@@ -102,7 +103,7 @@ Status: in progress
 Remaining:
 
 - Continue migrating UI callers from `AppDatabase` to repository-style modules.
-- Continue shrinking `AppDatabase` toward low-level Drift queries only.
+- Keep `AppDatabase` limited to schema, migrations, generated Drift access, and bootstrap wiring.
 
 ## Phase 3: Domain Model and Aggregation
 

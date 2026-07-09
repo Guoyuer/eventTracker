@@ -154,6 +154,13 @@ void main() {
     expect(database, isNot(contains('deleteUnitByName')));
     expect(database, isNot(contains('getRecordsInRange')));
     expect(database, isNot(contains('getEventsMap')));
+    expect(database, isNot(contains('getRecordsByEventId')));
+    expect(database, isNot(contains('getEventDesc')));
+    expect(database, isNot(contains('getEventUnit')));
+    expect(database, isNot(contains('getRawEvents')));
+    expect(database, isNot(contains('addEventInDB')));
+    expect(database, isNot(contains('updateEventDescription')));
+    expect(database, isNot(contains('deleteEvent')));
     expect(unitRepository, contains('select(_db.units)'));
     expect(statisticsRepository, contains('select(_db.records)'));
     expect(statisticsRepository, contains('select(_db.events)'));
@@ -293,6 +300,8 @@ void main() {
     expect(database, isNot(contains('class DBHandle')));
     expect(database, isNot(contains('factory DBHandle')));
     expect(database, isNot(contains('static final AppDatabase _db')));
+    expect(database, isNot(contains('getRecordById')));
+    expect(database, isNot(contains('getEventById')));
 
     for (final oldMethodName in [
       'addPlainRecordInDB',

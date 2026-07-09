@@ -1,10 +1,10 @@
-import 'package:drift/drift.dart';
 import 'package:event_tracker/persistence/database/app_database.dart';
 import 'package:event_tracker/persistence/record_lifecycle_store.dart';
 import 'package:event_tracker/persistence/statistics_repository.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import 'support/database_test_helpers.dart';
 import 'support/database_test_harness.dart';
 
 void main() {
@@ -27,17 +27,15 @@ void main() {
   });
 
   test('repository loads range records with activities by id', () async {
-    final readId = await db.addEventInDB(
-      EventsCompanion(
-        name: const Value('Read'),
-        careTime: const Value(false),
-      ),
+    final readId = await insertTestActivity(
+      db,
+      name: 'Read',
+      careTime: false,
     );
-    final runId = await db.addEventInDB(
-      EventsCompanion(
-        name: const Value('Run'),
-        careTime: const Value(false),
-      ),
+    final runId = await insertTestActivity(
+      db,
+      name: 'Run',
+      careTime: false,
     );
 
     await lifecycle.addPlainRecord(readId, DateTime(2026, 1, 1, 8));
@@ -56,11 +54,10 @@ void main() {
   });
 
   test('repository excludes records outside the requested range', () async {
-    final eventId = await db.addEventInDB(
-      EventsCompanion(
-        name: const Value('Read'),
-        careTime: const Value(false),
-      ),
+    final eventId = await insertTestActivity(
+      db,
+      name: 'Read',
+      careTime: false,
     );
 
     await lifecycle.addPlainRecord(eventId, DateTime(2025, 12, 31, 8));
