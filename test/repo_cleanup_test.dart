@@ -167,6 +167,18 @@ void main() {
     expect(providers, contains('activityDescriptionEditingProvider'));
   });
 
+  test('activity editor draft choices stay in Riverpod', () {
+    final editor = File('lib/eventEditor.dart').readAsStringSync();
+    final providers = File('lib/stateProviders.dart').readAsStringSync();
+
+    expect(editor, isNot(contains('ConsumerStatefulWidget')));
+    expect(editor, isNot(contains('setState(')));
+    expect(editor, contains('activityEditorCareTimeProvider'));
+    expect(editor, contains('activityEditorSelectedUnitProvider'));
+    expect(providers, contains('activityEditorCareTimeProvider'));
+    expect(providers, contains('activityEditorSelectedUnitProvider'));
+  });
+
   test('database module does not expose record lifecycle convenience methods',
       () {
     final database =

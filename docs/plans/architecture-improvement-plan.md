@@ -153,6 +153,7 @@ Current status:
 - `ReloadEventsN` now invalidates `activityListProvider` instead of popping and pushing `MainPage`.
 - `ActivityDescriptionEditor` reads and writes descriptions through `activityDescriptionProvider` instead of creating repositories inside shared common widgets.
 - `ActivityDescriptionEditor` keeps edit-mode state in `activityDescriptionEditingProvider` instead of local widget state.
+- `EventEditor` keeps add-activity draft choices in Riverpod providers instead of local widget state.
 - Activity list mutations, activity creation, and unit management now read repositories through Riverpod providers instead of calling repository factories in widgets.
 - Incomplete long-press manual time entry controls were removed because they displayed a picker without applying the selected time.
 - `StatisticPage` now keeps the selected date range in `selectedStatisticsRangeProvider` and loads chart data through `statisticsProvider`.

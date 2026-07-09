@@ -4,24 +4,41 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'domain/activity_models.dart';
 import 'stateProviders.dart';
 
-class EventEditor extends ConsumerStatefulWidget {
-  const EventEditor();
+class EventEditor extends ConsumerWidget {
+  EventEditor({Key? key}) : super(key: key);
 
-  @override
-  ConsumerState<EventEditor> createState() => _EventEditorState();
-}
-
-class _EventEditorState extends ConsumerState<EventEditor> {
-  String? selectedUnit;
-  bool careTime = true;
   final _formKey = GlobalKey<FormState>();
 
-  late String name;
-  String? desc;
-
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final units = ref.watch(unitListProvider);
+    final selectedUnit = ref.watch(activityEditorSelectedUnitProvider);
+    final careTime = ref.watch(activityEditorCareTimeProvider);
+    String? name;
+    String? description;
+
+    Future<void> saveActivity() async {
+      if (!_formKey.currentState!.validate()) {
+        return;
+      }
+
+      _formKey.currentState!.save();
+      try {
+        await ref.read(activityRepositoryProvider).createActivity(
+              name: name!,
+              unit: selectedUnit,
+              description: description,
+              careTime: careTime,
+            );
+        if (!context.mounted) {
+          return;
+        }
+        Navigator.pop(context, true);
+      } catch (_) {
+        showToast("添加失败，可能是因为项目名重复！");
+      }
+    }
+
     return Scaffold(
         appBar: AppBar(
           title: Text("添加新项目"),
@@ -52,7 +69,7 @@ class _EventEditorState extends ConsumerState<EventEditor> {
                           ),
                           TextFormField(
                             onSaved: (String? value) {
-                              desc = value;
+                              description = value;
                             },
                             decoration: InputDecoration(
                                 hintText: "项目说明",
@@ -62,28 +79,34 @@ class _EventEditorState extends ConsumerState<EventEditor> {
                               title: Text("关注时长"),
                               value: careTime,
                               onChanged: (bool val) {
-                                setState(() {
-                                  careTime = val;
-                                });
+                                ref
+                                    .read(
+                                        activityEditorCareTimeProvider.notifier)
+                                    .state = val;
                               })
                         ])),
                     Card(
                         elevation: 8,
                         child: units.when(
-                          data: _buildUnitSelector,
+                          data: (units) =>
+                              _buildUnitSelector(ref, units, selectedUnit),
                           error: (error, stackTrace) => ListTile(
                             title: Text("加载单位失败"),
                           ),
                           loading: loadingScreen,
                         )),
                     myRaisedButton(Text("保存"), () {
-                      _saveActivity();
+                      saveActivity();
                     })
                   ],
                 ))));
   }
 
-  Widget _buildUnitSelector(List<ActivityUnit> units) {
+  Widget _buildUnitSelector(
+    WidgetRef ref,
+    List<ActivityUnit> units,
+    String? selectedUnit,
+  ) {
     List<Widget> children = [];
     if (units.isEmpty) {
       children.add(ListTile(title: Text("暂无单位，可到单位管理页面添加")));
@@ -101,9 +124,8 @@ class _EventEditorState extends ConsumerState<EventEditor> {
               toggleable: true,
               value: units[idx].name,
               onChanged: (String? val) {
-                setState(() {
-                  selectedUnit = val;
-                });
+                ref.read(activityEditorSelectedUnitProvider.notifier).state =
+                    val;
               });
         });
 
@@ -111,27 +133,5 @@ class _EventEditorState extends ConsumerState<EventEditor> {
     return Column(
       children: children,
     );
-  }
-
-  Future<void> _saveActivity() async {
-    if (!_formKey.currentState!.validate()) {
-      return;
-    }
-
-    _formKey.currentState!.save();
-    try {
-      await ref.read(activityRepositoryProvider).createActivity(
-            name: name,
-            unit: selectedUnit,
-            description: desc,
-            careTime: careTime,
-          );
-      if (!mounted) {
-        return;
-      }
-      Navigator.pop(context, true);
-    } catch (_) {
-      showToast("添加失败，可能是因为项目名重复！");
-    }
   }
 }

@@ -63,6 +63,12 @@ final activityDescriptionProvider =
 final activityDescriptionEditingProvider =
     StateProvider.family<bool, int>((ref, activityId) => false);
 
+final activityEditorCareTimeProvider =
+    StateProvider.autoDispose<bool>((ref) => true);
+
+final activityEditorSelectedUnitProvider =
+    StateProvider.autoDispose<String?>((ref) => null);
+
 final unitListProvider = FutureProvider<List<ActivityUnit>>((ref) {
   return ref.watch(unitRepositoryProvider).getUnits();
 });
