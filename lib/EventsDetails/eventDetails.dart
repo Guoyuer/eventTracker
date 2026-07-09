@@ -1,5 +1,6 @@
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:event_tracker/analytics/activity_detail_analytics.dart';
 import 'package:event_tracker/common/commonWidget.dart';
 import 'package:event_tracker/common/const.dart';
@@ -9,7 +10,7 @@ import 'package:sprintf/sprintf.dart';
 
 import '../DAO/base.dart';
 import '../heatmap_calendar/heatMap.dart';
-import '../persistence/activity_repository.dart';
+import '../stateProviders.dart';
 
 class EventDetailsWrapper extends StatelessWidget {
   @override
@@ -20,17 +21,15 @@ class EventDetailsWrapper extends StatelessWidget {
   }
 }
 
-class EventDetails extends StatefulWidget {
+class EventDetails extends ConsumerStatefulWidget {
   EventDetails({Key? key, required this.event}) : super(key: key);
   final BaseEventModel event;
 
   @override
-  _EventDetailsState createState() => _EventDetailsState();
+  ConsumerState<EventDetails> createState() => _EventDetailsState();
 }
 
-class _EventDetailsState extends State<EventDetails> {
-  Future<List<Record>>? _records;
-  final ActivityRepository _repository = activityRepository();
+class _EventDetailsState extends ConsumerState<EventDetails> {
   List<String> toggleTexts = [];
   List<bool> isSelected = [true];
   final ScrollController _scrollController = ScrollController();
@@ -39,7 +38,6 @@ class _EventDetailsState extends State<EventDetails> {
   @override
   void initState() {
     super.initState();
-    _records = _repository.getActivityRecords(widget.event.id);
     if (widget.event is TimingEventModel) {
       toggleTexts.add("时长");
     } else {
@@ -88,126 +86,118 @@ class _EventDetailsState extends State<EventDetails> {
   }
 
   Widget get2Charts() {
-    return FutureBuilder<List<Record>>(
-        future: _records,
-        builder: (ctx, snapshot) {
-          switch (snapshot.connectionState) {
-            case ConnectionState.done:
-              List<Record> records = snapshot.data!;
-              final selectedIndex = getSelected(isSelected);
-              final selectedMetric =
-                  metricForActivitySelection(widget.event, selectedIndex);
-              final heatMapSeries = buildActivityHeatmapSeries(
-                records: records,
-                activity: widget.event,
-                metric: selectedMetric,
-                now: DateTime.now(),
-              );
-              List<Record> recordsOfMonth = [];
-              List<Widget> toggleChildren =
-                  toggleTexts.map((e) => Text(e)).toList();
-              int numOfRecords;
-              String heading;
-              if (month == nilTime) {
-                numOfRecords = records.length;
-                heading = "共进行";
-              } else {
-                recordsOfMonth = recordsInMonth(records, month);
-                numOfRecords = recordsOfMonth.length;
-                heading = month.month.toString() + "月共进行";
-              }
-              WidgetsBinding.instance.addPostFrameCallback((_) {
-                scrollToEnd(context);
-              });
-              var heatMap = Column(
-                children: [
-                  Center(
-                      child: Text(
-                    "统计数据 - " + toggleTexts[selectedIndex],
-                    style: chartTitleStyle,
-                  )),
-                  Container(
-                    margin: EdgeInsets.symmetric(horizontal: 5),
-                    width: double.infinity,
-                    child: SingleChildScrollView(
-                      controller: _scrollController,
-                      scrollDirection: Axis.horizontal,
-                      child: HeatMapCalendar(
-                        dateRange: heatMapSeries.range,
-                        input: heatMapSeries.data,
-                        unit: heatMapSeries.unit,
-                      ),
-                    ),
-                  ),
-                  Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Container(
-                            margin: EdgeInsets.only(left: 10),
-                            child: RichText(
-                              text: TextSpan(
-                                  style: TextStyle(
-                                      fontSize: 16, color: Colors.black),
-                                  children: [
-                                    TextSpan(text: heading),
-                                    TextSpan(
-                                        text: '$numOfRecords',
-                                        style: TextStyle(
-                                            fontWeight: FontWeight.bold)),
-                                    TextSpan(text: " 次")
-                                  ]),
-                            )),
-                        Container(
-                            height: 35,
-                            margin: EdgeInsets.all(10),
-                            child: ToggleButtons(
-                                children: toggleChildren,
-                                borderRadius:
-                                    BorderRadius.all(Radius.circular(10)),
-                                borderWidth: 2,
-                                selectedBorderColor: Colors.blueAccent,
-                                isSelected: isSelected,
-                                onPressed: (int index) {
-                                  if (index != getSelected(isSelected)) {
-                                    for (int i = 0;
-                                        i < isSelected.length;
-                                        i++) {
-                                      setState(() {
-                                        if (i == index) {
-                                          isSelected[i] = true;
-                                        } else {
-                                          isSelected[i] = false;
-                                        }
-                                      });
-                                    }
-                                  }
-                                }))
-                      ]),
-                ],
-              );
-              var barChart;
-              if (recordsOfMonth.isNotEmpty) {
-                barChart = getTimeSlotsBar(
-                    recordsOfMonth, widget.event, selectedMetric);
-              } else {
-                barChart =
-                    getTimeSlotsBar(records, widget.event, selectedMetric);
-              }
-              List<Widget> charts = [heatMap, barChart];
-              charts = charts
-                  .map((e) => Card(
-                        elevation: 10,
-                        child: e,
-                      ))
-                  .toList();
+    final records = ref.watch(activityRecordsProvider(widget.event.id));
+    return records.when(
+      data: _buildCharts,
+      error: (error, stackTrace) => Card(
+        elevation: 10,
+        child: Text("加载记录失败"),
+      ),
+      loading: loadingScreen,
+    );
+  }
 
-              return Column(
-                children: charts,
-              );
-            default:
-              return loadingScreen();
-          }
-        });
+  Widget _buildCharts(List<Record> records) {
+    final selectedIndex = getSelected(isSelected);
+    final selectedMetric =
+        metricForActivitySelection(widget.event, selectedIndex);
+    final heatMapSeries = buildActivityHeatmapSeries(
+      records: records,
+      activity: widget.event,
+      metric: selectedMetric,
+      now: DateTime.now(),
+    );
+    List<Record> recordsOfMonth = [];
+    List<Widget> toggleChildren = toggleTexts.map((e) => Text(e)).toList();
+    int numOfRecords;
+    String heading;
+    if (month == nilTime) {
+      numOfRecords = records.length;
+      heading = "共进行";
+    } else {
+      recordsOfMonth = recordsInMonth(records, month);
+      numOfRecords = recordsOfMonth.length;
+      heading = month.month.toString() + "月共进行";
+    }
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      scrollToEnd(context);
+    });
+    var heatMap = Column(
+      children: [
+        Center(
+            child: Text(
+          "统计数据 - " + toggleTexts[selectedIndex],
+          style: chartTitleStyle,
+        )),
+        Container(
+          margin: EdgeInsets.symmetric(horizontal: 5),
+          width: double.infinity,
+          child: SingleChildScrollView(
+            controller: _scrollController,
+            scrollDirection: Axis.horizontal,
+            child: HeatMapCalendar(
+              dateRange: heatMapSeries.range,
+              input: heatMapSeries.data,
+              unit: heatMapSeries.unit,
+            ),
+          ),
+        ),
+        Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
+          Container(
+              margin: EdgeInsets.only(left: 10),
+              child: RichText(
+                text: TextSpan(
+                    style: TextStyle(fontSize: 16, color: Colors.black),
+                    children: [
+                      TextSpan(text: heading),
+                      TextSpan(
+                          text: '$numOfRecords',
+                          style: TextStyle(fontWeight: FontWeight.bold)),
+                      TextSpan(text: " 次")
+                    ]),
+              )),
+          Container(
+              height: 35,
+              margin: EdgeInsets.all(10),
+              child: ToggleButtons(
+                  children: toggleChildren,
+                  borderRadius: BorderRadius.all(Radius.circular(10)),
+                  borderWidth: 2,
+                  selectedBorderColor: Colors.blueAccent,
+                  isSelected: isSelected,
+                  onPressed: (int index) {
+                    if (index != getSelected(isSelected)) {
+                      for (int i = 0; i < isSelected.length; i++) {
+                        setState(() {
+                          if (i == index) {
+                            isSelected[i] = true;
+                          } else {
+                            isSelected[i] = false;
+                          }
+                        });
+                      }
+                    }
+                  }))
+        ]),
+      ],
+    );
+    var barChart;
+    if (recordsOfMonth.isNotEmpty) {
+      barChart = getTimeSlotsBar(recordsOfMonth, widget.event, selectedMetric);
+    } else {
+      barChart = getTimeSlotsBar(records, widget.event, selectedMetric);
+    }
+    List<Widget> charts = [heatMap, barChart];
+    charts = charts
+        .map((e) => Card(
+              elevation: 10,
+              child: e,
+            ))
+        .toList();
+
+    return Column(
+      children: charts,
+    );
   }
 
   @override
@@ -243,7 +233,13 @@ class _EventDetailsState extends State<EventDetails> {
                         );
                       });
                   if (delete != null && delete) {
-                    await _repository.deleteActivity(widget.event.id);
+                    await ref
+                        .read(activityRepositoryProvider)
+                        .deleteActivity(widget.event.id);
+                    ref.invalidate(activityListProvider);
+                    if (!mounted) {
+                      return;
+                    }
                     Navigator.of(context).pop(true);
                   }
                 },
@@ -277,18 +273,23 @@ class _EventDetailsState extends State<EventDetails> {
                       String timeStr = DateFormat('yyyy.MM.dd').format(day);
                       return AlertDialog(
                         title: Text(timeStr + "的记录"),
-                        content: FutureBuilder<List<Record>>(
-                            future: _records,
-                            builder: (ctx, snapshot) {
-                              switch (snapshot.connectionState) {
-                                case ConnectionState.done:
-                                  List<Record> records = snapshot.data!;
-                                  return getDayRecordsWidgets(
-                                      records, day, widget.event);
-                                default:
-                                  return loadingScreen();
-                              }
-                            }),
+                        content: Consumer(
+                          builder: (context, ref, child) {
+                            return ref
+                                .watch(
+                                  activityRecordsProvider(widget.event.id),
+                                )
+                                .when(
+                                  data: (records) => getDayRecordsWidgets(
+                                    records,
+                                    day,
+                                    widget.event,
+                                  ),
+                                  error: (error, stackTrace) => Text("加载记录失败"),
+                                  loading: loadingScreen,
+                                );
+                          },
+                        ),
                       );
                     });
               }

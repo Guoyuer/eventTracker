@@ -7,6 +7,10 @@ import 'persistence/activity_repository.dart';
 import 'persistence/statistics_repository.dart';
 import 'persistence/unit_repository.dart';
 
+final activityRepositoryProvider = Provider<ActivityRepository>((ref) {
+  return activityRepository();
+});
+
 final selectedIndexProvider = StateProvider<int>((ref) {
   return 0;
 });
@@ -15,7 +19,12 @@ final eventListScrollDirProvider =
     StateProvider<ScrollDirection>((ref) => ScrollDirection.forward);
 
 final activityListProvider = FutureProvider<List<BaseEventModel>>((ref) {
-  return activityRepository().getActivities();
+  return ref.watch(activityRepositoryProvider).getActivities();
+});
+
+final activityRecordsProvider =
+    FutureProvider.family<List<Record>, int>((ref, activityId) {
+  return ref.watch(activityRepositoryProvider).getActivityRecords(activityId);
 });
 
 final unitListProvider = FutureProvider<List<Unit>>((ref) {
