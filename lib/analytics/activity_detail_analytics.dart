@@ -2,8 +2,8 @@ import 'dart:math';
 
 import 'package:flutter/material.dart' show DateTimeRange;
 
-import '../DAO/base.dart';
 import '../common/util.dart';
+import '../domain/activity_models.dart';
 
 enum ActivityDetailMetric { duration, count, value }
 
@@ -43,19 +43,19 @@ ActivityDetailMetric metricForActivitySelection(
 }
 
 ActivityHeatmapSeries buildActivityHeatmapSeries({
-  required List<Record> records,
+  required List<ActivityRecord> records,
   required BaseEventModel activity,
   required ActivityDetailMetric metric,
   required DateTime now,
 }) {
   final data = <DateTime, double>{};
   final range = DateTimeRange(
-    start: records.isEmpty ? getDate(now) : getDate(records.first.endTime!),
+    start: records.isEmpty ? getDate(now) : getDate(records.first.endTime),
     end: getDate(now),
   );
 
   for (final record in records) {
-    final date = getDate(record.endTime!);
+    final date = getDate(record.endTime);
     data[date] = (data[date] ?? 0) + _dailyRecordValue(record, metric);
   }
 
@@ -67,7 +67,7 @@ ActivityHeatmapSeries buildActivityHeatmapSeries({
 }
 
 ActivityTimeSlotSeries buildActivityTimeSlotSeries({
-  required List<Record> records,
+  required List<ActivityRecord> records,
   required BaseEventModel activity,
   required ActivityDetailMetric metric,
 }) {
@@ -77,7 +77,7 @@ ActivityTimeSlotSeries buildActivityTimeSlotSeries({
 
   final values = List<double>.filled(24, 0);
   for (final record in records) {
-    final end = record.endTime!;
+    final end = record.endTime;
     values[end.hour] += _timeSlotRecordValue(record, metric);
   }
 
@@ -87,20 +87,21 @@ ActivityTimeSlotSeries buildActivityTimeSlotSeries({
   );
 }
 
-List<Record> recordsInMonth(List<Record> records, DateTime month) {
+List<ActivityRecord> recordsInMonth(
+    List<ActivityRecord> records, DateTime month) {
   return records
       .where((record) =>
-          record.endTime!.month == month.month &&
-          record.endTime!.year == month.year)
+          record.endTime.month == month.month &&
+          record.endTime.year == month.year)
       .toList();
 }
 
-List<Record> recordsOnDay(List<Record> records, DateTime day) {
+List<ActivityRecord> recordsOnDay(List<ActivityRecord> records, DateTime day) {
   return records
       .where((record) =>
-          record.endTime!.month == day.month &&
-          record.endTime!.year == day.year &&
-          record.endTime!.day == day.day)
+          record.endTime.month == day.month &&
+          record.endTime.year == day.year &&
+          record.endTime.day == day.day)
       .toList();
 }
 
@@ -110,10 +111,10 @@ List<double> combineAdjacentHourSlots(List<double> hourlyValues) {
   ];
 }
 
-double _dailyRecordValue(Record record, ActivityDetailMetric metric) {
+double _dailyRecordValue(ActivityRecord record, ActivityDetailMetric metric) {
   switch (metric) {
     case ActivityDetailMetric.duration:
-      return record.endTime!.difference(record.startTime!).inMinutes.toDouble();
+      return record.endTime.difference(record.startTime!).inMinutes.toDouble();
     case ActivityDetailMetric.count:
       return 1;
     case ActivityDetailMetric.value:
@@ -121,7 +122,8 @@ double _dailyRecordValue(Record record, ActivityDetailMetric metric) {
   }
 }
 
-double _timeSlotRecordValue(Record record, ActivityDetailMetric metric) {
+double _timeSlotRecordValue(
+    ActivityRecord record, ActivityDetailMetric metric) {
   switch (metric) {
     case ActivityDetailMetric.duration:
       throw StateError('duration values are split across occupied hours');
@@ -132,13 +134,14 @@ double _timeSlotRecordValue(Record record, ActivityDetailMetric metric) {
   }
 }
 
-ActivityTimeSlotSeries _buildDurationTimeSlotSeries(List<Record> records) {
+ActivityTimeSlotSeries _buildDurationTimeSlotSeries(
+    List<ActivityRecord> records) {
   final seconds = List<double>.filled(24, 0);
 
   for (final record in records) {
     _addDurationByHour(
       seconds,
-      DateTimeRange(start: record.startTime!, end: record.endTime!),
+      DateTimeRange(start: record.startTime!, end: record.endTime),
     );
   }
 

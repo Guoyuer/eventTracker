@@ -107,6 +107,7 @@ Status: in progress
 - Moved activity detail heatmap and time-slot aggregation out of Widgets into `activity_detail_analytics.dart`.
 - Moved statistics activity-count and time-slot aggregation out of Widgets into `statistics_analytics.dart`.
 - Dropped legacy step tables and record sentinel assumptions from the active schema through a tested v3 migration.
+- Moved activity display models and analytics read models into `lib/domain/` so analytics no longer imports Drift generated row types.
 - Define invariants for timed records, plain records, values, and units.
 
 ## Phase 4: UI Composition

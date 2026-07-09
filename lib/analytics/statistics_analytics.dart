@@ -1,6 +1,6 @@
 import 'dart:collection';
 
-import '../DAO/base.dart';
+import '../domain/activity_models.dart';
 
 class ActivityCount {
   ActivityCount({
@@ -8,7 +8,7 @@ class ActivityCount {
     required this.count,
   });
 
-  final Event activity;
+  final StatisticsActivity activity;
   final int count;
 }
 
@@ -26,8 +26,8 @@ class StatisticsSummary {
 }
 
 StatisticsSummary buildStatisticsSummary({
-  required List<Record> records,
-  required Map<int, Event> eventsById,
+  required List<ActivityRecord> records,
+  required Map<int, StatisticsActivity> eventsById,
 }) {
   final activityCountsById = LinkedHashMap<int, int>();
   final hourlyCountsByActivityName = LinkedHashMap<String, List<double>>();
@@ -41,13 +41,16 @@ StatisticsSummary buildStatisticsSummary({
       activity.name,
       () => List<double>.filled(24, 0),
     );
-    hourlyCounts[record.endTime!.hour] += 1;
+    hourlyCounts[record.endTime.hour] += 1;
   }
 
   return StatisticsSummary(
     activityCounts: [
       for (final entry in activityCountsById.entries)
-        ActivityCount(activity: eventsById[entry.key]!, count: entry.value),
+        ActivityCount(
+          activity: _activityForId(entry.key, eventsById),
+          count: entry.value,
+        ),
     ],
     hourlyCountsByActivityName: hourlyCountsByActivityName,
   );
@@ -59,11 +62,17 @@ List<double> combineStatisticsAdjacentHourSlots(List<double> hourlyValues) {
   ];
 }
 
-Event _activityForRecord(Record record, Map<int, Event> eventsById) {
-  final activity = eventsById[record.eventId];
+StatisticsActivity _activityForRecord(
+    ActivityRecord record, Map<int, StatisticsActivity> eventsById) {
+  final activity = _activityForId(record.eventId, eventsById);
+  return activity;
+}
+
+StatisticsActivity _activityForId(
+    int activityId, Map<int, StatisticsActivity> eventsById) {
+  final activity = eventsById[activityId];
   if (activity == null) {
-    throw StateError('Record ${record.id} references missing activity '
-        '${record.eventId}.');
+    throw StateError('Missing activity $activityId.');
   }
   return activity;
 }

@@ -95,6 +95,7 @@ Current status:
 - Added tests for multi-activity statistics counts, hourly buckets, dangling activity references, and adjacent-hour grouping.
 - Added `docs/architecture/module-flow.md` with Mermaid diagrams for the active module flow and remaining seams.
 - Moved statistics range-record and activity-map reads behind `StatisticsRepository`.
+- Moved activity display models plus analytics record/activity read models into `lib/domain/`, with repositories mapping from Drift rows.
 
 Target modules:
 

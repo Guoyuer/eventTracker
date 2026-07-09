@@ -6,7 +6,7 @@ import 'package:event_tracker/common/commonWidget.dart';
 import 'package:event_tracker/common/util.dart';
 import 'package:intl/intl.dart';
 
-import '../DAO/base.dart';
+import '../domain/activity_models.dart';
 import '../persistence/statistics_repository.dart' show StatisticsData;
 import '../stateProviders.dart';
 
@@ -103,7 +103,7 @@ class Charts extends ConsumerWidget {
     );
   }
 
-  Map<String, Color> _activityColors(Map<int, Event> eventsMap) {
+  Map<String, Color> _activityColors(Map<int, StatisticsActivity> eventsMap) {
     final colors = <String, Color>{};
     eventsMap.forEach((activityId, activity) {
       colors[activity.name] =

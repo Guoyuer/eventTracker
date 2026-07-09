@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart' show DateTimeRange;
 
 import '../DAO/base.dart';
+import '../domain/activity_models.dart';
 
 class StatisticsData {
   StatisticsData({
@@ -8,8 +9,8 @@ class StatisticsData {
     required this.activitiesById,
   });
 
-  final List<Record> records;
-  final Map<int, Event> activitiesById;
+  final List<ActivityRecord> records;
+  final Map<int, StatisticsActivity> activitiesById;
 }
 
 abstract class StatisticsRepository {
@@ -27,8 +28,23 @@ class DriftStatisticsRepository implements StatisticsRepository {
     final activitiesById = await _db.getEventsMap();
 
     return StatisticsData(
-      records: records,
-      activitiesById: activitiesById,
+      records: [
+        for (final record in records)
+          ActivityRecord(
+            id: record.id,
+            eventId: record.eventId,
+            startTime: record.startTime,
+            endTime: record.endTime!,
+            value: record.value,
+          ),
+      ],
+      activitiesById: {
+        for (final entry in activitiesById.entries)
+          entry.key: StatisticsActivity(
+            id: entry.value.id,
+            name: entry.value.name,
+          ),
+      },
     );
   }
 }

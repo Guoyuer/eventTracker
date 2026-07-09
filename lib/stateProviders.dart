@@ -3,6 +3,7 @@ import 'package:flutter/rendering.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'DAO/base.dart';
+import 'domain/activity_models.dart';
 import 'persistence/activity_repository.dart';
 import 'persistence/statistics_repository.dart';
 import 'persistence/unit_repository.dart';
@@ -23,7 +24,7 @@ final activityListProvider = FutureProvider<List<BaseEventModel>>((ref) {
 });
 
 final activityRecordsProvider =
-    FutureProvider.family<List<Record>, int>((ref, activityId) {
+    FutureProvider.family<List<ActivityRecord>, int>((ref, activityId) {
   return ref.watch(activityRepositoryProvider).getActivityRecords(activityId);
 });
 

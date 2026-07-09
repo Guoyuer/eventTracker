@@ -3,9 +3,9 @@ import 'dart:async';
 import 'package:flutter/material.dart' hide DatePickerTheme;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../stateProviders.dart';
-import '../DAO/base.dart';
 import '../common/commonWidget.dart';
 import '../common/const.dart';
+import '../domain/activity_models.dart';
 import '../persistence/activity_repository.dart';
 
 part 'util.dart';

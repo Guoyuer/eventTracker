@@ -32,4 +32,17 @@ void main() {
     expect(database, isNot(contains('eventId.equals(-1)')));
     expect(sql, isNot(contains('step_time')));
   });
+
+  test('analytics modules do not import generated Drift database types', () {
+    for (final path in [
+      'lib/analytics/activity_detail_analytics.dart',
+      'lib/analytics/statistics_analytics.dart',
+    ]) {
+      final source = File(path).readAsStringSync();
+
+      expect(source, isNot(contains("../DAO/base.dart")));
+      expect(source, isNot(contains("List<Record")));
+      expect(source, isNot(contains("Map<int, Event")));
+    }
+  });
 }

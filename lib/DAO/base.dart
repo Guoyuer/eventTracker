@@ -7,11 +7,10 @@ import 'package:drift/drift.dart';
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
 
+import '../domain/activity_models.dart';
 import 'tables.dart';
 
 part 'base.g.dart';
-
-part 'model/displayModel.dart';
 // 实现单例模式
 
 class DBHandle {

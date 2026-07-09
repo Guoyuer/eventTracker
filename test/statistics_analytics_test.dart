@@ -1,5 +1,5 @@
-import 'package:event_tracker/DAO/base.dart';
 import 'package:event_tracker/analytics/statistics_analytics.dart';
+import 'package:event_tracker/domain/activity_models.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
@@ -66,22 +66,19 @@ void main() {
   });
 }
 
-Event event({required int id, required String name}) {
-  return Event(
+StatisticsActivity event({required int id, required String name}) {
+  return StatisticsActivity(
     id: id,
     name: name,
-    careTime: false,
-    sumVal: 0,
-    sumTime: Duration.zero,
   );
 }
 
-Record record({
+ActivityRecord record({
   required int id,
   required int eventId,
   required DateTime end,
 }) {
-  return Record(
+  return ActivityRecord(
     id: id,
     eventId: eventId,
     endTime: end,

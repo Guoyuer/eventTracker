@@ -8,7 +8,7 @@ import 'package:event_tracker/common/util.dart';
 import 'package:intl/intl.dart';
 import 'package:sprintf/sprintf.dart';
 
-import '../DAO/base.dart';
+import '../domain/activity_models.dart';
 import '../heatmap_calendar/heatMap.dart';
 import '../stateProviders.dart';
 
@@ -97,7 +97,7 @@ class _EventDetailsState extends ConsumerState<EventDetails> {
     );
   }
 
-  Widget _buildCharts(List<Record> records) {
+  Widget _buildCharts(List<ActivityRecord> records) {
     final selectedIndex = getSelected(isSelected);
     final selectedMetric =
         metricForActivitySelection(widget.event, selectedIndex);
@@ -107,7 +107,7 @@ class _EventDetailsState extends ConsumerState<EventDetails> {
       metric: selectedMetric,
       now: DateTime.now(),
     );
-    List<Record> recordsOfMonth = [];
+    List<ActivityRecord> recordsOfMonth = [];
     List<Widget> toggleChildren = toggleTexts.map((e) => Text(e)).toList();
     int numOfRecords;
     String heading;
@@ -294,7 +294,7 @@ class _EventDetailsState extends ConsumerState<EventDetails> {
   }
 
   Widget getDayRecordsWidgets(
-      List<Record> records, DateTime time, BaseEventModel event) {
+      List<ActivityRecord> records, DateTime time, BaseEventModel event) {
     List<Widget> tiles = [];
     records = recordsOnDay(records, time);
     if (records.isEmpty) return Text("当日无记录");
@@ -304,7 +304,7 @@ class _EventDetailsState extends ConsumerState<EventDetails> {
             DateFormat('MM-dd kk:mm').format(record.startTime!);
         // if (startTimeStr.substring(0, 2) == '24')
         //   startTimeStr = '00' + startTimeStr.substring(2);
-        String endTimeStr = DateFormat('MM-dd kk:mm').format(record.endTime!);
+        String endTimeStr = DateFormat('MM-dd kk:mm').format(record.endTime);
         // if (endTimeStr.substring(0, 2) == '24')
         //   endTimeStr = '00' + endTimeStr.substring(2);
         if (event.unit != null) {
@@ -315,7 +315,7 @@ class _EventDetailsState extends ConsumerState<EventDetails> {
           tiles.add(Text("$startTimeStr ~ $endTimeStr  "));
         }
       } else {
-        String endTimeStr = DateFormat('kk:mm').format(record.endTime!);
+        String endTimeStr = DateFormat('kk:mm').format(record.endTime);
         if (event.unit != null) {
           int value = record.value!.toInt();
           String unit = event.unit!;
@@ -338,7 +338,7 @@ class _EventDetailsState extends ConsumerState<EventDetails> {
   }
 
   Widget getTimeSlotsBar(
-    List<Record> records,
+    List<ActivityRecord> records,
     BaseEventModel event,
     ActivityDetailMetric metric,
   ) {

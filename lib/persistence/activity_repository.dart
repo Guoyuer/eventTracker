@@ -1,11 +1,12 @@
 import 'package:drift/drift.dart';
 
 import '../DAO/base.dart';
+import '../domain/activity_models.dart';
 
 abstract class ActivityRepository {
   Future<List<BaseEventModel>> getActivities();
 
-  Future<List<Record>> getActivityRecords(int activityId);
+  Future<List<ActivityRecord>> getActivityRecords(int activityId);
 
   Future<int> createActivity({
     required String name,
@@ -52,8 +53,18 @@ class DriftActivityRepository implements ActivityRepository {
   }
 
   @override
-  Future<List<Record>> getActivityRecords(int activityId) {
-    return _db.getRecordsByEventId(activityId);
+  Future<List<ActivityRecord>> getActivityRecords(int activityId) async {
+    final records = await _db.getRecordsByEventId(activityId);
+    return [
+      for (final record in records)
+        ActivityRecord(
+          id: record.id,
+          eventId: record.eventId,
+          startTime: record.startTime,
+          endTime: record.endTime!,
+          value: record.value,
+        ),
+    ];
   }
 
   @override

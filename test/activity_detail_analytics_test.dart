@@ -1,6 +1,6 @@
-import 'package:event_tracker/DAO/base.dart';
 import 'package:event_tracker/analytics/activity_detail_analytics.dart';
 import 'package:event_tracker/common/const.dart';
+import 'package:event_tracker/domain/activity_models.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
@@ -140,17 +140,17 @@ void main() {
   });
 }
 
-Record record({
+ActivityRecord record({
   required int id,
   DateTime? start,
   DateTime? end,
   double? value,
 }) {
-  return Record(
+  return ActivityRecord(
     id: id,
     eventId: 1,
     startTime: start,
-    endTime: end,
+    endTime: end!,
     value: value,
   );
 }
