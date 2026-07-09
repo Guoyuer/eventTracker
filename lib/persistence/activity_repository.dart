@@ -2,6 +2,7 @@ import 'package:drift/drift.dart';
 
 import '../domain/activity_models.dart';
 import 'database/app_database.dart';
+import 'record_lifecycle_store.dart';
 
 abstract class ActivityRepository {
   Future<List<BaseEventModel>> getActivities();
@@ -21,8 +22,6 @@ abstract class ActivityRepository {
 
   Future<String?> getActivityUnit(int activityId);
 
-  Future<DateTime> getActivityStartTime(int activityId);
-
   Future<void> addPlainRecord(
     int activityId,
     DateTime endTime, {
@@ -37,15 +36,17 @@ abstract class ActivityRepository {
     double? value,
   });
 
-  Future<void> deleteActiveTimedRecordForActivity(int activityId);
+  Future<void> cancelActiveTimedRecord(int activityId);
 
   Future<void> deleteActivity(int activityId);
 }
 
 class DriftActivityRepository implements ActivityRepository {
-  DriftActivityRepository(this._db);
+  DriftActivityRepository(this._db)
+      : _recordLifecycle = RecordLifecycleStore(_db);
 
   final AppDatabase _db;
+  final RecordLifecycleStore _recordLifecycle;
 
   @override
   Future<List<BaseEventModel>> getActivities() {
@@ -103,33 +104,21 @@ class DriftActivityRepository implements ActivityRepository {
   }
 
   @override
-  Future<DateTime> getActivityStartTime(int activityId) {
-    return _db.getEventStartTime(activityId);
-  }
-
-  @override
   Future<void> addPlainRecord(
     int activityId,
     DateTime endTime, {
     double? value,
   }) {
-    return _db.addPlainRecordInDB(
-      RecordsCompanion(
-        eventId: Value(activityId),
-        endTime: Value(endTime),
-        value: Value(value),
-      ),
+    return _recordLifecycle.addPlainRecord(
+      activityId,
+      endTime,
+      value: value,
     );
   }
 
   @override
   Future<int> startTimedRecord(int activityId, DateTime startTime) {
-    return _db.startTimingRecordInDB(
-      RecordsCompanion(
-        eventId: Value(activityId),
-        startTime: Value(startTime),
-      ),
-    );
+    return _recordLifecycle.startTimedRecord(activityId, startTime);
   }
 
   @override
@@ -138,7 +127,7 @@ class DriftActivityRepository implements ActivityRepository {
     DateTime stoppedAt, {
     double? value,
   }) {
-    return _db.stopActiveTimingRecordInDB(
+    return _recordLifecycle.stopActiveTimedRecord(
       activityId,
       stoppedAt,
       value: value,
@@ -146,8 +135,8 @@ class DriftActivityRepository implements ActivityRepository {
   }
 
   @override
-  Future<void> deleteActiveTimedRecordForActivity(int activityId) {
-    return _db.deleteActiveTimingRecordForEventInDB(activityId);
+  Future<void> cancelActiveTimedRecord(int activityId) {
+    return _recordLifecycle.cancelActiveTimedRecord(activityId);
   }
 
   @override

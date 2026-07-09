@@ -1,5 +1,7 @@
 part of 'eventsList.dart';
 
+const accidentalTimedRecordThreshold = Duration(seconds: 5);
+
 void refreshActivityList(BuildContext context) {
   ProviderScope.containerOf(context).invalidate(activityListProvider);
 }
@@ -69,48 +71,27 @@ Future<void> addPlainRecord(BuildContext context, DateTime time) async {
 }
 
 Future<void> stopTimingRecord(BuildContext context, DateTime time) async {
-  int eventId = EventDataHolder.of(context).event.id;
+  final event = EventDataHolder.of(context).event as TimingEventModel;
+  final eventId = event.id;
 
   final repository = activityRepository();
-  DateTime startTime = await repository.getActivityStartTime(eventId);
-  var fiveSeconds = Duration(seconds: 5);
-  Duration thisDuration = time.difference(startTime);
-  if (thisDuration.compareTo(fiveSeconds) < 0) {
-    bool delete = await showDialog<bool>(
-            context: context,
-            builder: (context) {
-              return AlertDialog(
-                title: Text("时间不足5s，删除该记录还是继续？"),
-                actions: [
-                  TextButton(
-                      onPressed: () => Navigator.of(context).pop(true),
-                      child: Text("删除")),
-                  TextButton(
-                      onPressed: () => Navigator.of(context).pop(false),
-                      child: Text("继续"))
-                ],
-              );
-            }) ??
-        false;
-    if (delete) {
-      await repository.deleteActiveTimedRecordForActivity(eventId);
-      refreshActivityList(context);
-      return;
-    } else {
-      showToast("继续");
-      return;
-    }
-  } else {
-    String? unit = await repository.getActivityUnit(eventId);
-    double? val = 0;
-    if (unit != null) {
-      val = await inputValDialog(context, unit);
-      if (val == null) return;
-    }
-
-    await repository.stopActiveTimedRecord(eventId, time, value: val);
+  final duration = time.difference(event.startTime!);
+  if (duration < accidentalTimedRecordThreshold) {
+    await repository.cancelActiveTimedRecord(eventId);
     refreshActivityList(context);
+    showToast("已取消本次计时");
+    return;
   }
+
+  String? unit = await repository.getActivityUnit(eventId);
+  double? val = 0;
+  if (unit != null) {
+    val = await inputValDialog(context, unit);
+    if (val == null) return;
+  }
+
+  await repository.stopActiveTimedRecord(eventId, time, value: val);
+  refreshActivityList(context);
 }
 
 EventStatus getEventStatus(BaseEventModel event) {

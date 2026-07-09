@@ -98,11 +98,9 @@ class EventTileButton extends StatelessWidget {
           stopTimingRecord(context, DateTime.now());
         }, () async {
           showToast("长按 -- 手动指定停止时间");
-          DateTime startTime =
-              await activityRepository().getActivityStartTime(event.id);
-          var fiveSeconds = Duration(seconds: 5);
-          Duration thisDuration = DateTime.now().difference(startTime);
-          if (thisDuration.compareTo(fiveSeconds) < 0) {
+          final activeEvent = event as TimingEventModel;
+          final duration = DateTime.now().difference(activeEvent.startTime!);
+          if (duration < accidentalTimedRecordThreshold) {
             showToast("开始不足5s");
           } else {
             showTimePicker(

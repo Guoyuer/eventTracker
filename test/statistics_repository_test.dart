@@ -1,5 +1,6 @@
 import 'package:drift/drift.dart';
 import 'package:event_tracker/persistence/database/app_database.dart';
+import 'package:event_tracker/persistence/record_lifecycle_store.dart';
 import 'package:event_tracker/persistence/statistics_repository.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -8,6 +9,7 @@ import 'support/database_test_harness.dart';
 
 void main() {
   late AppDatabase db;
+  late RecordLifecycleStore lifecycle;
   late StatisticsRepository repository;
 
   setUpAll(() {
@@ -16,6 +18,7 @@ void main() {
 
   setUp(() {
     db = openTestDatabase();
+    lifecycle = RecordLifecycleStore(db);
     repository = DriftStatisticsRepository(db);
   });
 
@@ -37,18 +40,8 @@ void main() {
       ),
     );
 
-    await db.addPlainRecordInDB(
-      RecordsCompanion(
-        eventId: Value(readId),
-        endTime: Value(DateTime(2026, 1, 1, 8)),
-      ),
-    );
-    await db.addPlainRecordInDB(
-      RecordsCompanion(
-        eventId: Value(runId),
-        endTime: Value(DateTime(2026, 1, 2, 8)),
-      ),
-    );
+    await lifecycle.addPlainRecord(readId, DateTime(2026, 1, 1, 8));
+    await lifecycle.addPlainRecord(runId, DateTime(2026, 1, 2, 8));
 
     final data = await repository.getStatisticsData(
       DateTimeRange(
@@ -70,18 +63,8 @@ void main() {
       ),
     );
 
-    await db.addPlainRecordInDB(
-      RecordsCompanion(
-        eventId: Value(eventId),
-        endTime: Value(DateTime(2025, 12, 31, 8)),
-      ),
-    );
-    await db.addPlainRecordInDB(
-      RecordsCompanion(
-        eventId: Value(eventId),
-        endTime: Value(DateTime(2026, 1, 1, 8)),
-      ),
-    );
+    await lifecycle.addPlainRecord(eventId, DateTime(2025, 12, 31, 8));
+    await lifecycle.addPlainRecord(eventId, DateTime(2026, 1, 1, 8));
 
     final data = await repository.getStatisticsData(
       DateTimeRange(

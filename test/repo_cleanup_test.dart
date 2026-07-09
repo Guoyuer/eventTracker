@@ -64,4 +64,25 @@ void main() {
       expect(source, isNot(contains('persistence/database/app_database.dart')));
     }
   });
+
+  test('database module does not expose record lifecycle convenience methods',
+      () {
+    final database =
+        File('lib/persistence/database/app_database.dart').readAsStringSync();
+
+    for (final oldMethodName in [
+      'addPlainRecordInDB',
+      'startTimingRecordInDB',
+      'stopTimingRecordInDB',
+      'stopActiveTimingRecordInDB',
+      'deleteActiveTimingRecordInDB',
+      'deleteActiveTimingRecordForEventInDB',
+      'getEventStartTime',
+      'getEventSumTime',
+      'getEventRecordsInRange',
+      'getStartTime',
+    ]) {
+      expect(database, isNot(contains(oldMethodName)));
+    }
+  });
 }

@@ -82,7 +82,9 @@ Status: in progress
 
 - Renamed `DAO` to the lower-case `lib/persistence/database/` module path.
 - Replaced ad hoc string SQL updates in record lifecycle and latest-step reads with typed Drift operations.
-- Continue making record lifecycle operations transactional. Completed for plain record add, timed record start, timed record stop, active timed record delete, and event delete.
+- Continue making record lifecycle operations transactional. Completed for plain record add, timed record start, timed record stop, active timed record cancel, and event delete.
+- Moved record lifecycle writes and Aggregate Totals updates out of `AppDatabase` into `RecordLifecycleStore` plus the pure `ActivityAggregateTotals` rule object.
+- Replaced the short timed-record delete prompt with a cancel policy for accidental starts under five seconds.
 - Introduced `ActivityRepository` and migrated activity creation plus the activity-list recording flow to it.
 - Migrated activity detail record reads, deletion, and description edits to `ActivityRepository`.
 - Introduced `UnitRepository` and migrated unit management plus unit-list loading to it.
@@ -108,6 +110,7 @@ Status: in progress
 - Moved statistics activity-count and time-slot aggregation out of Widgets into `statistics_analytics.dart`.
 - Dropped legacy step tables and record sentinel assumptions from the active schema through a tested v3 migration.
 - Moved activity display models and analytics read models into `lib/domain/` so analytics no longer imports Drift generated row types.
+- Added explicit `ActivityAggregateTotals` invariants for plain and timed record accumulation.
 - Define invariants for timed records, plain records, values, and units.
 
 ## Phase 4: UI Composition

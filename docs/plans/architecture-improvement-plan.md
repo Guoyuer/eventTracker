@@ -46,6 +46,8 @@ Completed slice:
 - Removed inactive step-count UI, fake-data generation, debug DB viewer, and their direct database helper methods.
 - Removed unused/discontinued dependencies `share` and `moor_db_viewer`.
 - Moved activity detail record reads, activity deletion, and description reads/writes behind `ActivityRepository`.
+- Moved record lifecycle writes and Aggregate Totals updates into `RecordLifecycleStore` and the pure `ActivityAggregateTotals` rule object.
+- Renamed accidental short-start cleanup from delete semantics to `cancelActiveTimedRecord`.
 - Retired the legacy step schema via ADR 0001 and schema v3 migration.
 - Renamed the uppercase `DAO` module path to `lib/persistence/database/`.
 - Kept `flutter analyze`, `flutter test`, and `flutter build windows` green.
@@ -61,6 +63,12 @@ Next slice:
 
 Current problem: `sumTime`, `sumVal`, and `lastRecordId` are cached on activities and can drift from records if updates happen in multiple places.
 
+Current status:
+
+- `RecordLifecycleStore` owns plain record add, timed record start, timed record stop, and active timed record cancel writes.
+- `ActivityAggregateTotals` owns plain and timed accumulation rules and fails fast on negative timed durations.
+- Accidental timed starts under five seconds now cancel directly instead of asking the user to delete or continue.
+
 Target shape:
 
 - Introduce a small lifecycle module or internal repository helper for aggregate updates.
@@ -69,7 +77,7 @@ Target shape:
   - plain record add
   - timed record start
   - timed record stop
-  - active timed record delete
+  - active timed record cancel
   - event delete
   - value and duration accumulation
 

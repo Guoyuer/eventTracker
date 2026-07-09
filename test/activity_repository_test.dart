@@ -1,4 +1,4 @@
-import 'package:drift/drift.dart';
+import 'package:drift/drift.dart' hide isNotNull, isNull;
 import 'package:event_tracker/common/const.dart';
 import 'package:event_tracker/domain/activity_models.dart';
 import 'package:event_tracker/persistence/database/app_database.dart';
@@ -186,5 +186,41 @@ void main() {
       repository.stopActiveTimedRecord(activityId, DateTime(2026, 1, 1, 8)),
       throwsStateError,
     );
+  });
+
+  test('repository cancels an active timed record without accumulating totals',
+      () async {
+    final activityId = await repository.createActivity(
+      name: 'Practice',
+      careTime: true,
+    );
+    final firstStart = DateTime(2026, 1, 1, 8);
+    final activeStart = DateTime(2026, 1, 1, 9);
+
+    final firstRecordId = await repository.startTimedRecord(
+      activityId,
+      firstStart,
+    );
+    await repository.stopActiveTimedRecord(
+      activityId,
+      DateTime(2026, 1, 1, 8, 10),
+    );
+    final activeRecordId = await repository.startTimedRecord(
+      activityId,
+      activeStart,
+    );
+
+    await repository.cancelActiveTimedRecord(activityId);
+
+    final activity =
+        (await repository.getActivities()).single as TimingEventModel;
+    final canceledRecord = await (db.select(db.records)
+          ..where((record) => record.id.equals(activeRecordId)))
+        .getSingleOrNull();
+
+    expect(canceledRecord, isNull);
+    expect(activity.status, EventStatus.notActive);
+    expect(activity.sumDuration, const Duration(minutes: 10));
+    expect(activity.lastRecordId, firstRecordId);
   });
 }

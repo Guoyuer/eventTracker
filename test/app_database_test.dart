@@ -1,5 +1,6 @@
 import 'package:drift/drift.dart' hide isNotNull, isNull;
 import 'package:event_tracker/persistence/database/app_database.dart';
+import 'package:event_tracker/persistence/record_lifecycle_store.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -7,6 +8,7 @@ import 'support/database_test_harness.dart';
 
 void main() {
   late AppDatabase db;
+  late RecordLifecycleStore lifecycle;
 
   setUpAll(() {
     initializeDatabaseTestEnvironment();
@@ -14,6 +16,7 @@ void main() {
 
   setUp(() {
     db = openTestDatabase();
+    lifecycle = RecordLifecycleStore(db);
   });
 
   tearDown(() async {
@@ -30,12 +33,10 @@ void main() {
       ),
     );
 
-    await db.addPlainRecordInDB(
-      RecordsCompanion(
-        eventId: Value(eventId),
-        endTime: Value(DateTime(2026, 1, 1, 8)),
-        value: const Value(20),
-      ),
+    await lifecycle.addPlainRecord(
+      eventId,
+      DateTime(2026, 1, 1, 8),
+      value: 20,
     );
 
     final event = await db.getEventById(eventId);
@@ -56,19 +57,15 @@ void main() {
       ),
     );
 
-    await db.addPlainRecordInDB(
-      RecordsCompanion(
-        eventId: Value(eventId),
-        endTime: Value(DateTime(2026, 1, 1, 8)),
-        value: const Value(12),
-      ),
+    await lifecycle.addPlainRecord(
+      eventId,
+      DateTime(2026, 1, 1, 8),
+      value: 12,
     );
-    await db.addPlainRecordInDB(
-      RecordsCompanion(
-        eventId: Value(eventId),
-        endTime: Value(DateTime(2026, 1, 2, 8)),
-        value: const Value(8),
-      ),
+    await lifecycle.addPlainRecord(
+      eventId,
+      DateTime(2026, 1, 2, 8),
+      value: 8,
     );
 
     final event = await db.getEventById(eventId);
@@ -90,26 +87,14 @@ void main() {
     final start = DateTime(2026, 1, 1, 8);
     final end = DateTime(2026, 1, 1, 8, 30);
 
-    final recordId = await db.startTimingRecordInDB(
-      RecordsCompanion(
-        eventId: Value(eventId),
-        startTime: Value(start),
-      ),
-    );
+    final recordId = await lifecycle.startTimedRecord(eventId, start);
 
     var event = await db.getEventById(eventId);
     var record = await db.getRecordById(recordId);
     expect(event.lastRecordId, recordId);
     expect(record.endTime, isNull);
 
-    await db.stopTimingRecordInDB(
-      end.difference(start),
-      RecordsCompanion(
-        id: Value(recordId),
-        eventId: Value(eventId),
-        endTime: Value(end),
-      ),
-    );
+    await lifecycle.stopActiveTimedRecord(eventId, end);
 
     event = await db.getEventById(eventId);
     record = await db.getRecordById(recordId);
@@ -126,36 +111,24 @@ void main() {
       ),
     );
 
-    final firstRecordId = await db.startTimingRecordInDB(
-      RecordsCompanion(
-        eventId: Value(eventId),
-        startTime: Value(DateTime(2026, 1, 1, 8)),
-      ),
+    await lifecycle.startTimedRecord(
+      eventId,
+      DateTime(2026, 1, 1, 8),
     );
-    await db.stopTimingRecordInDB(
-      const Duration(minutes: 20),
-      RecordsCompanion(
-        id: Value(firstRecordId),
-        eventId: Value(eventId),
-        endTime: Value(DateTime(2026, 1, 1, 8, 20)),
-        value: const Value(3),
-      ),
+    await lifecycle.stopActiveTimedRecord(
+      eventId,
+      DateTime(2026, 1, 1, 8, 20),
+      value: 3,
     );
 
-    final secondRecordId = await db.startTimingRecordInDB(
-      RecordsCompanion(
-        eventId: Value(eventId),
-        startTime: Value(DateTime(2026, 1, 2, 8)),
-      ),
+    final secondRecordId = await lifecycle.startTimedRecord(
+      eventId,
+      DateTime(2026, 1, 2, 8),
     );
-    await db.stopTimingRecordInDB(
-      const Duration(minutes: 30),
-      RecordsCompanion(
-        id: Value(secondRecordId),
-        eventId: Value(eventId),
-        endTime: Value(DateTime(2026, 1, 2, 8, 30)),
-        value: const Value(5),
-      ),
+    await lifecycle.stopActiveTimedRecord(
+      eventId,
+      DateTime(2026, 1, 2, 8, 30),
+      value: 5,
     );
 
     final event = await db.getEventById(eventId);
@@ -165,7 +138,7 @@ void main() {
     expect(event.sumVal, 8);
   });
 
-  test('deleting an active timed record restores previous last record',
+  test('canceling an active timed record restores previous last record',
       () async {
     final eventId = await db.addEventInDB(
       EventsCompanion(
@@ -174,29 +147,21 @@ void main() {
       ),
     );
 
-    final firstRecordId = await db.startTimingRecordInDB(
-      RecordsCompanion(
-        eventId: Value(eventId),
-        startTime: Value(DateTime(2026, 1, 1, 8)),
-      ),
+    final firstRecordId = await lifecycle.startTimedRecord(
+      eventId,
+      DateTime(2026, 1, 1, 8),
     );
-    await db.stopTimingRecordInDB(
-      const Duration(minutes: 10),
-      RecordsCompanion(
-        id: Value(firstRecordId),
-        eventId: Value(eventId),
-        endTime: Value(DateTime(2026, 1, 1, 8, 10)),
-      ),
+    await lifecycle.stopActiveTimedRecord(
+      eventId,
+      DateTime(2026, 1, 1, 8, 10),
     );
 
-    final activeRecordId = await db.startTimingRecordInDB(
-      RecordsCompanion(
-        eventId: Value(eventId),
-        startTime: Value(DateTime(2026, 1, 1, 9)),
-      ),
+    final activeRecordId = await lifecycle.startTimedRecord(
+      eventId,
+      DateTime(2026, 1, 1, 9),
     );
 
-    await db.deleteActiveTimingRecordInDB(activeRecordId, eventId);
+    await lifecycle.cancelActiveTimedRecord(eventId);
 
     final event = await db.getEventById(eventId);
     final deletedRecord = await (db.select(db.records)
