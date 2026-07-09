@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart' hide DatePickerTheme;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../application/activity_recording_controller.dart';
 import '../application/activity_recording_actions.dart';
 import '../common/async_state.dart';
 import '../common/commonWidget.dart';
@@ -7,7 +8,7 @@ import '../domain/activity_models.dart';
 import '../persistence/persistence_providers.dart';
 import '../state/activity_list_providers.dart';
 
-part 'util.dart';
+import 'events_list_helpers.dart';
 
 class EventList extends ConsumerStatefulWidget {
   EventList({Key? key}) : super(key: key);
@@ -70,21 +71,40 @@ class EventTileButton extends ConsumerWidget {
     switch (status) {
       case EventStatus.plain:
         return eventListButton(Icon(Icons.add_rounded), Text("新记录"), () {
-          recordActivity(context, ref, DateTime.now());
+          _submitRecording(context, ref, event, DateTime.now());
         });
       case EventStatus.notActive:
         return eventListButton(Icon(Icons.play_arrow_outlined), Text("开始"), () {
-          recordActivity(context, ref, DateTime.now());
+          _submitRecording(context, ref, event, DateTime.now());
         });
       case EventStatus.active:
         return eventListButton(Icon(Icons.stop_circle_outlined), Text("停止"),
             () {
-          recordActivity(context, ref, DateTime.now());
+          _submitRecording(context, ref, event, DateTime.now());
         });
       default:
         return eventListButton(
             Icon(Icons.help_outline_rounded), Text("???"), () {});
     }
+  }
+
+  Future<void> _submitRecording(
+    BuildContext context,
+    WidgetRef ref,
+    BaseEventModel event,
+    DateTime recordedAt,
+  ) {
+    final controller = ActivityRecordingController(
+      actions: ActivityRecordingActions(ref.read(activityRepositoryProvider)),
+      refresh: () => ref.invalidate(activityListProvider),
+      notify: showToast,
+    );
+
+    return controller.record(
+      event,
+      recordedAt,
+      requestValue: (unit) => inputValDialog(context, unit),
+    );
   }
 }
 
@@ -122,7 +142,7 @@ class EventTile extends ConsumerWidget {
                 bool? deleted = await Navigator.of(context)
                     .pushNamed("EventDetails", arguments: event) as bool?;
                 if (deleted != null && deleted) {
-                  refreshActivityList(ref);
+                  ref.invalidate(activityListProvider);
                 }
               },
               child: Container(

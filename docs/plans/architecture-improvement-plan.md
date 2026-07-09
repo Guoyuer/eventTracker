@@ -168,7 +168,9 @@ Current status:
 - `StatisticPage` now keeps the selected date range in `selectedStatisticsRangeProvider` and loads chart data through `statisticsProvider`.
 - `EventTile` is now stateless; active-timer blinking is isolated in `ActiveTimingHighlight`, and elapsed-time text is driven by `elapsedDurationProvider`.
 - Activity recording actions now live in `ActivityRecordingActions`, so add/start/stop/cancel and value-prompt decisions can be tested without widget plumbing.
-- Feature state providers now live under `lib/state/`, with `stateProviders.dart` kept as a compatibility facade instead of the active owner module.
+- `ActivityRecordingController` now owns the route-level recording outcome policy, so changed, unchanged, and accidental short-timer cancellation results are handled behind a small tested Interface.
+- Activity detail deletion now returns a route result; `EventList` owns the single `activityListProvider` invalidation after deletion.
+- Feature state providers now live under `lib/state/`, and the old `stateProviders.dart` compatibility facade has been removed.
 - Async loading, empty, error, and retry rendering now goes through `AsyncStateView` instead of page-local `.when` branches.
 
 Target shape:
@@ -185,8 +187,9 @@ Rules:
 
 Next UI state slice:
 
-1. Replace `ReloadEventsN` dispatches with direct provider invalidation where `WidgetRef` is available.
-2. Make loading, empty, and error states consistent across activity, detail, and statistics views.
+1. Continue extracting route interaction coordinators where Widgets still combine prompts, navigation, mutation, refresh, and notification policy.
+2. Keep Widgets as UI Adapters and move reusable interaction policy behind tested application Modules.
+3. Delete compatibility files as soon as active imports have moved.
 
 ### 6. Keep Debug Tools Out of Release UI
 

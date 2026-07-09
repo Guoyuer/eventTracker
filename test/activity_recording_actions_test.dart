@@ -1,4 +1,5 @@
 import 'package:event_tracker/application/activity_recording_actions.dart';
+import 'package:event_tracker/application/activity_recording_controller.dart';
 import 'package:event_tracker/domain/activity_models.dart';
 import 'package:event_tracker/persistence/activity_repository.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -117,6 +118,65 @@ void main() {
       _TimedStop(activityId: 2, stoppedAt: stoppedAt, value: 4),
     ]);
   });
+
+  test('recording controller refreshes changed activity lists', () async {
+    final repository = _FakeActivityRepository();
+    final harness = _ControllerHarness(repository);
+    final recordedAt = DateTime(2026, 1, 1, 8);
+
+    await harness.controller.record(
+      _plainActivity(unit: null),
+      recordedAt,
+      requestValue: (_) => throw StateError('value prompt should not open'),
+    );
+
+    expect(harness.refreshCount, 1);
+    expect(harness.notifications, isEmpty);
+  });
+
+  test('recording controller reports canceled accidental timed records',
+      () async {
+    final repository = _FakeActivityRepository();
+    final harness = _ControllerHarness(repository);
+    final startTime = DateTime(2026, 1, 1, 8);
+
+    await harness.controller.record(
+      _timedActivity(status: EventStatus.active, startTime: startTime),
+      startTime.add(const Duration(seconds: 4)),
+      requestValue: (_) => throw StateError('value prompt should not open'),
+    );
+
+    expect(harness.refreshCount, 1);
+    expect(harness.notifications, ['已取消本次计时']);
+  });
+
+  test('recording controller leaves unchanged outcomes quiet', () async {
+    final repository = _FakeActivityRepository();
+    final harness = _ControllerHarness(repository);
+
+    await harness.controller.record(
+      _plainActivity(unit: 'pages'),
+      DateTime(2026, 1, 1, 8),
+      requestValue: (_) async => null,
+    );
+
+    expect(harness.refreshCount, 0);
+    expect(harness.notifications, isEmpty);
+  });
+}
+
+class _ControllerHarness {
+  _ControllerHarness(_FakeActivityRepository repository) {
+    controller = ActivityRecordingController(
+      actions: ActivityRecordingActions(repository),
+      refresh: () => refreshCount++,
+      notify: notifications.add,
+    );
+  }
+
+  late final ActivityRecordingController controller;
+  var refreshCount = 0;
+  final notifications = <String>[];
 }
 
 PlainEventModel _plainActivity({String? unit}) {

@@ -140,8 +140,10 @@ Status: in progress
 - Moved active-timer ticking state out of the whole activity tile and behind `elapsedDurationProvider`.
 - Replaced shared text-input dialog `StatefulBuilder` state with controller-driven rebuilds.
 - Moved the statistics date range into Riverpod state and kept chart data loading behind `statisticsProvider`.
-- Moved activity recording actions out of `EventsList/util.dart` and into a testable `ActivityRecordingActions` module.
-- Split broad Riverpod state ownership out of `stateProviders.dart` into focused modules under `lib/state/`.
+- Moved activity recording decisions out of `EventsList/util.dart` and into the testable `ActivityRecordingActions` module.
+- Moved route-level recording outcome handling behind `ActivityRecordingController`, leaving the activity-list Widget as a thin UI Adapter for prompts, refresh, and toast notifications.
+- Split broad Riverpod state ownership out of `stateProviders.dart` into focused modules under `lib/state/`, then removed the compatibility facade after active imports were migrated.
+- Made activity detail deletion return a route result so `EventList` is the single owner of activity-list refresh after deletion.
 - Standardized async loading, empty, error, and retry states behind `AsyncStateView`.
 - Replaced the heatmap calendar's global empty-date sentinel with typed placeholder cells produced by the calendar model.
 - Removed the old settings-page DB viewer, delete-all-data button, fake-data generator, and inactive step-count route.
@@ -157,6 +159,13 @@ Status: in progress
 - Renamed legacy `sql.moor` to `sql.drift` and regenerated Drift code with the Drift 2 generator.
 - Then evaluate Flutter SDK upgrade separately.
 - Removed unused `share` and discontinued `moor_db_viewer`.
+
+Next platform slice:
+
+1. Upgrade Flutter stable and Dart together through the Flutter SDK.
+2. Raise the Dart SDK constraint only after the upgraded toolchain resolves dependencies.
+3. Revisit dependency versions that are blocked by Flutter 3.10 / Dart 3.0, especially chart and lint packages.
+4. Run `flutter analyze`, `flutter test`, `flutter build windows`, and a Windows visual smoke check before committing.
 
 ## First Execution Slice
 

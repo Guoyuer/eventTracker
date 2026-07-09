@@ -6,7 +6,6 @@ import 'package:event_tracker/common/const.dart';
 import '../domain/activity_models.dart';
 import '../persistence/persistence_providers.dart';
 import '../state/activity_detail_providers.dart';
-import '../state/activity_list_providers.dart';
 import 'activity_detail_charts.dart';
 import 'activity_description_editor.dart';
 
@@ -53,7 +52,6 @@ class EventDetails extends ConsumerWidget {
                   await ref
                       .read(activityRepositoryProvider)
                       .deleteActivity(event.id);
-                  ref.invalidate(activityListProvider);
                   if (!context.mounted) {
                     return;
                   }

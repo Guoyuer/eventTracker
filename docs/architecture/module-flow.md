@@ -21,6 +21,7 @@ flowchart LR
     ActivityDetailChartModels["activity_detail_chart_models.dart"]
     StatisticsChartModels["statistics_chart_models.dart"]
     DateRange["DateRange"]
+    ActivityRecordingController["ActivityRecordingController"]
     ActivityRecordingActions["ActivityRecordingActions"]
     AsyncStateView["AsyncStateView"]
   end
@@ -52,8 +53,9 @@ flowchart LR
   end
 
   EventList --> ActivityListProvider
-  EventList --> ActivityRecordingActions
+  EventList --> ActivityRecordingController
   EventList --> AsyncStateView
+  ActivityRecordingController --> ActivityRecordingActions
   ActivityRecordingActions --> ActivityRepository
   ActivityListProvider --> ActivityRepositoryProvider
   EventDetails --> ActivityRecordsProvider
@@ -116,6 +118,24 @@ flowchart LR
   After["After"]
   After --> A1["ref.invalidate(activityListProvider)"]
   A1 --> A2["EventList reloads activity list"]
+```
+
+### Activity Recording Interaction
+
+```mermaid
+flowchart LR
+  Before["Before"]
+  Before --> B1["EventTileButton"]
+  B1 --> B2["Prompt for value"]
+  B1 --> B3["Call repository mutation policy"]
+  B1 --> B4["Switch on changed/canceled/unchanged outcome"]
+  B1 --> B5["Refresh list and show toast"]
+
+  After["After"]
+  After --> A1["EventTileButton UI Adapter"]
+  A1 --> A2["ActivityRecordingController"]
+  A2 --> A3["ActivityRecordingActions"]
+  A2 --> A4["Refresh and notify outcome policy"]
 ```
 
 ### Activity Details Heatmap

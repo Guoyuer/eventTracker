@@ -6,6 +6,7 @@ void main() {
   test('removed prototype files and dependencies stay removed', () {
     expect(File('lib/addFakeData.dart').existsSync(), isFalse);
     expect(File('lib/StepCount/stepStatistics.dart').existsSync(), isFalse);
+    expect(File('lib/stateProviders.dart').existsSync(), isFalse);
 
     final pubspec = File('pubspec.yaml').readAsStringSync();
     final lockfile = File('pubspec.lock').readAsStringSync();
@@ -62,7 +63,6 @@ void main() {
 
   test('ui state does not import the Drift database module directly', () {
     for (final path in [
-      'lib/stateProviders.dart',
       'lib/state/activity_detail_providers.dart',
       'lib/state/activity_editor_providers.dart',
       'lib/state/activity_list_providers.dart',
@@ -96,25 +96,18 @@ void main() {
       expect(source, isNot(contains('stateProviders.dart')));
     }
 
-    final facade = File('lib/stateProviders.dart').readAsStringSync();
-    expect(facade, isNot(contains('import ')));
-    expect(facade, contains("export 'state/activity_list_providers.dart';"));
-    expect(facade, contains("export 'state/statistics_providers.dart';"));
+    expect(File('lib/stateProviders.dart').existsSync(), isFalse);
   });
 
   test('persistence providers own database adapter wiring', () {
     final providers =
         File('lib/persistence/persistence_providers.dart').readAsStringSync();
-    final stateProviders = File('lib/stateProviders.dart').readAsStringSync();
 
     expect(providers, contains('appDatabaseProvider'));
     expect(providers, contains('Provider<AppDatabase>'));
     expect(providers, contains('DriftActivityRepository'));
     expect(providers, contains('DriftUnitRepository'));
     expect(providers, contains('DriftStatisticsRepository'));
-    expect(stateProviders,
-        contains("export 'persistence/persistence_providers.dart';"));
-    expect(stateProviders, isNot(contains('Provider<AppDatabase>')));
   });
 
   test('repositories do not create the production database singleton', () {
@@ -251,7 +244,7 @@ void main() {
       () {
     for (final path in [
       'lib/EventsList/eventsList.dart',
-      'lib/EventsList/util.dart',
+      'lib/EventsList/events_list_helpers.dart',
       'lib/eventEditor.dart',
       'lib/UnitManager/unitsManagerPage.dart',
     ]) {
@@ -266,22 +259,41 @@ void main() {
   test('activity list delegates recording actions to a testable module', () {
     final eventsList =
         File('lib/EventsList/eventsList.dart').readAsStringSync();
-    final listUtil = File('lib/EventsList/util.dart').readAsStringSync();
+    final listHelpers =
+        File('lib/EventsList/events_list_helpers.dart').readAsStringSync();
+    final controller =
+        File('lib/application/activity_recording_controller.dart')
+            .readAsStringSync();
     final actions = File('lib/application/activity_recording_actions.dart')
         .readAsStringSync();
     final repository =
         File('lib/persistence/activity_repository.dart').readAsStringSync();
 
-    expect(
-        eventsList, contains('recordActivity(context, ref, DateTime.now())'));
-    expect(listUtil, contains('ActivityRecordingActions'));
-    expect(listUtil, isNot(contains('addPlainRecord(')));
-    expect(listUtil, isNot(contains('startTimedRecord(')));
-    expect(listUtil, isNot(contains('stopActiveTimedRecord(')));
-    expect(listUtil, isNot(contains('cancelActiveTimedRecord(')));
+    expect(eventsList, contains('ActivityRecordingController'));
+    expect(eventsList, isNot(contains('recordActivity(context')));
+    expect(eventsList, isNot(contains('switch (outcome)')));
+    expect(listHelpers, isNot(contains('WidgetRef')));
+    expect(controller, contains('ActivityRecordingActions'));
+    expect(controller, isNot(contains('BuildContext')));
+    expect(controller, isNot(contains('WidgetRef')));
+    expect(controller, isNot(contains('addPlainRecord(')));
+    expect(controller, isNot(contains('startTimedRecord(')));
+    expect(controller, isNot(contains('stopActiveTimedRecord(')));
+    expect(controller, isNot(contains('cancelActiveTimedRecord(')));
     expect(actions, contains('ActivityRecordingOutcome'));
     expect(actions, contains('accidentalTimedRecordThreshold'));
     expect(repository, isNot(contains('getActivityUnit')));
+  });
+
+  test('activity detail deletion has a single activity-list refresh owner', () {
+    final details =
+        File('lib/EventsDetails/eventDetails.dart').readAsStringSync();
+    final eventsList =
+        File('lib/EventsList/eventsList.dart').readAsStringSync();
+
+    expect(details, isNot(contains('activityListProvider')));
+    expect(details, isNot(contains('ref.invalidate(activityListProvider)')));
+    expect(eventsList, contains('ref.invalidate(activityListProvider)'));
   });
 
   test('activity list does not expose incomplete manual time entry controls',
@@ -307,6 +319,12 @@ void main() {
     expect(
         activityList, contains('class LapsedTimeStr extends ConsumerWidget'));
     expect(providers, contains('elapsedDurationProvider'));
+  });
+
+  test('unused common widget helpers stay deleted', () {
+    final common = File('lib/common/commonWidget.dart').readAsStringSync();
+
+    expect(common, isNot(contains('DividerWithText')));
   });
 
   test('statistics page keeps selected range in Riverpod state', () {

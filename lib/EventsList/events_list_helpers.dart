@@ -1,35 +1,7 @@
-part of 'eventsList.dart';
+import 'package:flutter/material.dart' hide DatePickerTheme;
 
-void refreshActivityList(WidgetRef ref) {
-  ref.invalidate(activityListProvider);
-}
-
-Future<void> recordActivity(
-  BuildContext context,
-  WidgetRef ref,
-  DateTime recordedAt,
-) async {
-  final event = EventDataHolder.of(context).event;
-  final recorder =
-      ActivityRecordingActions(ref.read(activityRepositoryProvider));
-  final outcome = await recorder.record(
-    event,
-    recordedAt,
-    requestValue: (unit) => inputValDialog(context, unit),
-  );
-
-  switch (outcome) {
-    case ActivityRecordingOutcome.changed:
-      refreshActivityList(ref);
-      break;
-    case ActivityRecordingOutcome.canceledAccidentalTimedRecord:
-      refreshActivityList(ref);
-      showToast("已取消本次计时");
-      break;
-    case ActivityRecordingOutcome.unchanged:
-      break;
-  }
-}
+import '../common/commonWidget.dart';
+import '../domain/activity_models.dart';
 
 Future<double?> inputValDialog(BuildContext ctx, String unit) async {
   final controller = TextEditingController();
@@ -78,8 +50,9 @@ Future<double?> inputValDialog(BuildContext ctx, String unit) async {
 EventStatus getEventStatus(BaseEventModel event) {
   if (event is TimingEventModel) {
     return event.status;
-  } else {
-    if (event is PlainEventModel) return EventStatus.plain;
+  }
+  if (event is PlainEventModel) {
+    return EventStatus.plain;
   }
   return EventStatus.plain;
 }

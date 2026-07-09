@@ -84,30 +84,3 @@ void showToast(String text) {
       textColor: Colors.white,
       fontSize: 16.0);
 }
-
-class DividerWithText extends StatelessWidget {
-  final String txt;
-
-  DividerWithText(this.txt);
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      margin: EdgeInsets.only(top: 5),
-      child: Row(children: [
-        Expanded(
-            child: Divider(
-          thickness: 5,
-        )),
-        Text(
-          txt,
-          style: TextStyle(fontSize: 20),
-        ),
-        Expanded(
-            child: Divider(
-          thickness: 5,
-        ))
-      ]),
-    );
-  }
-}
