@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../common/async_state.dart';
 import '../persistence/persistence_providers.dart';
 import '../state/activity_detail_providers.dart';
 
@@ -16,10 +17,12 @@ class ActivityDescriptionEditor extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final description = ref.watch(activityDescriptionProvider(activityId));
 
-    return description.when(
+    return AsyncStateView<String?>(
+      value: description,
       data: (rawDescription) => _buildDescription(ref, rawDescription),
-      error: (error, stackTrace) => Text("加载描述失败"),
-      loading: () => Text("加载中"),
+      errorMessage: '加载描述失败',
+      layout: AsyncStateLayout.inline,
+      onRetry: () => ref.invalidate(activityDescriptionProvider(activityId)),
     );
   }
 

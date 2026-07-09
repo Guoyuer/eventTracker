@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:event_tracker/common/async_state.dart';
 import 'package:event_tracker/common/commonWidget.dart';
 import 'package:event_tracker/common/util.dart';
 import 'package:intl/intl.dart';
@@ -57,10 +58,12 @@ class Charts extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final statistics = ref.watch(statisticsProvider(range));
-    return statistics.when(
+    return AsyncStateView<StatisticsData>(
+      value: statistics,
       data: _buildCharts,
-      error: (error, stackTrace) => Card(elevation: 10, child: Text("加载统计失败")),
-      loading: loadingScreen,
+      errorMessage: '加载统计失败',
+      layout: AsyncStateLayout.card,
+      onRetry: () => ref.invalidate(statisticsProvider(range)),
     );
   }
 

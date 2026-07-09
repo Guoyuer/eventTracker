@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../common/async_state.dart';
 import '../common/commonWidget.dart';
 import '../domain/activity_models.dart';
 import '../persistence/persistence_providers.dart';
@@ -16,10 +17,11 @@ class UnitsManager extends ConsumerWidget {
       appBar: AppBar(
         title: Text("单位管理"),
       ),
-      body: units.when(
+      body: AsyncStateView<List<ActivityUnit>>(
+        value: units,
         data: (units) => _buildListView(context, ref, units),
-        error: (error, stackTrace) => Center(child: Text("加载单位失败")),
-        loading: loadingScreen,
+        errorMessage: '加载单位失败',
+        onRetry: () => ref.invalidate(unitListProvider),
       ),
     );
   }

@@ -19,6 +19,7 @@ flowchart LR
     ActivityDetailAnalytics["activity_detail_analytics.dart"]
     StatisticsAnalytics["statistics_analytics.dart"]
     ActivityRecordingActions["ActivityRecordingActions"]
+    AsyncStateView["AsyncStateView"]
   end
 
   subgraph State["Riverpod state"]
@@ -49,14 +50,17 @@ flowchart LR
 
   EventList --> ActivityListProvider
   EventList --> ActivityRecordingActions
+  EventList --> AsyncStateView
   ActivityRecordingActions --> ActivityRepository
   ActivityListProvider --> ActivityRepositoryProvider
   EventDetails --> ActivityRecordsProvider
+  EventDetails --> AsyncStateView
   ActivityRecordsProvider --> ActivityRepositoryProvider
   EventEditor --> UnitListProvider
   UnitManager --> UnitListProvider
   UnitListProvider --> UnitRepositoryProvider
   Statistics --> StatisticsProvider
+  Statistics --> AsyncStateView
   StatisticsProvider --> StatisticsRepositoryProvider
   EventEditor --> ActivityRepositoryProvider
   EventDetails --> ActivityDetailAnalytics
@@ -127,10 +131,10 @@ The direction is to keep record and activity rules in pure modules or repositori
 
 ```mermaid
 flowchart LR
-  AsyncStates["Inconsistent async state rendering"]
-  AsyncStates --> UI["Standardize loading, empty, error, and retry states"]
+  ChartAdapters["Chart adapters own view-model construction"]
+  ChartAdapters --> Logic["Move chart view models into pure modules"]
 
   Next["Next deepening candidates"]
-  Next --> AsyncState["Standardize loading, empty, error, and retry states"]
   Next --> ChartViewModels["Extract pure chart view-model builders"]
+  Next --> HeatmapGeometry["Extract heatmap geometry and level mapping"]
 ```

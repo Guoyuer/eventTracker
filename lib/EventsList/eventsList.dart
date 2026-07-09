@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart' hide DatePickerTheme;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../application/activity_recording_actions.dart';
+import '../common/async_state.dart';
 import '../common/commonWidget.dart';
 import '../domain/activity_models.dart';
 import '../persistence/persistence_providers.dart';
@@ -41,18 +42,17 @@ class _EventListState extends ConsumerState<EventList> {
   @override
   Widget build(BuildContext context) {
     final events = ref.watch(activityListProvider);
-    return events.when(
+    return AsyncStateView<List<BaseEventModel>>(
+      value: events,
       data: _buildEventList,
-      error: (error, stackTrace) => Center(child: Text("加载项目失败：$error")),
-      loading: loadingScreen,
+      errorMessage: '加载项目失败',
+      emptyMessage: '暂无项目',
+      isEmpty: (events) => events.isEmpty,
+      onRetry: () => ref.invalidate(activityListProvider),
     );
   }
 
   Widget _buildEventList(List<BaseEventModel> events) {
-    if (events.isEmpty) {
-      return Center(child: Text("暂无项目"));
-    }
-
     return ListView.builder(
         controller: _scrollController,
         itemCount: events.length,

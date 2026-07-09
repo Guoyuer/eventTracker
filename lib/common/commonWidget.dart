@@ -30,16 +30,6 @@ Widget eventListButton(Icon icon, Widget label, void Function() onPressCallBack,
           onLongPress: onLongPressCallBack));
 }
 
-Widget loadingScreen() {
-  return Center(
-    child: Container(
-      width: 50,
-      height: 50,
-      child: CircularProgressIndicator(),
-    ),
-  );
-}
-
 Future<void> displayTextInputDialog(
   BuildContext context,
   String title,

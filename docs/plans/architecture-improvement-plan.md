@@ -166,6 +166,7 @@ Current status:
 - `EventTile` is now stateless; active-timer blinking is isolated in `ActiveTimingHighlight`, and elapsed-time text is driven by `elapsedDurationProvider`.
 - Activity recording actions now live in `ActivityRecordingActions`, so add/start/stop/cancel and value-prompt decisions can be tested without widget plumbing.
 - Feature state providers now live under `lib/state/`, with `stateProviders.dart` kept as a compatibility facade instead of the active owner module.
+- Async loading, empty, error, and retry rendering now goes through `AsyncStateView` instead of page-local `.when` branches.
 
 Target shape:
 
@@ -218,8 +219,8 @@ Rule:
 
 Recommended order from here:
 
-1. Standardize async loading, empty, error, and retry states across list/detail/statistics views.
-2. Extract pure chart view-model builders from chart adapter widgets.
+1. Extract pure chart view-model builders from chart adapter widgets.
+2. Extract heatmap calendar geometry and level mapping out of widgets.
 3. Dependency cleanup and upgrade batches.
 
 ## Definition of Done for Each Slice

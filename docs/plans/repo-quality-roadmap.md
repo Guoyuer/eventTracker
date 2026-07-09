@@ -139,6 +139,7 @@ Status: in progress
 - Moved the statistics date range into Riverpod state and kept chart data loading behind `statisticsProvider`.
 - Moved activity recording actions out of `EventsList/util.dart` and into a testable `ActivityRecordingActions` module.
 - Split broad Riverpod state ownership out of `stateProviders.dart` into focused modules under `lib/state/`.
+- Standardized async loading, empty, error, and retry states behind `AsyncStateView`.
 - Removed the old settings-page DB viewer, delete-all-data button, fake-data generator, and inactive step-count route.
 
 ## Phase 5: Dependency and Platform Modernization

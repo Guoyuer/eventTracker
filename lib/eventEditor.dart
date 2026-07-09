@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:event_tracker/common/async_state.dart';
 import 'package:event_tracker/common/commonWidget.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'domain/activity_models.dart';
@@ -89,13 +90,13 @@ class EventEditor extends ConsumerWidget {
                         ])),
                     Card(
                         elevation: 8,
-                        child: units.when(
+                        child: AsyncStateView<List<ActivityUnit>>(
+                          value: units,
                           data: (units) =>
                               _buildUnitSelector(ref, units, selectedUnit),
-                          error: (error, stackTrace) => ListTile(
-                            title: Text("加载单位失败"),
-                          ),
-                          loading: loadingScreen,
+                          errorMessage: '加载单位失败',
+                          layout: AsyncStateLayout.inline,
+                          onRetry: () => ref.invalidate(unitListProvider),
                         )),
                     myRaisedButton(Text("保存"), () {
                       saveActivity();

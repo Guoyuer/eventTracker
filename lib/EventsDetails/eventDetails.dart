@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:event_tracker/common/commonWidget.dart';
+import 'package:event_tracker/common/async_state.dart';
 import 'package:event_tracker/common/const.dart';
 
 import '../domain/activity_models.dart';
@@ -30,7 +30,15 @@ class EventDetails extends ConsumerWidget {
     if (event.lastRecordId != null) {
       listChildren.add(_buildCharts(ref));
     } else {
-      listChildren.add(Text("暂无记录"));
+      listChildren.add(
+        Card(
+          elevation: 10,
+          child: Padding(
+            padding: EdgeInsets.all(16),
+            child: Center(child: Text("暂无记录")),
+          ),
+        ),
+      );
     }
 
     return Scaffold(
@@ -79,16 +87,17 @@ class EventDetails extends ConsumerWidget {
 
   Widget _buildCharts(WidgetRef ref) {
     final records = ref.watch(activityRecordsProvider(event.id));
-    return records.when(
+    return AsyncStateView<List<ActivityRecord>>(
+      value: records,
       data: (records) => ActivityDetailCharts(
         activity: event,
         records: records,
       ),
-      error: (error, stackTrace) => Card(
-        elevation: 10,
-        child: Text("加载记录失败"),
-      ),
-      loading: loadingScreen,
+      errorMessage: '加载记录失败',
+      emptyMessage: '暂无记录',
+      isEmpty: (records) => records.isEmpty,
+      layout: AsyncStateLayout.card,
+      onRetry: () => ref.invalidate(activityRecordsProvider(event.id)),
     );
   }
 

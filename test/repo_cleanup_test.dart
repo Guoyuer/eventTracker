@@ -209,6 +209,32 @@ void main() {
     expect(source, isNot(contains('setState(')));
   });
 
+  test('async loading empty and error states use the shared module', () {
+    final asyncState = File('lib/common/async_state.dart').readAsStringSync();
+    final commonWidgets =
+        File('lib/common/commonWidget.dart').readAsStringSync();
+
+    expect(asyncState, contains('class AsyncStateView'));
+    expect(asyncState, contains('enum AsyncStateLayout'));
+    expect(asyncState, contains('CircularProgressIndicator'));
+    expect(commonWidgets, isNot(contains('loadingScreen')));
+
+    for (final path in [
+      'lib/EventsList/eventsList.dart',
+      'lib/EventsDetails/eventDetails.dart',
+      'lib/EventsDetails/activity_description_editor.dart',
+      'lib/Statistics/statistics.dart',
+      'lib/UnitManager/unitsManagerPage.dart',
+      'lib/eventEditor.dart',
+    ]) {
+      final source = File(path).readAsStringSync();
+
+      expect(source, contains('AsyncStateView'));
+      expect(source, isNot(contains('.when(')));
+      expect(source, isNot(contains('loadingScreen')));
+    }
+  });
+
   test('ui widgets use repository providers instead of repository factories',
       () {
     for (final path in [
