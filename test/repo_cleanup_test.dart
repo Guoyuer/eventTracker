@@ -105,7 +105,12 @@ void main() {
 
     expect(statistics, isNot(contains('StatefulWidget')));
     expect(statistics, isNot(contains('setState(')));
+    expect(statistics, isNot(contains('fl_chart')));
+    expect(statistics, isNot(contains('statistics_analytics.dart')));
+    expect(statistics, isNot(contains('PieChart')));
+    expect(statistics, isNot(contains('BarChart')));
     expect(statistics, contains('selectedStatisticsRangeProvider'));
+    expect(statistics, contains('StatisticsCharts'));
     expect(providers, contains('selectedStatisticsRangeProvider'));
     expect(providers, contains('statisticsProvider'));
   });

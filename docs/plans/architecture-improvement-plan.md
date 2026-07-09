@@ -106,6 +106,7 @@ Current status:
 - Added `docs/architecture/module-flow.md` with Mermaid diagrams for the active module flow and remaining seams.
 - Moved statistics range-record and activity-map reads behind `StatisticsRepository`.
 - Moved activity display models plus analytics record/activity read models into `lib/domain/`, with repositories mapping from Drift rows.
+- Extracted statistics chart rendering and `fl_chart` adapters into `Statistics/statistics_charts.dart`.
 
 Target modules:
 
@@ -122,8 +123,8 @@ Rules:
 
 Remaining analytics slice:
 
-1. Extract chart adapter helpers if `Statistics` remains difficult to read.
-2. Replace Widget-local calculation with calls into analytics modules where more remain.
+1. Replace Widget-local calculation with calls into analytics modules where more remain.
+2. Split chart rendering further if future chart types add more adapter complexity.
 
 ### 4. Retired Legacy Step Schema
 
@@ -169,8 +170,7 @@ Rules:
 Next UI state slice:
 
 1. Replace `ReloadEventsN` dispatches with direct provider invalidation where `WidgetRef` is available.
-2. Extract the remaining chart adapter helpers from the statistics Widget.
-3. Make loading, empty, and error states consistent across activity, detail, and statistics views.
+2. Make loading, empty, and error states consistent across activity, detail, and statistics views.
 
 ### 6. Keep Debug Tools Out of Release UI
 

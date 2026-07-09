@@ -110,6 +110,7 @@ Status: in progress
 - Moved statistics activity-count and time-slot aggregation out of Widgets into `statistics_analytics.dart`.
 - Dropped legacy step tables and record sentinel assumptions from the active schema through a tested v3 migration.
 - Moved activity display models and analytics read models into `lib/domain/` so analytics no longer imports Drift generated row types.
+- Extracted statistics chart rendering and `fl_chart` adapters out of the statistics page route.
 - Added explicit `ActivityAggregateTotals` invariants for plain and timed record accumulation.
 - Define invariants for timed records, plain records, values, and units.
 
