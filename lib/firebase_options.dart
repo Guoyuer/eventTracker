@@ -69,7 +69,8 @@ class DefaultFirebaseOptions {
     messagingSenderId: '383831406976',
     projectId: 'event-tracker-22a80',
     storageBucket: 'event-tracker-22a80.appspot.com',
-    iosClientId: '383831406976-59pklt72pnsv8no56do2ea4fbpk4pfve.apps.googleusercontent.com',
+    iosClientId:
+        '383831406976-59pklt72pnsv8no56do2ea4fbpk4pfve.apps.googleusercontent.com',
     iosBundleId: 'com.yuerguo.flutterEventTracker',
   );
 }

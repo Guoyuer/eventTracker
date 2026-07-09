@@ -26,6 +26,37 @@ flutter build windows
 
 If a gate is temporarily red, document the exact failure in this file before moving on.
 
+## Fast Windows Iteration Loop
+
+`flutter build windows` is the final runtime gate for completed slices, but it is too slow for every small edit. Use this loop while actively developing:
+
+```powershell
+flutter run -d windows
+```
+
+Keep that process alive and use Flutter hot reload from the terminal:
+
+```text
+r
+```
+
+For Dart-only logic or UI refactors, prefer a tighter check before the final Windows build:
+
+```powershell
+flutter analyze
+flutter test test\<relevant_test_file>.dart
+flutter test --plain-name "<matching test name>"
+```
+
+Run the full gate before claiming a slice is complete, before committing a runtime fix, or after touching Windows runner files, CMake, plugin registration, startup/bootstrap code, native dependencies, or database initialization:
+
+```powershell
+flutter test
+flutter build windows
+```
+
+Avoid `flutter clean` during normal iteration because it discards incremental build caches and makes the next Windows build much slower.
+
 ## Phase 1: Baseline Tooling and Runtime
 
 Status: completed
@@ -46,17 +77,19 @@ Status: in progress
 - Replaced ad hoc string SQL updates in record lifecycle and latest-step reads with typed Drift operations.
 - Continue making record lifecycle operations transactional. Completed for plain record add, timed record start, timed record stop, active timed record delete, and event delete.
 - Introduced `ActivityRepository` and migrated activity creation plus the activity-list recording flow to it.
+- Migrated activity detail record reads, deletion, and description edits to `ActivityRepository`.
 - Introduced `UnitRepository` and migrated unit management plus unit-list loading to it.
+- Introduced `StatisticsRepository` and migrated statistics range reads to it.
 - Move desktop sqflite setup behind a database bootstrap module.
 - Added tests around record lifecycle, aggregate totals, latest step lookup, repository activity creation, and repository activity recording.
 - Added tests for unit add/list/delete and duplicate-name protection through the repository.
+- Removed inactive step-count and debug/fake-data database methods from the active persistence API.
 
 Remaining:
 
 - Rename `DAO` to a lower-case persistence module path.
 - Continue migrating UI callers from `AppDatabase` to repository-style modules.
 - Move details and statistics reads behind persistence interfaces.
-- Decide whether debug fake-data generation should use repositories or remain a database-only developer tool.
 
 ## Phase 3: Domain Model and Aggregation
 
@@ -64,18 +97,18 @@ Status: in progress
 
 - Extract activity display models and event status logic out of generated persistence files.
 - Moved activity detail heatmap and time-slot aggregation out of Widgets into `activity_detail_analytics.dart`.
-- Move statistics aggregation out of Widgets into pure Dart modules.
-- Replace `eventId = -1` step records with a clearer step-specific persistence model or document an ADR if retained.
+- Moved statistics activity-count and time-slot aggregation out of Widgets into `statistics_analytics.dart`.
+- Decide whether to migrate or drop the remaining legacy step tables in a schema migration.
 - Define invariants for timed records, plain records, values, and units.
 
 ## Phase 4: UI Composition
 
-Status: pending
+Status: in progress
 
 - Split large widgets into route, view model, and small render widgets.
 - Make loading, empty, and error states consistent across list/detail/statistics views.
-- Replace route-refresh hacks with provider-driven refresh.
-- Hide developer tools behind debug mode or remove them from production UI.
+- Replaced the route pop/push activity-list refresh hack with `activityListProvider` invalidation.
+- Removed the old settings-page DB viewer, delete-all-data button, fake-data generator, and inactive step-count route.
 
 ## Phase 5: Dependency and Platform Modernization
 
@@ -84,7 +117,7 @@ Status: pending
 - Decide whether Firebase is needed. Remove it if cloud sync is out of scope.
 - Upgrade dependencies in small batches with tests between batches.
 - Then evaluate Flutter SDK upgrade separately.
-- Replace discontinued packages (`share`, `moor_db_viewer`) or isolate them behind debug-only code.
+- Removed unused `share` and discontinued `moor_db_viewer`.
 
 ## First Execution Slice
 
@@ -117,12 +150,12 @@ Solution: Extract pure aggregation functions for daily totals, time-slot distrib
 
 Benefits: Fast unit tests, smaller Widgets, and a reusable interface for future analytics views.
 
-### Worth Exploring: Debug Surface
+### Completed: Debug Surface
 
-Files: `lib/settingPage.dart`, `lib/addFakeData.dart`, `moor_db_viewer` dependency.
+Files: `lib/settingPage.dart`, deleted `lib/addFakeData.dart`, deleted `lib/StepCount/stepStatistics.dart`, removed `moor_db_viewer` dependency.
 
 Problem: Development-only actions are visible in the product UI and can delete all local data.
 
-Solution: Hide debug tools behind `kDebugMode` or move them to a developer-only route.
+Solution: Removed the inactive debug tools and discontinued viewer dependency instead of preserving another developer-only route.
 
 Benefits: Lower product risk with minimal behavioral change for developers.

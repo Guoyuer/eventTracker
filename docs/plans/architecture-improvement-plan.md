@@ -12,17 +12,18 @@ flutter test
 flutter build windows
 ```
 
+During active Windows development, use the faster loop documented in `docs/plans/repo-quality-roadmap.md`: keep `flutter run -d windows` alive, hot reload Dart/UI edits with `r`, run targeted tests while iterating, and reserve `flutter build windows` for completed slices or startup/native/runtime changes.
+
 ## Architectural Direction
 
 ### 1. Deepen the Persistence Module
 
-Current problem: `AppDatabase` is too broad. It owns schema, platform persistence behavior, record lifecycle operations, unit operations, step data, display model shaping, and debug utilities.
+Current problem: `AppDatabase` is too broad. It owns schema, platform persistence behavior, record lifecycle operations, unit operations, display model shaping, and some legacy schema concerns.
 
 Target shape:
 
 - `ActivityRepository`: activity and record lifecycle operations.
 - `UnitRepository`: unit list, create, delete.
-- `StepRepository`: step data reads/writes.
 - `DatabaseBootstrap`: platform-specific database setup.
 - `AppDatabase`: Drift tables, generated accessors, and low-level persistence only.
 
@@ -41,6 +42,9 @@ Completed slice:
 - Moved activity creation behind `ActivityRepository`.
 - Migrated `EventEditor` so it no longer creates `EventsCompanion` or calls `DBHandle().db.addEventInDB`.
 - Added tests for activity creation and duplicate-name protection through the repository.
+- Removed inactive step-count UI, fake-data generation, debug DB viewer, and their direct database helper methods.
+- Removed unused/discontinued dependencies `share` and `moor_db_viewer`.
+- Moved activity detail record reads, activity deletion, and description reads/writes behind `ActivityRepository`.
 - Kept `flutter analyze`, `flutter test`, and `flutter build windows` green.
 
 Next slice:
@@ -86,6 +90,10 @@ Current status:
 - Extracted activity detail time-slot distribution into `activity_detail_analytics.dart`.
 - Removed the old `EventsDetails/util.dart` helper after moving its behavior behind typed analytics results.
 - Added tests for timed duration, plain counts, plain values, record filtering, and adjacent-hour grouping.
+- Extracted statistics activity counts and hourly slot aggregation into `statistics_analytics.dart`.
+- Added tests for multi-activity statistics counts, hourly buckets, dangling activity references, and adjacent-hour grouping.
+- Added `docs/architecture/module-flow.md` with Mermaid diagrams for the active module flow and remaining seams.
+- Moved statistics range-record and activity-map reads behind `StatisticsRepository`.
 
 Target modules:
 
@@ -102,31 +110,36 @@ Rules:
 
 Remaining analytics slice:
 
-1. Extract cross-activity summary data used by the statistics pie chart.
-2. Extract stacked time-slot distribution used by the statistics bar chart.
-3. Add tests for records with multiple activities and empty records.
-4. Replace Widget-local calculation with calls into analytics modules.
+1. Extract chart adapter helpers if `Statistics` remains difficult to read.
+2. Replace Widget-local calculation with calls into analytics modules where more remain.
 
-### 4. Fix Step Record Design
+### 4. Retire Legacy Step Schema
 
-Current problem: step data is partly modeled as `records.eventId = -1`, which leaks a sentinel into normal activity queries.
+Current problem: the active step-count UI has been removed, but the schema still contains legacy step tables and record-sentinel assumptions.
 
 Preferred direction:
 
-- Treat step data as its own persistence model through `StepRepository`.
-- Stop exposing `eventId = -1` outside the persistence module.
+- Decide whether step tracking is a real product feature.
+- If not, remove legacy step tables in a schema migration.
+- If yes, reintroduce it as a separate module instead of `records.eventId = -1`.
 
 Decision needed:
 
-- Either migrate step records out of `records`, or write an ADR documenting why the sentinel remains.
+- Write an ADR before changing schema because existing local databases may still contain step tables or sentinel records.
 
 Minimal next step:
 
-- Introduce a named constant or repository method for step records so `-1` does not spread further.
+- Stop adding new code paths that write step data. This is complete for the current active app.
 
 ### 5. Move UI Refresh to Riverpod
 
 Current problem: list refresh uses notifications plus route pop/push. This makes UI state hard to reason about.
+
+Current status:
+
+- Added `activityListProvider`.
+- `EventList` watches the provider instead of owning a one-shot future.
+- `ReloadEventsN` now invalidates `activityListProvider` instead of popping and pushing `MainPage`.
 
 Target shape:
 
@@ -142,26 +155,23 @@ Rules:
 
 Next UI state slice:
 
-1. Add an activity list provider.
-2. Use it in `EventList`.
-3. Replace `ReloadEventsN` in the activity list flow.
-4. Keep old notification behavior only where not yet migrated.
+1. Replace `ReloadEventsN` dispatches with direct provider invalidation where `WidgetRef` is available.
+2. Add `unitListProvider`.
+3. Add `statisticsProvider`.
 
 ### 6. Keep Debug Tools Out of Release UI
 
-Current status: DB viewer, delete-all-data, and fake-data generation are gated by `kDebugMode`.
+Current status: DB viewer, delete-all-data, and fake-data generation were removed from the settings page.
 
 Target shape:
 
-- Move debug tools into a dedicated developer route.
-- Avoid importing debug-only packages from production routes if possible.
-- Keep destructive debug actions explicit and isolated.
+- Avoid importing debug-only packages from production routes.
+- Reintroduce developer tooling only when it has a maintained dependency and an explicit owner.
 
 Next slice:
 
-1. Create `DeveloperPage`.
-2. Move DB viewer, delete-all-data, and fake-data actions there.
-3. Keep `SettingPage` focused on user settings.
+1. Keep `SettingPage` focused on user settings.
+2. Add developer tooling only after repository seams can support it safely.
 
 ### 7. Modernize Dependencies Last
 
@@ -171,9 +181,7 @@ Order:
 
 1. Keep tests green while finishing persistence and analytics seams.
 2. Remove Firebase if cloud sync is not planned.
-3. Replace discontinued packages:
-   - `share` -> `share_plus`, or remove if unused.
-   - `moor_db_viewer` -> debug-only replacement or removal.
+3. Replace or remove remaining discontinued packages.
 4. Upgrade Drift in a dedicated branch/slice.
 5. Upgrade Riverpod separately.
 6. Upgrade Flutter SDK separately.
@@ -186,11 +194,9 @@ Rule:
 
 Recommended order from here:
 
-1. Statistics analytics extraction.
-2. Step repository and sentinel containment.
-3. Riverpod activity list provider.
-4. Developer page split.
-5. Dependency cleanup and upgrade batches.
+1. Replace remaining notification-based refresh calls with provider invalidation.
+2. Legacy step schema ADR or migration.
+3. Dependency cleanup and upgrade batches.
 
 ## Definition of Done for Each Slice
 

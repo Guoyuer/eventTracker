@@ -1,8 +1,11 @@
+import 'package:flutter/foundation.dart'
+    show TargetPlatform, defaultTargetPlatform, kIsWeb, visibleForTesting;
 import 'package:flutter/material.dart';
 import 'package:event_tracker/common/const.dart';
-import 'package:event_tracker/heatmap_calendar/heatMap.dart';
 import 'package:drift_sqflite/drift_sqflite.dart';
 import 'package:drift/drift.dart';
+import 'package:path/path.dart' as p;
+import 'package:path_provider/path_provider.dart';
 
 import 'tables.dart';
 
@@ -31,9 +34,7 @@ class DBHandle {
     tables: [Units, Events, Records, Steps, StepOffset], include: {'SQL.moor'})
 class AppDatabase extends _$AppDatabase {
   AppDatabase([QueryExecutor? executor])
-      : super(executor ??
-            SqfliteQueryExecutor.inDatabaseFolder(
-                path: "db.sqlite", logStatements: false));
+      : super(executor ?? defaultDatabaseExecutor());
 
   @override
   int get schemaVersion => 2;
@@ -41,27 +42,10 @@ class AppDatabase extends _$AppDatabase {
   @override
   MigrationStrategy get migration =>
       MigrationStrategy(beforeOpen: (details) async {
-        // var offset = await getStepOffset();
-        // if (offset == null) {
-        //   //便于后续操作，因为不是nullable
-        //   await into(stepOffset).insert(StepOffsetCompanion(
-        //       id: Value(1), step: Value(0), time: Value(nilTime)));
-        // }
         await customStatement('PRAGMA synchronous = OFF');
       }, onCreate: (Migrator m) {
         return m.createAll();
       });
-
-//////////////////////////////////debug工具////////////////////////////////////
-  Future<void> deleteEverything() {
-    return transaction(() async {
-      // you only need this if you've manually enabled foreign keys
-      // await customStatement('PRAGMA foreign_keys = OFF');
-      for (final table in allTables) {
-        await delete(table).go();
-      }
-    });
-  }
 
 //////////////////////////////////unit相关////////////////////////////////////
 
@@ -345,42 +329,32 @@ class AppDatabase extends _$AppDatabase {
 
     return events;
   }
+}
 
-///////////////////////////////////////steps相关///////////////////////////////////
-///////////////////offset相关
-  Future<StepOffsetData?> getStepOffset() {
-    return (select(stepOffset)..where((tbl) => tbl.id.equals(1)))
-        .getSingleOrNull();
-  }
+QueryExecutor defaultDatabaseExecutor() {
+  return LazyDatabase(() async {
+    if (usesExplicitDatabasePathOnPlatform(defaultTargetPlatform,
+        isWeb: kIsWeb)) {
+      final directory = await getApplicationSupportDirectory();
+      await directory.create(recursive: true);
+      return SqfliteQueryExecutor(
+        path: p.join(directory.path, 'db.sqlite'),
+        logStatements: false,
+      );
+    }
 
-  Future updateStepOffset(int step, DateTime time) {
-    return (update(stepOffset)..where((tbl) => tbl.id.equals(1)))
-        .write(StepOffsetCompanion(step: Value(step), time: Value(time)));
-  }
+    return SqfliteQueryExecutor.inDatabaseFolder(
+      path: 'db.sqlite',
+      logStatements: false,
+    );
+  });
+}
 
-  Future writeStepOffset(int step, DateTime time) {
-    return into(stepOffset).insert(StepOffsetCompanion(
-        id: Value(1), step: Value(step), time: Value(nilTime)));
-  }
-
-  ///////////////////step相关
-  Future writeStep(int step, DateTime time) {
-    return into(steps)
-        .insert(StepsCompanion(step: Value(step), time: Value(time)));
-  }
-
-  Future<Step?> getLatestStep() async {
-    return (select(steps)
-          ..orderBy([(tbl) => OrderingTerm.desc(tbl.id)])
-          ..limit(1))
-        .getSingleOrNull();
-  }
-
-///////////////////step相关
-  Future writeDailyStep(int step, DateTime time) {
-    return into(records).insert(RecordsCompanion(
-        eventId: Value(-1),
-        endTime: Value(time),
-        value: Value(step.toDouble())));
-  }
+@visibleForTesting
+bool usesExplicitDatabasePathOnPlatform(TargetPlatform platform,
+    {required bool isWeb}) {
+  return !isWeb &&
+      (platform == TargetPlatform.windows ||
+          platform == TargetPlatform.linux ||
+          platform == TargetPlatform.macOS);
 }

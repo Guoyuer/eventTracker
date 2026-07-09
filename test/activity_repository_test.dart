@@ -75,6 +75,59 @@ void main() {
     );
   });
 
+  test('repository reads records for one activity', () async {
+    final firstActivityId = await repository.createActivity(
+      name: 'Read',
+      careTime: false,
+    );
+    final secondActivityId = await repository.createActivity(
+      name: 'Run',
+      careTime: false,
+    );
+
+    await repository.addPlainRecord(
+      firstActivityId,
+      DateTime(2026, 1, 1, 8),
+    );
+    await repository.addPlainRecord(
+      secondActivityId,
+      DateTime(2026, 1, 1, 9),
+    );
+
+    final records = await repository.getActivityRecords(firstActivityId);
+
+    expect(records, hasLength(1));
+    expect(records.single.eventId, firstActivityId);
+  });
+
+  test('repository updates activity description', () async {
+    final activityId = await repository.createActivity(
+      name: 'Read',
+      careTime: false,
+      description: 'Initial',
+    );
+
+    await repository.updateActivityDescription(activityId, 'Updated');
+
+    expect(await repository.getActivityDescription(activityId), 'Updated');
+  });
+
+  test('repository deletes an activity with its records', () async {
+    final activityId = await repository.createActivity(
+      name: 'Read',
+      careTime: false,
+    );
+    await repository.addPlainRecord(
+      activityId,
+      DateTime(2026, 1, 1, 8),
+    );
+
+    await repository.deleteActivity(activityId);
+
+    expect(() => db.getEventById(activityId), throwsA(anything));
+    expect(await repository.getActivityRecords(activityId), isEmpty);
+  });
+
   test(
       'repository completes a timed activity without exposing database companions',
       () async {

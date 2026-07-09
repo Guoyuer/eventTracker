@@ -1,8 +1,6 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart' hide DatePickerTheme;
-// import 'package:flutter_datetime_picker/flutter_datetime_picker.dart' show DatePickerTheme;
-// import 'package:drift_sqflite/drift_sqflite.dart' hide Column;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../stateProviders.dart';
 import '../DAO/base.dart';
@@ -12,54 +10,61 @@ import '../persistence/activity_repository.dart';
 
 part 'util.dart';
 
-class EventList extends ConsumerWidget {
+class EventList extends ConsumerStatefulWidget {
   EventList({Key? key}) : super(key: key);
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    ScrollController _c = ScrollController();
-    Future<List<BaseEventModel>> _events = activityRepository().getActivities();
-    _c.addListener(() {
-      ref
-          .read(eventListScrollDirProvider.notifier)
-          .update((state) => state = _c.position.userScrollDirection);
-    });
-    return FutureBuilder<List<BaseEventModel>>(
-        future: _events,
-        builder: (ctx, snapshot) {
-          switch (snapshot.connectionState) {
-            case ConnectionState.done:
-              if (snapshot.hasError) {
-                return Center(child: Text("加载项目失败：${snapshot.error}"));
-              }
-              if (!snapshot.hasData) {
-                return loadingScreen();
-              }
-              List<BaseEventModel> events = snapshot.data!;
-              if (events.isEmpty) {
-                return Center(child: Text("暂无项目"));
-              }
-              var list = ListView.builder(
-                  // shrinkWrap: true,
-                  controller: _c,
-                  itemCount: events.length,
-                  itemBuilder: (ctx, idx) {
-                    return EventDataHolder(
-                        event: events[idx], child: EventTile());
-                    // return EventTile(data[idx]['id'],data[idx]['name'], true, false);
-                  });
+  ConsumerState<EventList> createState() => _EventListState();
+}
 
-              return list;
-            default:
-              return loadingScreen();
-          }
+class _EventListState extends ConsumerState<EventList> {
+  late final ScrollController _scrollController;
+
+  @override
+  void initState() {
+    super.initState();
+    _scrollController = ScrollController();
+    _scrollController.addListener(_updateScrollDirection);
+  }
+
+  @override
+  void dispose() {
+    _scrollController.removeListener(_updateScrollDirection);
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+  void _updateScrollDirection() {
+    ref.read(eventListScrollDirProvider.notifier).update(
+          (state) => _scrollController.position.userScrollDirection,
+        );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final events = ref.watch(activityListProvider);
+    return events.when(
+      data: _buildEventList,
+      error: (error, stackTrace) => Center(child: Text("加载项目失败：$error")),
+      loading: loadingScreen,
+    );
+  }
+
+  Widget _buildEventList(List<BaseEventModel> events) {
+    if (events.isEmpty) {
+      return Center(child: Text("暂无项目"));
+    }
+
+    return ListView.builder(
+        controller: _scrollController,
+        itemCount: events.length,
+        itemBuilder: (ctx, idx) {
+          return EventDataHolder(event: events[idx], child: EventTile());
         });
   }
 }
 
 class EventTileButton extends StatelessWidget {
-  // final int eventId; //按钮要记住，因为操作据库的时候要用。
-
   @override
   Widget build(BuildContext context) {
     BaseEventModel event = EventDataHolder.of(context).event;
@@ -73,23 +78,7 @@ class EventTileButton extends StatelessWidget {
           showToast("长按 -- 手动指定时间");
           showTimePicker(
             context: context,
-            // showTitleActions: true,
-            // minTime: DateTime.now().add(Duration(days: -7)),
-            // maxTime: DateTime.now().add(Duration(seconds: 1)),
             initialTime: TimeOfDay.now(),
-            // theme: DatePickerTheme(
-            //     headerColor: Colors.orange,
-            //     backgroundColor: Colors.blue,
-            //     itemStyle: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 18),
-            //     doneStyle: TextStyle(color: Colors.white, fontSize: 16)),
-            // onConfirm: (time) {
-            //   addPlainRecord(context, time);
-            // },
-            // onCancel: () {
-            //   showToast("用户取消");
-            // },
-            // currentTime: DateTime.now(),
-            // locale: LocaleType.zh
           );
         });
       case EventStatus.notActive:
@@ -101,22 +90,6 @@ class EventTileButton extends StatelessWidget {
           showTimePicker(
             context: context,
             initialTime: TimeOfDay.now(),
-            // showTitleActions: true,
-            // minTime: DateTime.now().add(Duration(days: -7)),
-            // maxTime: DateTime.now().add(Duration(seconds: 1)),
-            // theme: DatePickerTheme(
-            //     headerColor: Colors.orange,
-            //     backgroundColor: Colors.blue,
-            //     itemStyle: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 18),
-            //     doneStyle: TextStyle(color: Colors.white, fontSize: 16)),
-            // onConfirm: (time) {
-            //   startTimingRecord(context, time);
-            // },
-            // onCancel: () {
-            //   showToast("用户取消");
-            // },
-            // currentTime: DateTime.now(),
-            // locale: LocaleType.zh
           );
         });
       case EventStatus.active:
@@ -135,21 +108,6 @@ class EventTileButton extends StatelessWidget {
             showTimePicker(
               context: context,
               initialTime: TimeOfDay.now(),
-              // showTitleActions: true,
-              // minTime: startTime,
-              // maxTime: DateTime.now().add(Duration(seconds: 5)),
-              // theme: DatePickerTheme(
-              //     headerColor: Colors.orange,
-              //     backgroundColor: Colors.blue,
-              //     itemStyle: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 18),
-              //     doneStyle: TextStyle(color: Colors.white, fontSize: 16)),
-              // onConfirm: (time) {
-              //   stopTimingRecord(context, time);
-              // },
-              // onCancel: () {
-              //   showToast("用户取消");
-              // },
-              // locale: LocaleType.zh
             );
           }
         });
@@ -178,7 +136,7 @@ class EventDataHolder extends InheritedWidget {
 
 class EventTile extends StatefulWidget {
   @override
-  _EventTileState createState() => new _EventTileState();
+  _EventTileState createState() => _EventTileState();
 }
 
 class _EventTileState extends State<EventTile>
@@ -189,7 +147,7 @@ class _EventTileState extends State<EventTile>
   initState() {
     super.initState();
     second = 1;
-    _controller = new AnimationController(
+    _controller = AnimationController(
         duration: Duration(seconds: second),
         reverseDuration: Duration(seconds: second),
         vsync: this)
@@ -204,12 +162,9 @@ class _EventTileState extends State<EventTile>
     Widget eventInfo;
     if (event is TimingEventModel) {
       String sumValStr;
-      //TimingEvent
       var data = event;
       if (data.status == EventStatus.notActive) {
-        //关闭动画
         _controller.reset();
-        //inactive，显示累计时间和值(if有单位)
         String sumTimeStr = "尚未开始";
         if (data.sumDuration.inMicroseconds != 0) {
           sumTimeStr = formatDuration(data.sumDuration);
@@ -243,7 +198,6 @@ class _EventTileState extends State<EventTile>
       }
     } else {
       _controller.reset();
-      //PlainEvent
       var data = (event as PlainEventModel);
       int time = data.time;
 
@@ -275,7 +229,6 @@ class _EventTileState extends State<EventTile>
       }
     }
     return Card(
-        // color: animation.value,
         elevation: 8,
         child: Stack(
           children: [
@@ -294,7 +247,6 @@ class _EventTileState extends State<EventTile>
                   margin: EdgeInsets.only(left: 10, top: 10),
                   height: 68,
                   child: Column(
-                    // crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
                       Align(
                         alignment: Alignment.topLeft,
@@ -319,14 +271,12 @@ class _EventTileState extends State<EventTile>
         ));
   }
 
-  dispose() {
-    //路由销毁时需要释放动画资源
+  void dispose() {
     _controller.dispose();
     super.dispose();
   }
 }
 
-///显示流逝事件的。别的事件状态就显示静态的Text()就好了。
 class LapsedTimeStr extends StatefulWidget {
   final DateTime startTime;
 

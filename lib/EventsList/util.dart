@@ -1,73 +1,70 @@
 part of 'eventsList.dart';
 
-void startTimingRecord(BuildContext context, DateTime now) {
+Future<void> startTimingRecord(BuildContext context, DateTime now) async {
   int eventId = EventDataHolder.of(context).event.id;
-  activityRepository()
-      .startTimedRecord(eventId, now)
-      .then((_) => ReloadEventsN().dispatch(context));
+  await activityRepository().startTimedRecord(eventId, now);
+  ReloadEventsN().dispatch(context);
 }
 
-Future<double?> inputValDialog(BuildContext ctx, String unit) {
-  TextEditingController _c = TextEditingController();
-  return showDialog<double>(
-      context: ctx,
-      builder: (context) {
-        return AlertDialog(
-          title: Text("请输入数据"),
-          content: Row(
-            children: [
-              Text("共完成了"),
-              Flexible(
-                  child: TextField(
-                controller: _c,
-                decoration: InputDecoration(hintText: "?"),
-                keyboardType: TextInputType.number,
-                textAlign: TextAlign.center,
-              )),
-              Text(unit),
+Future<double?> inputValDialog(BuildContext ctx, String unit) async {
+  final controller = TextEditingController();
+  try {
+    return await showDialog<double>(
+        context: ctx,
+        builder: (context) {
+          return AlertDialog(
+            title: Text("请输入数据"),
+            content: Row(
+              children: [
+                Text("共完成了"),
+                Flexible(
+                    child: TextField(
+                  controller: controller,
+                  decoration: InputDecoration(hintText: "?"),
+                  keyboardType: TextInputType.number,
+                  textAlign: TextAlign.center,
+                )),
+                Text(unit),
+              ],
+            ),
+            actions: [
+              TextButton(
+                  onPressed: () {
+                    Navigator.of(context).pop(null);
+                  },
+                  child: Text("取消")),
+              TextButton(
+                  onPressed: () {
+                    try {
+                      Navigator.of(context).pop(double.parse(controller.text));
+                    } catch (err) {
+                      showToast("请输入数值");
+                    }
+                  },
+                  child: Text("确认")),
             ],
-          ),
-          actions: [
-            TextButton(
-                onPressed: () {
-                  Navigator.of(context).pop(null);
-                },
-                child: Text("取消")),
-            TextButton(
-                onPressed: () {
-                  double val;
-                  try {
-                    val = double.parse(_c.text);
-                    Navigator.of(context).pop(val);
-                  } catch (err) {
-                    showToast("请输入数值");
-                  }
-                },
-                child: Text("确认")),
-          ],
-        );
-      });
+          );
+        });
+  } finally {
+    controller.dispose();
+  }
 }
 
-Future addPlainRecord(BuildContext context, DateTime time) async {
+Future<void> addPlainRecord(BuildContext context, DateTime time) async {
   int eventId = EventDataHolder.of(context).event.id;
-  //判断是否有unit
 
   String? unit = await activityRepository().getActivityUnit(eventId);
 
   double? val;
   if (unit != null) {
-    //有单位
     val = await inputValDialog(context, unit);
-    if (val == null) return; // 对话框点了取消，不记录
+    if (val == null) return;
   }
-  activityRepository()
-      .addPlainRecord(eventId, time, value: val)
-      .then((_) => ReloadEventsN().dispatch(context));
+  await activityRepository().addPlainRecord(eventId, time, value: val);
+  ReloadEventsN().dispatch(context);
 }
 
-//按下停止记录按钮的回调函数
-Future stopTimingRecord(BuildContext context, DateTime time) async {
+Future<void> stopTimingRecord(BuildContext context, DateTime time) async {
   int eventId = EventDataHolder.of(context).event.id;
 
   final repository = activityRepository();
@@ -77,33 +74,31 @@ Future stopTimingRecord(BuildContext context, DateTime time) async {
   var fiveSeconds = Duration(seconds: 5);
   Duration thisDuration = DateTime.now().difference(startTime);
   if (thisDuration.compareTo(fiveSeconds) < 0) {
-    //任务距开始不足5s
-    bool delete = await showDialog(
-        context: context,
-        builder: (context) {
-          return AlertDialog(
-            title: Text("时间不足5s，删除该记录还是继续？"),
-            actions: [
-              TextButton(
-                  onPressed: () => Navigator.of(context).pop(true),
-                  child: Text("删除")),
-              TextButton(
-                  onPressed: () => Navigator.of(context).pop(false),
-                  child: Text("继续"))
-            ],
-          );
-        });
+    bool delete = await showDialog<bool>(
+            context: context,
+            builder: (context) {
+              return AlertDialog(
+                title: Text("时间不足5s，删除该记录还是继续？"),
+                actions: [
+                  TextButton(
+                      onPressed: () => Navigator.of(context).pop(true),
+                      child: Text("删除")),
+                  TextButton(
+                      onPressed: () => Navigator.of(context).pop(false),
+                      child: Text("继续"))
+                ],
+              );
+            }) ??
+        false;
     if (delete) {
-      repository.deleteActiveTimedRecord(eventId, recordId).then((_) {
-        ReloadEventsN().dispatch(context);
-      });
+      await repository.deleteActiveTimedRecord(eventId, recordId);
+      ReloadEventsN().dispatch(context);
       return;
     } else {
       showToast("继续");
       return;
     }
   } else {
-    //该任务距开始超过5s，进行正常停止操作
     String? unit = await repository.getActivityUnit(eventId);
     double? val = 0;
     if (unit != null) {
@@ -111,9 +106,9 @@ Future stopTimingRecord(BuildContext context, DateTime time) async {
       if (val == null) return;
     }
 
-    repository
-        .stopTimedRecord(eventId, recordId, time, thisDuration, value: val)
-        .then((_) => ReloadEventsN().dispatch(context));
+    await repository.stopTimedRecord(eventId, recordId, time, thisDuration,
+        value: val);
+    ReloadEventsN().dispatch(context);
   }
 }
 

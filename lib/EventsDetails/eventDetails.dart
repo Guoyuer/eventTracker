@@ -9,6 +9,7 @@ import 'package:sprintf/sprintf.dart';
 
 import '../DAO/base.dart';
 import '../heatmap_calendar/heatMap.dart';
+import '../persistence/activity_repository.dart';
 
 class EventDetailsWrapper extends StatelessWidget {
   @override
@@ -29,7 +30,7 @@ class EventDetails extends StatefulWidget {
 
 class _EventDetailsState extends State<EventDetails> {
   Future<List<Record>>? _records;
-  AppDatabase db = DBHandle().db;
+  final ActivityRepository _repository = activityRepository();
   List<String> toggleTexts = [];
   List<bool> isSelected = [true];
   final ScrollController _scrollController = ScrollController();
@@ -38,7 +39,7 @@ class _EventDetailsState extends State<EventDetails> {
   @override
   void initState() {
     super.initState();
-    _records = db.getRecordsByEventId(widget.event.id);
+    _records = _repository.getActivityRecords(widget.event.id);
     if (widget.event is TimingEventModel) {
       toggleTexts.add("时长");
     } else {
@@ -119,9 +120,6 @@ class _EventDetailsState extends State<EventDetails> {
                 scrollToEnd(context);
               });
               var heatMap = Column(
-                //heatMap, title,
-                // shrinkWrap: true,
-                // scrollDirection: Axis.vertical,
                 children: [
                   Center(
                       child: Text(
@@ -212,7 +210,6 @@ class _EventDetailsState extends State<EventDetails> {
         });
   }
 
-  //keep your build pure
   @override
   Widget build(BuildContext context) {
     List<Widget> listChildren = [getEventDescWidget()];
@@ -246,8 +243,7 @@ class _EventDetailsState extends State<EventDetails> {
                         );
                       });
                   if (delete != null && delete) {
-                    var db = DBHandle().db;
-                    db.deleteEvent(widget.event.id);
+                    await _repository.deleteActivity(widget.event.id);
                     Navigator.of(context).pop(true);
                   }
                 },
@@ -256,7 +252,6 @@ class _EventDetailsState extends State<EventDetails> {
           title: Text(sprintf("%s - 项目详细", [widget.event.name])),
         ),
         body: NotificationListener(
-            //在更高处监听，避免setState影响heatMap
             onNotification: (Notification notification) {
               if (notification is MonthTouchedN) {
                 setState(() {

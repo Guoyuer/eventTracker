@@ -12,7 +12,7 @@
 - **Plain Activity**: An activity where only occurrence time matters. It creates a completed record immediately.
 - **Unit**: A user-managed label for numeric values, such as kilometers, pages, or questions.
 - **Aggregate Totals**: Cached totals stored on an activity, currently `sumTime`, `sumVal`, and `lastRecordId`.
-- **Step Record**: Historical step-count data currently encoded as a record with `eventId = -1`.
+- **Legacy Step Schema**: Historical step-count tables and sentinel records from an inactive prototype. There is no active step-count UI.
 
 ## Current Architecture
 
@@ -22,7 +22,6 @@
 - Activity detail analytics: `lib/EventsDetails/`
 - Cross-activity statistics: `lib/Statistics/`
 - Unit management: `lib/UnitManager/`
-- Step analytics: `lib/StepCount/`
 
 ## Quality Direction
 

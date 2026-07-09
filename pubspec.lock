@@ -201,14 +201,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "2.2.4"
-  db_viewer:
-    dependency: transitive
-    description:
-      name: db_viewer
-      sha256: "426daaaa0142facb95590da5b5b1d9a86d31c129098423c8644d3cc009bfe849"
-      url: "https://pub.dev"
-    source: hosted
-    version: "1.0.3"
   drift:
     dependency: "direct main"
     description:
@@ -469,30 +461,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.0.4"
-  moor:
-    dependency: transitive
-    description:
-      name: moor
-      sha256: "3c9500ebb0996592480728a5480e020c881110597416b9f3c6f72e57212bd78c"
-      url: "https://pub.dev"
-    source: hosted
-    version: "4.6.1+1"
-  moor_db_viewer:
-    dependency: "direct main"
-    description:
-      name: moor_db_viewer
-      sha256: eb53e930de9ec9fe46b555df7010f724011058e07f4a65bfbf97966b0e928028
-      url: "https://pub.dev"
-    source: hosted
-    version: "5.0.0"
-  nested:
-    dependency: transitive
-    description:
-      name: nested
-      sha256: "03bac4c528c64c95c722ec99280375a6f2fc708eec17c7b3f07253b626cd2a20"
-      url: "https://pub.dev"
-    source: hosted
-    version: "1.0.0"
   package_config:
     dependency: transitive
     description:
@@ -589,14 +557,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "4.2.4"
-  provider:
-    dependency: transitive
-    description:
-      name: provider
-      sha256: cdbe7530b12ecd9eb455bdaa2fcb8d4dad22e80b8afb4798b41479d5ce26847f
-      url: "https://pub.dev"
-    source: hosted
-    version: "6.0.5"
   pub_semver:
     dependency: transitive
     description:
@@ -637,14 +597,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "2.3.6"
-  share:
-    dependency: "direct main"
-    description:
-      name: share
-      sha256: "97e6403f564ed1051a01534c2fc919cb6e40ea55e60a18ec23cee6e0ce19f4be"
-      url: "https://pub.dev"
-    source: hosted
-    version: "2.0.4"
   shelf:
     dependency: transitive
     description:

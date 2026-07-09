@@ -28,20 +28,13 @@ dependencies:
   flutter_riverpod: ^2.3.6
   fluttertoast: ^8.2.2
   random_color:
-  # flutter_launcher_icons:
-  share:
   sprintf:
   intl:
-  # pedometer:
-  #UI:
   fl_chart:
-  # flutter_datetime_picker:
-  #  数据库相关↓
   sqflite:
   drift:
   drift_sqflite: ^1.0.0
   path_provider:
-  moor_db_viewer:
   sqlite3_flutter_libs: ^0.5.0
   path: ^1.8.3
 

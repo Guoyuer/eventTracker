@@ -1,15 +1,15 @@
 import 'package:flutter/material.dart';
-import 'package:event_tracker/DAO/base.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 
-ElevatedButton myRaisedButton(Widget child, void Function() onPressCallBack, [void Function()? onLongPressCallBack]) {
+import '../persistence/activity_repository.dart';
+
+ElevatedButton myRaisedButton(Widget child, void Function() onPressCallBack,
+    [void Function()? onLongPressCallBack]) {
   return ElevatedButton(
       style: ElevatedButton.styleFrom(
         backgroundColor: Colors.blue,
         padding: EdgeInsets.symmetric(horizontal: 50),
       ),
-      // highlightColor: Colors.blue[700],
-      // colorBrightness: Brightness.dark,
       child: child,
       onPressed: onPressCallBack,
       onLongPress: onLongPressCallBack);
@@ -23,12 +23,10 @@ Widget eventListButton(Icon icon, Widget label, void Function() onPressCallBack,
           icon: icon,
           style: ElevatedButton.styleFrom(
             backgroundColor: Colors.blue,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20.0)),
+            shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(20.0)),
             padding: EdgeInsets.symmetric(horizontal: 50),
           ),
-          // highlightColor: Colors.blue[700],
-          // colorBrightness: Brightness.dark,
-          // splashColor: Colors.grey,
           label: label,
           onPressed: onPressCallBack,
           onLongPress: onLongPressCallBack));
@@ -44,8 +42,8 @@ Widget loadingScreen() {
   );
 }
 
-Future<void> displayTextInputDialog(
-    BuildContext context, String title, Function okButton, TextEditingController c) async {
+Future<void> displayTextInputDialog(BuildContext context, String title,
+    Function okButton, TextEditingController c) async {
   return showDialog(
       context: context,
       builder: (context) {
@@ -58,15 +56,12 @@ Future<void> displayTextInputDialog(
               },
               controller: c,
             ),
-            // decoration: InputDecoration(hintText: "如：米"),
-
             actions: <Widget>[
               TextButton(
                 child: Text('取消'),
                 onPressed: () {
                   setState(() {
-                    // listNeedUpdate = false;
-                    Navigator.pop(context); //false表示不需要刷新
+                    Navigator.pop(context);
                   });
                 },
               ),
@@ -116,7 +111,6 @@ class DividerWithText extends StatelessWidget {
 }
 
 class DescEditable extends StatefulWidget {
-  // final String initText;
   final int eventId;
 
   DescEditable(this.eventId);
@@ -128,14 +122,14 @@ class DescEditable extends StatefulWidget {
 class _EditableTextState extends State<DescEditable> {
   bool _isEditingText = false;
   late TextEditingController _c;
-  AppDatabase db = DBHandle().db;
+  final ActivityRepository _repository = activityRepository();
   late Future<String?> _desc;
   late String desc;
 
   @override
   void initState() {
     super.initState();
-    _desc = db.getEventDesc(widget.eventId);
+    _desc = _repository.getActivityDescription(widget.eventId);
     _c = TextEditingController();
   }
 
@@ -156,7 +150,7 @@ class _EditableTextState extends State<DescEditable> {
             setState(() {
               // initialText = newValue;
               desc = newValue;
-              db.updateEventDescription(widget.eventId, newValue);
+              _repository.updateActivityDescription(widget.eventId, newValue);
               _isEditingText = false;
             });
           },
@@ -165,7 +159,7 @@ class _EditableTextState extends State<DescEditable> {
         ),
       );
     } else {
-      _desc = db.getEventDesc(widget.eventId);
+      _desc = _repository.getActivityDescription(widget.eventId);
       return InkWell(
           onTap: () {
             setState(() {

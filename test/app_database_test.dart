@@ -1,6 +1,7 @@
 import 'package:drift/drift.dart' hide isNotNull, isNull;
 import 'package:drift_sqflite/drift_sqflite.dart';
 import 'package:event_tracker/DAO/base.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 
@@ -207,15 +208,77 @@ void main() {
     expect(event.lastRecordId, firstRecordId);
   });
 
-  test('latest step returns the most recently inserted step row', () async {
-    expect(await db.getLatestStep(), isNull);
+  test('range record reads exclude legacy step sentinel records', () async {
+    final eventId = await db.addEventInDB(
+      EventsCompanion(
+        name: const Value('Reading'),
+        careTime: const Value(false),
+      ),
+    );
+    final normalEnd = DateTime(2026, 1, 1, 8);
+    final legacyStepEnd = DateTime(2026, 1, 1, 9);
 
-    await db.writeStep(100, DateTime(2026, 1, 1, 8));
-    await db.writeStep(200, DateTime(2026, 1, 1, 9));
+    await db.addPlainRecordInDB(
+      RecordsCompanion(
+        eventId: Value(eventId),
+        endTime: Value(normalEnd),
+      ),
+    );
+    await db.into(db.records).insert(
+          RecordsCompanion(
+            eventId: const Value(-1),
+            endTime: Value(legacyStepEnd),
+            value: const Value(5000),
+          ),
+        );
 
-    final latestStep = await db.getLatestStep();
+    final records = await db.getRecordsInRange(
+      DateTimeRange(
+        start: DateTime(2026, 1, 1),
+        end: DateTime(2026, 1, 2),
+      ),
+    );
 
-    expect(latestStep, isNotNull);
-    expect(latestStep!.step, 200);
+    expect(records, hasLength(1));
+    expect(records.single.eventId, eventId);
+    expect(records.single.endTime, normalEnd);
+  });
+
+  test('default database executor uses explicit paths on desktop only', () {
+    expect(
+      usesExplicitDatabasePathOnPlatform(
+        TargetPlatform.windows,
+        isWeb: false,
+      ),
+      isTrue,
+    );
+    expect(
+      usesExplicitDatabasePathOnPlatform(
+        TargetPlatform.macOS,
+        isWeb: false,
+      ),
+      isTrue,
+    );
+    expect(
+      usesExplicitDatabasePathOnPlatform(
+        TargetPlatform.linux,
+        isWeb: false,
+      ),
+      isTrue,
+    );
+    expect(
+      usesExplicitDatabasePathOnPlatform(
+        TargetPlatform.android,
+        isWeb: false,
+      ),
+      isFalse,
+    );
+    expect(
+      usesExplicitDatabasePathOnPlatform(
+        TargetPlatform.windows,
+        isWeb: true,
+      ),
+      isFalse,
+    );
   });
 }

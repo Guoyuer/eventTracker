@@ -5,12 +5,18 @@ import '../DAO/base.dart';
 abstract class ActivityRepository {
   Future<List<BaseEventModel>> getActivities();
 
+  Future<List<Record>> getActivityRecords(int activityId);
+
   Future<int> createActivity({
     required String name,
     required bool careTime,
     String? unit,
     String? description,
   });
+
+  Future<String?> getActivityDescription(int activityId);
+
+  Future<void> updateActivityDescription(int activityId, String description);
 
   Future<String?> getActivityUnit(int activityId);
 
@@ -35,6 +41,8 @@ abstract class ActivityRepository {
   });
 
   Future<void> deleteActiveTimedRecord(int activityId, int recordId);
+
+  Future<void> deleteActivity(int activityId);
 }
 
 class DriftActivityRepository implements ActivityRepository {
@@ -45,6 +53,11 @@ class DriftActivityRepository implements ActivityRepository {
   @override
   Future<List<BaseEventModel>> getActivities() {
     return _db.getEventsProfile();
+  }
+
+  @override
+  Future<List<Record>> getActivityRecords(int activityId) {
+    return _db.getRecordsByEventId(activityId);
   }
 
   @override
@@ -67,6 +80,19 @@ class DriftActivityRepository implements ActivityRepository {
   @override
   Future<String?> getActivityUnit(int activityId) {
     return _db.getEventUnit(activityId);
+  }
+
+  @override
+  Future<String?> getActivityDescription(int activityId) {
+    return _db.getEventDesc(activityId);
+  }
+
+  @override
+  Future<void> updateActivityDescription(
+    int activityId,
+    String description,
+  ) {
+    return _db.updateEventDescription(activityId, description);
   }
 
   @override
@@ -126,6 +152,11 @@ class DriftActivityRepository implements ActivityRepository {
   @override
   Future<void> deleteActiveTimedRecord(int activityId, int recordId) {
     return _db.deleteActiveTimingRecordInDB(recordId, activityId);
+  }
+
+  @override
+  Future<void> deleteActivity(int activityId) {
+    return _db.deleteEvent(activityId);
   }
 }
 

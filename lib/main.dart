@@ -1,13 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
-import 'package:event_tracker/StepCount/stepStatistics.dart';
 import 'package:event_tracker/settingPage.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'EventsDetails/eventDetails.dart';
 import 'EventsList/eventsList.dart';
 import 'Statistics/statistics.dart';
-// import 'StepCount/pedometer.dart';
 import 'UnitManager/unitsManagerPage.dart';
 import 'eventEditor.dart';
 import 'common/const.dart';
@@ -23,14 +21,12 @@ class EventTracker extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      // debugShowCheckedModeBanner: false,
       localizationsDelegates: [GlobalMaterialLocalizations.delegate],
       supportedLocales: [const Locale('en'), const Locale('zh')],
       routes: {
         "eventEditor": (context) => EventEditor(),
         "unitsManager": (context) => UnitsManager(),
         "EventDetails": (context) => EventDetailsWrapper(),
-        "StepStatistics": (context) => StepStatPage()
       },
       title: 'Event Tracker',
       theme: ThemeData(
@@ -67,9 +63,6 @@ class FAB extends ConsumerWidget {
 }
 
 class MainPage extends ConsumerWidget {
-  // const MainPage({Key? key}) : super(key: key);
-  // @override
-  // MainPageState createState() => MainPageState();
   final List<String> bottomLabels = ["项目", "统计", "选项"];
 
   final List<Widget> pages = [
@@ -84,22 +77,17 @@ class MainPage extends ConsumerWidget {
     return Scaffold(
       appBar: AppBar(
         title: Text("活动记录本 - " + bottomLabels[selectedIdx]),
-        // actions: actionButtons(context),
       ),
       body: NotificationListener<Notification>(
           child: pages[selectedIdx],
           onNotification: (notification) {
             if (notification is ReloadEventsN) {
-              debugPrint("refresh!!!");
-              Navigator.pop(context, true);
-              Navigator.push(
-                  context, MaterialPageRoute(builder: (ctx) => MainPage()));
+              ref.invalidate(activityListProvider);
             }
             return true;
           }),
       floatingActionButton: FAB(context),
       bottomNavigationBar: BottomNavigationBar(
-          // 底部导航
           type: BottomNavigationBarType.fixed,
           items: <BottomNavigationBarItem>[
             BottomNavigationBarItem(
