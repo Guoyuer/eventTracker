@@ -16,10 +16,6 @@ class PageChangedN extends Notification {
   PageChangedN({required this.range});
 }
 
-class ReloadEventsN extends Notification {
-  ReloadEventsN();
-}
-
 class ScrollDirectionN extends Notification {
   final ScrollDirection direction;
 

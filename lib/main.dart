@@ -8,7 +8,6 @@ import 'EventsList/eventsList.dart';
 import 'Statistics/statistics.dart';
 import 'UnitManager/unitsManagerPage.dart';
 import 'eventEditor.dart';
-import 'common/const.dart';
 import 'stateProviders.dart';
 import 'bootstrap/app_bootstrap.dart';
 
@@ -56,7 +55,7 @@ class FAB extends ConsumerWidget {
               var added =
                   await Navigator.of(parentContext).pushNamed("eventEditor");
               if (added != null) {
-                ReloadEventsN().dispatch(parentContext);
+                ref.invalidate(activityListProvider);
               }
             }));
   }
@@ -78,14 +77,7 @@ class MainPage extends ConsumerWidget {
       appBar: AppBar(
         title: Text("活动记录本 - " + bottomLabels[selectedIdx]),
       ),
-      body: NotificationListener<Notification>(
-          child: pages[selectedIdx],
-          onNotification: (notification) {
-            if (notification is ReloadEventsN) {
-              ref.invalidate(activityListProvider);
-            }
-            return true;
-          }),
+      body: pages[selectedIdx],
       floatingActionButton: FAB(context),
       bottomNavigationBar: BottomNavigationBar(
           type: BottomNavigationBarType.fixed,

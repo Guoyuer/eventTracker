@@ -240,8 +240,9 @@ class _EventTileState extends State<EventTile>
               onTap: () async {
                 bool? deleted = await Navigator.of(context)
                     .pushNamed("EventDetails", arguments: event) as bool?;
-                if (deleted != null && deleted)
-                  ReloadEventsN().dispatch(context);
+                if (deleted != null && deleted) {
+                  refreshActivityList(context);
+                }
               },
               child: Container(
                   margin: EdgeInsets.only(left: 10, top: 10),

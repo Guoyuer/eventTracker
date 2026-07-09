@@ -1,9 +1,13 @@
 part of 'eventsList.dart';
 
+void refreshActivityList(BuildContext context) {
+  ProviderScope.containerOf(context).invalidate(activityListProvider);
+}
+
 Future<void> startTimingRecord(BuildContext context, DateTime now) async {
   int eventId = EventDataHolder.of(context).event.id;
   await activityRepository().startTimedRecord(eventId, now);
-  ReloadEventsN().dispatch(context);
+  refreshActivityList(context);
 }
 
 Future<double?> inputValDialog(BuildContext ctx, String unit) async {
@@ -61,7 +65,7 @@ Future<void> addPlainRecord(BuildContext context, DateTime time) async {
     if (val == null) return;
   }
   await activityRepository().addPlainRecord(eventId, time, value: val);
-  ReloadEventsN().dispatch(context);
+  refreshActivityList(context);
 }
 
 Future<void> stopTimingRecord(BuildContext context, DateTime time) async {
@@ -90,7 +94,7 @@ Future<void> stopTimingRecord(BuildContext context, DateTime time) async {
         false;
     if (delete) {
       await repository.deleteActiveTimedRecordForActivity(eventId);
-      ReloadEventsN().dispatch(context);
+      refreshActivityList(context);
       return;
     } else {
       showToast("继续");
@@ -105,7 +109,7 @@ Future<void> stopTimingRecord(BuildContext context, DateTime time) async {
     }
 
     await repository.stopActiveTimedRecord(eventId, time, value: val);
-    ReloadEventsN().dispatch(context);
+    refreshActivityList(context);
   }
 }
 
