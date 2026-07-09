@@ -1,22 +1,21 @@
 import 'package:drift/drift.dart';
-import 'package:drift_sqflite/drift_sqflite.dart';
 import 'package:event_tracker/DAO/base.dart';
 import 'package:event_tracker/persistence/statistics_repository.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:sqflite_common_ffi/sqflite_ffi.dart';
+
+import 'support/database_test_harness.dart';
 
 void main() {
   late AppDatabase db;
   late StatisticsRepository repository;
 
   setUpAll(() {
-    sqfliteFfiInit();
-    databaseFactory = databaseFactoryFfi;
+    initializeDatabaseTestEnvironment();
   });
 
   setUp(() {
-    db = AppDatabase(SqfliteQueryExecutor(path: inMemoryDatabasePath));
+    db = openTestDatabase();
     repository = DriftStatisticsRepository(db);
   });
 
