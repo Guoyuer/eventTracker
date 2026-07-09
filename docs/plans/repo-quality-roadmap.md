@@ -93,6 +93,7 @@ Status: in progress
 - Moved production `AppDatabase` construction and repository adapter wiring behind Riverpod persistence providers.
 - Moved platform-specific sqflite executor setup out of `app_database.dart` and into a database bootstrap module.
 - Moved activity display-model shaping out of `AppDatabase` and into `ActivityRepository`.
+- Moved unit and statistics table-specific query helpers out of `AppDatabase` and into their repositories.
 - Added tests around record lifecycle, aggregate totals, latest step lookup, repository activity creation, and repository activity recording.
 - Added tests for unit add/list/delete and duplicate-name protection through the repository.
 - Removed inactive step-count and debug/fake-data database methods from the active persistence API.

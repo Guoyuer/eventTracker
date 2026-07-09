@@ -18,7 +18,7 @@ class DriftUnitRepository implements UnitRepository {
 
   @override
   Future<List<ActivityUnit>> getUnits() async {
-    final units = await _db.getAllUnits();
+    final units = await _db.select(_db.units).get();
     return [
       for (final unit in units) ActivityUnit(id: unit.id, name: unit.name),
     ];
@@ -26,11 +26,12 @@ class DriftUnitRepository implements UnitRepository {
 
   @override
   Future<int> addUnit(String name) {
-    return _db.addUnit(UnitsCompanion(name: Value(name)));
+    return _db.into(_db.units).insert(UnitsCompanion(name: Value(name)));
   }
 
   @override
   Future<void> deleteUnit(String name) {
-    return _db.deleteUnitByName(name);
+    return (_db.delete(_db.units)..where((unit) => unit.name.equals(name)))
+        .go();
   }
 }

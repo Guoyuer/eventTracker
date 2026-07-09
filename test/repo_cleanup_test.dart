@@ -140,6 +140,25 @@ void main() {
     expect(repository, contains('PlainEventModel'));
   });
 
+  test('app database does not own repository-specific query helpers', () {
+    final database =
+        File('lib/persistence/database/app_database.dart').readAsStringSync();
+    final unitRepository =
+        File('lib/persistence/unit_repository.dart').readAsStringSync();
+    final statisticsRepository =
+        File('lib/persistence/statistics_repository.dart').readAsStringSync();
+
+    expect(database, isNot(contains('flutter/material.dart')));
+    expect(database, isNot(contains('DateTimeRange')));
+    expect(database, isNot(contains('getAllUnits')));
+    expect(database, isNot(contains('deleteUnitByName')));
+    expect(database, isNot(contains('getRecordsInRange')));
+    expect(database, isNot(contains('getEventsMap')));
+    expect(unitRepository, contains('select(_db.units)'));
+    expect(statisticsRepository, contains('select(_db.records)'));
+    expect(statisticsRepository, contains('select(_db.events)'));
+  });
+
   test('shared common widgets do not create persistence repositories', () {
     final source = File('lib/common/commonWidget.dart').readAsStringSync();
 

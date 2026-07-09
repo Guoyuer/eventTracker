@@ -1,3 +1,4 @@
+import 'package:drift/drift.dart';
 import 'package:flutter/material.dart' show DateTimeRange;
 
 import '../domain/activity_models.dart';
@@ -24,8 +25,11 @@ class DriftStatisticsRepository implements StatisticsRepository {
 
   @override
   Future<StatisticsData> getStatisticsData(DateTimeRange range) async {
-    final records = await _db.getRecordsInRange(range);
-    final activitiesById = await _db.getEventsMap();
+    final records = await (_db.select(_db.records)
+          ..where((record) =>
+              record.endTime.isBetweenValues(range.start, range.end)))
+        .get();
+    final activities = await _db.select(_db.events).get();
 
     return StatisticsData(
       records: [
@@ -39,10 +43,10 @@ class DriftStatisticsRepository implements StatisticsRepository {
           ),
       ],
       activitiesById: {
-        for (final entry in activitiesById.entries)
-          entry.key: StatisticsActivity(
-            id: entry.value.id,
-            name: entry.value.name,
+        for (final activity in activities)
+          activity.id: StatisticsActivity(
+            id: activity.id,
+            name: activity.name,
           ),
       },
     );

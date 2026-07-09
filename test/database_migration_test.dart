@@ -1,8 +1,8 @@
 import 'dart:io';
 
+import 'package:drift/drift.dart';
 import 'package:drift_sqflite/drift_sqflite.dart';
 import 'package:event_tracker/persistence/database/app_database.dart';
-import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:path/path.dart' as p;
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
@@ -34,12 +34,12 @@ void main() {
     final db = AppDatabase(SqfliteQueryExecutor(path: dbPath));
     addTearDown(db.close);
 
-    final records = await db.getRecordsInRange(
-      DateTimeRange(
-        start: DateTime(2026, 1, 1),
-        end: DateTime(2026, 1, 2),
-      ),
-    );
+    final records = await (db.select(db.records)
+          ..where((record) => record.endTime.isBetweenValues(
+                DateTime(2026, 1, 1),
+                DateTime(2026, 1, 2),
+              )))
+        .get();
 
     expect(records, hasLength(1));
     expect(records.single.eventId, 1);

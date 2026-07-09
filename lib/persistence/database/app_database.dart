@@ -1,5 +1,4 @@
 import 'package:drift/drift.dart';
-import 'package:flutter/material.dart';
 
 import 'database_bootstrap.dart';
 import 'tables.dart';
@@ -33,16 +32,6 @@ class AppDatabase extends _$AppDatabase {
     await customStatement('DROP TABLE IF EXISTS steps');
   }
 
-//////////////////////////////////unit相关////////////////////////////////////
-
-  Future<List<Unit>> getAllUnits() => select(units).get();
-
-  Future<int> addUnit(UnitsCompanion unit) => into(units).insert(unit);
-
-  Future<void> deleteUnitByName(String unitName) async {
-    await (delete(units)..where((tbl) => tbl.name.equals(unitName))).go();
-  }
-
   //////////////////////////////////record相关///////////////////////////////////
 
   ///////////////////record.get类
@@ -52,14 +41,6 @@ class AppDatabase extends _$AppDatabase {
     var record =
         await (select(records)..where((tbl) => tbl.id.equals(id))).getSingle();
     return record;
-  }
-
-  Future<List<Record>> getRecordsInRange(DateTimeRange range) {
-    DateTime start = range.start;
-    DateTime end = range.end;
-    return (select(records)
-          ..where((tbl) => tbl.endTime.isBetweenValues(start, end)))
-        .get();
   }
 
   ///得到所有的记录，不包括active的记录
@@ -91,15 +72,6 @@ class AppDatabase extends _$AppDatabase {
 
   Future<List<Event>> getRawEvents() {
     return select(events).get();
-  }
-
-  Future<Map<int, Event>> getEventsMap() async {
-    List<Event> events = await getRawEvents();
-    Map<int, Event> res = {};
-    events.forEach((element) {
-      res[element.id] = element;
-    });
-    return res;
   }
 
   ///返回成功或失败
