@@ -8,7 +8,6 @@ import '../common/commonWidget.dart';
 import '../domain/activity_models.dart';
 import '../stateProviders.dart';
 
-// ignore: must_be_immutable
 class UnitsManager extends ConsumerStatefulWidget {
   const UnitsManager();
 

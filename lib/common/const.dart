@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
 
-// ignore: must_be_immutable
-
 enum EventStatus {
   plain, // 不care时间
   active, //正在进行

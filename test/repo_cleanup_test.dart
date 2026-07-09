@@ -89,6 +89,15 @@ void main() {
     }
   });
 
+  test('activity list does not expose incomplete manual time entry controls',
+      () {
+    final activityList =
+        File('lib/EventsList/eventsList.dart').readAsStringSync();
+
+    expect(activityList, isNot(contains('showTimePicker')));
+    expect(activityList, isNot(contains('手动指定')));
+  });
+
   test('database module does not expose record lifecycle convenience methods',
       () {
     final database =

@@ -73,40 +73,16 @@ class EventTileButton extends ConsumerWidget {
         return eventListButton(Icon(Icons.add_rounded), Text("新记录"), () {
           DateTime now = DateTime.now();
           addPlainRecord(context, ref, now);
-        }, () {
-          showToast("长按 -- 手动指定时间");
-          showTimePicker(
-            context: context,
-            initialTime: TimeOfDay.now(),
-          );
         });
       case EventStatus.notActive:
         return eventListButton(Icon(Icons.play_arrow_outlined), Text("开始"), () {
           DateTime now = DateTime.now();
           startTimingRecord(context, ref, now);
-        }, () {
-          showToast("长按 -- 手动指定开始时间");
-          showTimePicker(
-            context: context,
-            initialTime: TimeOfDay.now(),
-          );
         });
       case EventStatus.active:
         return eventListButton(Icon(Icons.stop_circle_outlined), Text("停止"),
             () {
           stopTimingRecord(context, ref, DateTime.now());
-        }, () async {
-          showToast("长按 -- 手动指定停止时间");
-          final activeEvent = event as TimingEventModel;
-          final duration = DateTime.now().difference(activeEvent.startTime!);
-          if (duration < accidentalTimedRecordThreshold) {
-            showToast("开始不足5s");
-          } else {
-            showTimePicker(
-              context: context,
-              initialTime: TimeOfDay.now(),
-            );
-          }
         });
       default:
         return eventListButton(

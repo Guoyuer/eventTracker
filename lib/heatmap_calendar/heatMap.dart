@@ -27,7 +27,7 @@ class HeatMapDataHolder extends InheritedWidget {
   final DateTimeRange dateRange; //因为map无序
   final ValueChanged<DateTime>? onMonthTouched;
   final ValueChanged<DateTime>? onDayTouched;
-  late final String? unit;
+  final String? unit;
 
   HeatMapDataHolder(
       {required this.setting,
@@ -50,15 +50,14 @@ class HeatMapDataHolder extends InheritedWidget {
   }
 }
 
-// ignore: must_be_immutable
 class HeatMapCalendar extends StatefulWidget {
   final HeatMapSetting setting;
-  final Map<DateTime, double> data = {};
+  final Map<DateTime, double> data;
   final DateTimeRange dateRange;
   final ValueChanged<DateTime>? onMonthTouched;
   final ValueChanged<DateTime>? onDayTouched;
   final String unit; //Tooltip显示的单位
-  late double maxVal = 0;
+  final double maxVal;
 
   HeatMapCalendar(
       {Key? key,
@@ -68,10 +67,22 @@ class HeatMapCalendar extends StatefulWidget {
       required this.unit,
       this.onMonthTouched,
       this.onDayTouched})
-      : super(key: key) {
-    input.forEach((key, value) {
-      if (value > maxVal) maxVal = value;
-      this.data[getDate(key)] = value;
+      : data = _normalizeInput(input),
+        maxVal = _maxInputValue(input),
+        super(key: key);
+
+  static Map<DateTime, double> _normalizeInput(Map<DateTime, double> input) {
+    return {
+      for (final entry in input.entries) getDate(entry.key): entry.value,
+    };
+  }
+
+  static double _maxInputValue(Map<DateTime, double> input) {
+    if (input.isEmpty) {
+      return 0;
+    }
+    return input.values.reduce((maxValue, value) {
+      return value > maxValue ? value : maxValue;
     });
   }
 
