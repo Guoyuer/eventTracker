@@ -9,6 +9,7 @@ Bring this repo from a working prototype to a maintainable Flutter app that can 
 - Windows release build works.
 - `flutter analyze` is green under Flutter 3.44 / Dart 3.12 with `flutter_lints` 6.
 - `flutter test` is green with bootstrap, repository, persistence lifecycle, analytics, and structural cleanup tests.
+- Architecture boundaries are checked from parsed Dart import directives instead of brittle source-string assertions.
 - Persistence is mostly behind repository Modules; cached aggregate fields remain and are protected by record lifecycle tests.
 - Platform support is Windows-first with sqflite FFI; unused Firebase configuration has been removed.
 - `windows/` and `pubspec.lock` are tracked for reproducible desktop development.
@@ -138,6 +139,7 @@ Status: in progress
 - Changed Activity detail navigation to pass only an Activity ID and reload a fresh Activity Snapshot, removing the stale list-snapshot contract.
 - Fixed Statistics end-day handling: queries now include the full selected last day, exclude next-day midnight with a half-open interval, ignore active Records, and load Records plus Activities in one transaction.
 - Corrected the default Statistics window from eight displayed dates to seven inclusive calendar days.
+- Replaced the 790-line historical source-shape regression suite with focused analyzer-AST dependency rules for Domain, Application, Analytics, State, UI, and database bootstrap boundaries. Existing behavior, migration, persistence, and Widget tests remain the owners of product contracts.
 - Define invariants for timed records, plain records, values, and units.
 
 ## Phase 4: UI Composition

@@ -171,5 +171,7 @@ Calendar-day selection and timestamp interval semantics now have separate Interf
 flowchart LR
   AggregateCache["Aggregate Totals cache"] --> Malformed["malformed Record histories"]
   Malformed --> Invariants["stronger lifecycle invariants"]
-  SourceShape["source-shape tests"] --> Behavior["behavior and dependency tests"]
+  ParsedImports["parsed import directives"] --> Boundaries["durable layer boundaries"]
 ```
+
+Product behavior stays in unit, persistence, migration, and Widget tests. The architecture suite now checks only dependency direction from parsed Dart syntax, so internal renames and implementation changes do not create false regressions.

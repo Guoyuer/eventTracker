@@ -126,6 +126,7 @@ Current status:
 - Activity detail routes now carry an Activity ID and reload through `activitySnapshotProvider` instead of receiving a stale list snapshot.
 - Replaced ambiguous date ranges with `CalendarDateRange` and half-open `DateInterval` Modules; Statistics no longer leaks `+1 day` compensation from the Widget into persistence.
 - Statistics reads Records and Activities in one transaction and uses `>= start AND < endExclusive`, eliminating the next-day-midnight inclusion bug.
+- Architecture tests parse Dart import directives with analyzer and enforce durable layer boundaries; the old source-string implementation checks have been deleted.
 
 Target modules:
 
@@ -252,8 +253,7 @@ Rule:
 Recommended order from here:
 
 1. Continue hardening Aggregate Totals invariants around malformed record histories and any remaining direct cached-field reads.
-2. Replace remaining source-shape tests with behavior or architecture dependency tests where practical.
-3. Audit platform support after Android SDK installation or CI coverage is available.
+2. Audit platform support after Android SDK installation or CI coverage is available.
 
 ## Definition of Done for Each Slice
 
