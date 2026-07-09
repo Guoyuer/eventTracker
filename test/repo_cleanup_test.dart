@@ -403,6 +403,9 @@ void main() {
     final details = File(
       'lib/EventsDetails/eventDetails.dart',
     ).readAsStringSync();
+    final detailController = File(
+      'lib/application/activity_detail_controller.dart',
+    ).readAsStringSync();
 
     expect(editor, contains('ActivityEditorController'));
     expect(
@@ -420,6 +423,10 @@ void main() {
     );
     expect(details, contains('ActivityDetailController'));
     expect(details, contains('confirmDelete:'));
+    expect(details, contains('exitDetail:'));
+    expect(details, isNot(contains('if (!deleted')));
+    expect(detailController, contains('deleteActivityAndExit'));
+    expect(detailController, contains('ActivityDetailExit'));
     expect(
       details,
       isNot(contains('.read(activityRepositoryProvider).deleteActivity')),
@@ -639,10 +646,17 @@ void main() {
     final commonWidgets = File(
       'lib/common/commonWidget.dart',
     ).readAsStringSync();
+    final controller = File(
+      'lib/application/unit_management_controller.dart',
+    ).readAsStringSync();
 
     expect(unitManager, isNot(contains('ConsumerStatefulWidget')));
     expect(unitManager, isNot(contains('TextEditingController')));
     expect(unitManager, isNot(contains('setState(')));
+    expect(unitManager, contains('confirmDismiss:'));
+    expect(unitManager, isNot(contains('onDismissed:')));
+    expect(controller, contains('UnitDeleteConfirmation'));
+    expect(controller, contains('Future<bool> deleteUnit'));
     expect(commonWidgets, contains('TextEditingController'));
     expect(commonWidgets, contains('controller.dispose()'));
   });

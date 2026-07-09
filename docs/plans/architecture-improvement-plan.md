@@ -177,6 +177,8 @@ Current status:
 - Add-activity, activity-detail deletion/description-save, and unit-management mutation policy now lives behind small application controllers, leaving route Widgets as UI Adapters for forms, dialogs, and navigation.
 - Activity-list recording and detail-route refresh policy now live behind `ActivityListController`; `EventList` supplies UI adapters for value prompts, route navigation, notifications, and provider invalidation.
 - `EventList` no longer uses the pass-through `EventDataHolder` inherited widget, and shared button helpers no longer expose unused long-press callbacks from retired manual-time-entry controls.
+- Activity-detail deletion now exits the route through `ActivityDetailController`, with the Widget only providing confirmation and navigation adapters.
+- Unit deletion now runs confirmation, repository mutation, refresh, notification, and Dismissible permission through `UnitManagementController`, preventing failed deletes from visually dismissing rows before refresh.
 
 Target shape:
 
@@ -239,7 +241,7 @@ Rule:
 
 Recommended order from here:
 
-1. Continue shrinking route Widgets where `eventEditor.dart`, `eventDetails.dart`, and `unitsManagerPage.dart` still construct controllers or own confirmation/navigation policy.
+1. Continue shrinking route Widgets where `eventEditor.dart` and remaining route controller construction still mix form/navigation adapters with mutation policy.
 2. Revisit cached aggregate repair/rebuild options and decide whether aggregates should be repairable or recomputed.
 3. Audit platform support after Android SDK installation or CI coverage is available.
 

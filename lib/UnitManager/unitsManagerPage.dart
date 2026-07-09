@@ -62,10 +62,10 @@ class UnitsManager extends ConsumerWidget {
                   title: Center(child: Text(units[idx].name)),
                 ),
               ),
-              confirmDismiss: (direction) =>
-                  _confirmDismiss(context, direction),
-              onDismissed: (direction) =>
-                  controller.deleteUnit(units[idx].name),
+              confirmDismiss: (_) => controller.deleteUnit(
+                units[idx].name,
+                confirmDelete: () => _confirmDelete(context),
+              ),
             );
           },
         ),
@@ -89,27 +89,25 @@ class UnitsManager extends ConsumerWidget {
     );
   }
 
-  Future<bool> _confirmDismiss(
-    BuildContext context,
-    DismissDirection direction,
-  ) async {
-    return await showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: Text("是否删除该单位？"),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(false),
-              child: Text("取消"),
-            ),
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(true),
-              child: Text("删除"),
-            ),
-          ],
-        );
-      },
-    );
+  Future<bool> _confirmDelete(BuildContext context) async {
+    return await showDialog<bool>(
+          context: context,
+          builder: (BuildContext context) {
+            return AlertDialog(
+              title: Text("是否删除该单位？"),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.of(context).pop(false),
+                  child: Text("取消"),
+                ),
+                TextButton(
+                  onPressed: () => Navigator.of(context).pop(true),
+                  child: Text("删除"),
+                ),
+              ],
+            );
+          },
+        ) ??
+        false;
   }
 }

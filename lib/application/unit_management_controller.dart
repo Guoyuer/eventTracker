@@ -2,6 +2,7 @@ import '../persistence/unit_repository.dart';
 
 typedef UnitListRefresh = void Function();
 typedef UnitNotification = void Function(String message);
+typedef UnitDeleteConfirmation = Future<bool> Function();
 
 class UnitManagementController {
   UnitManagementController({
@@ -27,13 +28,23 @@ class UnitManagementController {
     }
   }
 
-  Future<void> deleteUnit(String name) async {
+  Future<bool> deleteUnit(
+    String name, {
+    required UnitDeleteConfirmation confirmDelete,
+  }) async {
+    final confirmed = await confirmDelete();
+    if (!confirmed) {
+      return false;
+    }
+
     try {
       await _repository.deleteUnit(name);
       _refresh();
+      return true;
     } catch (_) {
       _notify('删除失败');
       _refresh();
+      return false;
     }
   }
 }

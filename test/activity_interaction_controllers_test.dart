@@ -83,6 +83,39 @@ void main() {
   });
 
   test(
+    'activity detail exits only after a confirmed delete succeeds',
+    () async {
+      final repository = _FakeActivityRepository();
+      final exits = <bool>[];
+      final controller = ActivityDetailController(repository: repository);
+
+      await controller.deleteActivityAndExit(
+        12,
+        confirmDelete: () async => true,
+        exitDetail: exits.add,
+      );
+
+      expect(repository.deletedActivityIds, [12]);
+      expect(exits, [true]);
+    },
+  );
+
+  test('activity detail stays open when delete is unconfirmed', () async {
+    final repository = _FakeActivityRepository();
+    final exits = <bool>[];
+    final controller = ActivityDetailController(repository: repository);
+
+    await controller.deleteActivityAndExit(
+      12,
+      confirmDelete: () async => false,
+      exitDetail: exits.add,
+    );
+
+    expect(repository.deletedActivityIds, isEmpty);
+    expect(exits, isEmpty);
+  });
+
+  test(
     'activity detail saves descriptions before refreshing edit state',
     () async {
       final repository = _FakeActivityRepository();
@@ -173,26 +206,49 @@ void main() {
     expect(harness.notifications, ['添加失败，可能是因为重复']);
   });
 
-  test('unit delete refreshes after success', () async {
+  test('unit delete skips repository when unconfirmed', () async {
     final repository = _FakeUnitRepository();
     final harness = _UnitControllerHarness(repository);
 
-    await harness.controller.deleteUnit('km');
+    final deleted = await harness.controller.deleteUnit(
+      'km',
+      confirmDelete: () async => false,
+    );
 
+    expect(deleted, isFalse);
+    expect(repository.deletedUnitNames, isEmpty);
+    expect(harness.refreshCount, 0);
+    expect(harness.notifications, isEmpty);
+  });
+
+  test('unit delete refreshes and allows dismiss after success', () async {
+    final repository = _FakeUnitRepository();
+    final harness = _UnitControllerHarness(repository);
+
+    final deleted = await harness.controller.deleteUnit(
+      'km',
+      confirmDelete: () async => true,
+    );
+
+    expect(deleted, isTrue);
     expect(repository.deletedUnitNames, ['km']);
     expect(harness.refreshCount, 1);
     expect(harness.notifications, isEmpty);
   });
 
   test(
-    'unit delete reports failure and refreshes the dismissed list',
+    'unit delete reports failure and keeps the dismissed item visible',
     () async {
       final repository = _FakeUnitRepository()
         ..deleteUnitError = StateError('still used');
       final harness = _UnitControllerHarness(repository);
 
-      await harness.controller.deleteUnit('km');
+      final deleted = await harness.controller.deleteUnit(
+        'km',
+        confirmDelete: () async => true,
+      );
 
+      expect(deleted, isFalse);
       expect(harness.refreshCount, 1);
       expect(harness.notifications, ['删除失败']);
     },

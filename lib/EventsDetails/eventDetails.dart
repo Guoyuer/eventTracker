@@ -46,18 +46,18 @@ class EventDetails extends ConsumerWidget {
         actions: [
           IconButton(
             onPressed: () async {
-              final deleted =
-                  await ActivityDetailController(
-                    repository: ref.read(activityRepositoryProvider),
-                  ).deleteActivity(
-                    event.id,
-                    confirmDelete: () async =>
-                        await _confirmDelete(context) ?? false,
-                  );
-              if (!deleted || !context.mounted) {
-                return;
-              }
-              Navigator.of(context).pop(true);
+              await ActivityDetailController(
+                repository: ref.read(activityRepositoryProvider),
+              ).deleteActivityAndExit(
+                event.id,
+                confirmDelete: () async =>
+                    await _confirmDelete(context) ?? false,
+                exitDetail: (deleted) {
+                  if (context.mounted) {
+                    Navigator.of(context).pop(deleted);
+                  }
+                },
+              );
             },
             icon: Icon(Icons.delete),
           ),
