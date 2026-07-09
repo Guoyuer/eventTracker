@@ -135,6 +135,7 @@ Status: in progress
 Status: pending
 
 - Removed unused Firebase dependency, generated options, and stale Firestore configuration.
+- Removed the single-use `sprintf` dependency after replacing it with Dart string interpolation.
 - Upgrade dependencies in small batches with tests between batches.
 - Then evaluate Flutter SDK upgrade separately.
 - Removed unused `share` and discontinued `moor_db_viewer`.

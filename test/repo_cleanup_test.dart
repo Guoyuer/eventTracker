@@ -16,6 +16,7 @@ void main() {
       'db_viewer',
       'firebase_core',
       'random_color',
+      'sprintf',
     ]) {
       expect(pubspec, isNot(contains('$packageName:')));
       expect(lockfile, isNot(contains('$packageName:')));

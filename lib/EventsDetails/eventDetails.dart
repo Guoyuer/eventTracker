@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:event_tracker/common/commonWidget.dart';
 import 'package:event_tracker/common/const.dart';
-import 'package:sprintf/sprintf.dart';
 
 import '../domain/activity_models.dart';
 import '../stateProviders.dart';
@@ -52,7 +51,7 @@ class EventDetails extends ConsumerWidget {
                 },
                 icon: Icon(Icons.delete))
           ],
-          title: Text(sprintf("%s - 项目详细", [event.name])),
+          title: Text("${event.name} - 项目详细"),
         ),
         body: ListView(children: listChildren));
   }
