@@ -27,7 +27,7 @@ flowchart LR
     RecordLifecycle["RecordLifecycle"]
     UnitRepository["UnitRepository"]
     StatisticsRepository["StatisticsRepository"]
-    AggregateRules["ActivityAggregateSnapshot"]
+    RecordHistory["ActivityRecordHistory"]
     CalendarDateRange["CalendarDateRange"]
     DateInterval["DateInterval"]
   end
@@ -50,7 +50,6 @@ flowchart LR
     DriftUnitRepository["DriftUnitRepository"]
     DriftStatisticsRepository["DriftStatisticsRepository"]
     RecordLifecycleStore["RecordLifecycleStore"]
-    AggregateStore["ActivityAggregateStore"]
     AppDatabase["AppDatabase / Drift"]
     DatabaseBootstrap["DatabaseBootstrap"]
   end
@@ -86,8 +85,7 @@ flowchart LR
   CalendarDateRange --> DateInterval
   DriftActivityRepository --> RecordLifecycleStore
   DriftActivityRepository --> ActivitySnapshotStore
-  RecordLifecycleStore --> AggregateStore
-  AggregateStore --> AggregateRules
+  ActivitySnapshotStore --> RecordHistory
   ActivitySnapshotStore --> AppDatabase
   DriftActivityRepository --> AppDatabase
   DriftUnitRepository --> AppDatabase
@@ -144,12 +142,12 @@ flowchart LR
   N1 --> Mutable["mutable model + EventStatus"]
   Mutable --> Stale["detail receives stale snapshot"]
 
-  After["one Events / active Records join"] --> Snapshot["ActivitySnapshotStore"]
+  After["one Events / all Records join"] --> Snapshot["ActivitySnapshotStore"]
   Snapshot --> Sealed["sealed immutable Activity types"]
   Sealed --> Route["detail route passes ID and reloads"]
 ```
 
-Active state now comes from active Records rather than cached `lastRecordId`, malformed histories fail at one Interface, and the domain model cannot represent an active Timed Activity without a start time.
+Active state and totals now come from Records through `ActivityRecordHistory`. Schema v4 removed `lastRecordId`, `sumTime`, and `sumVal`; malformed histories fail at one Interface, and the domain model cannot represent an active Timed Activity without a start time.
 
 ## Deepened Statistics Range
 
@@ -169,9 +167,10 @@ Calendar-day selection and timestamp interval semantics now have separate Interf
 
 ```mermaid
 flowchart LR
-  AggregateCache["Aggregate Totals cache"] --> Malformed["malformed Record histories"]
-  Malformed --> Invariants["stronger lifecycle invariants"]
+  Lifecycle["RecordLifecycleStore"] --> TypeRules["Activity type validation"]
+  Database["schema v4"] --> Shape["FK + CHECK + one-active index"]
+  Snapshot["ActivitySnapshotStore"] --> History["ActivityRecordHistory"]
   ParsedImports["parsed import directives"] --> Boundaries["durable layer boundaries"]
 ```
 
-Product behavior stays in unit, persistence, migration, and Widget tests. The architecture suite now checks only dependency direction from parsed Dart syntax, so internal renames and implementation changes do not create false regressions.
+Records are the sole persisted fact for Activity state and totals. Product behavior stays in unit, persistence, migration, and Widget tests. The architecture suite checks only dependency direction from parsed Dart syntax, so internal renames and implementation changes do not create false regressions.

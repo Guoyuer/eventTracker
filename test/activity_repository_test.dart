@@ -95,85 +95,58 @@ void main() {
     },
   );
 
-  test(
-    'active snapshot derives from Records instead of cached lastRecordId',
-    () async {
-      final activityId = await repository.createActivity(
-        name: 'Practice',
-        careTime: true,
-      );
-      final startedAt = DateTime(2026, 1, 1, 8);
-      await repository.startTimedRecord(activityId, startedAt);
-      await (db.update(db.events)
-            ..where((event) => event.id.equals(activityId)))
-          .write(const EventsCompanion(lastRecordId: Value(null)));
+  test('snapshot derives active state and totals from Records', () async {
+    final activityId = await repository.createActivity(
+      name: 'Practice',
+      careTime: true,
+    );
+    await repository.startTimedRecord(activityId, DateTime(2026, 1, 1, 8));
+    await repository.stopActiveTimedRecord(
+      activityId,
+      DateTime(2026, 1, 1, 8, 25),
+      value: 3,
+    );
+    final activeStartedAt = DateTime(2026, 1, 1, 9);
+    await repository.startTimedRecord(activityId, activeStartedAt);
 
-      final activity = await repository.getActivity(activityId);
+    final activity = await repository.getActivity(activityId);
 
-      expect(activity, isA<ActiveTimedActivity>());
-      expect((activity as ActiveTimedActivity).startedAt, startedAt);
-    },
-  );
+    expect(activity, isA<ActiveTimedActivity>());
+    expect((activity as ActiveTimedActivity).startedAt, activeStartedAt);
+    expect(activity.totalDuration, const Duration(minutes: 25));
+    expect(activity.totalValue, 3);
+  });
 
-  test(
-    'snapshot fails fast when a Timed Activity has two active Records',
-    () async {
-      final activityId = await repository.createActivity(
-        name: 'Practice',
-        careTime: true,
-      );
-      for (final startedAt in [
-        DateTime(2026, 1, 1, 8),
-        DateTime(2026, 1, 1, 9),
-      ]) {
-        await db
-            .into(db.records)
-            .insert(
-              RecordsCompanion(
-                eventId: Value(activityId),
-                startTime: Value(startedAt),
-              ),
-            );
-      }
+  test('snapshot rejects Record shapes for the wrong Activity type', () async {
+    final plainId = await repository.createActivity(
+      name: 'Read',
+      careTime: false,
+    );
+    final timedId = await repository.createActivity(
+      name: 'Practice',
+      careTime: true,
+    );
+    await db
+        .into(db.records)
+        .insert(
+          RecordsCompanion(
+            eventId: Value(plainId),
+            startTime: Value(DateTime(2026, 1, 1, 8)),
+            endTime: Value(DateTime(2026, 1, 1, 9)),
+          ),
+        );
+    await db
+        .into(db.records)
+        .insert(
+          RecordsCompanion(
+            eventId: Value(timedId),
+            endTime: Value(DateTime(2026, 1, 1, 9)),
+          ),
+        );
 
-      expect(repository.getActivity(activityId), throwsStateError);
-    },
-  );
-
-  test(
-    'snapshot fails fast when an active Timed Record has no start',
-    () async {
-      final activityId = await repository.createActivity(
-        name: 'Practice',
-        careTime: true,
-      );
-      await db
-          .into(db.records)
-          .insert(RecordsCompanion(eventId: Value(activityId)));
-
-      expect(repository.getActivity(activityId), throwsStateError);
-    },
-  );
-
-  test(
-    'snapshot fails fast when a Plain Activity has an active Record',
-    () async {
-      final activityId = await repository.createActivity(
-        name: 'Read',
-        careTime: false,
-      );
-      await db
-          .into(db.records)
-          .insert(
-            RecordsCompanion(
-              eventId: Value(activityId),
-              startTime: Value(DateTime(2026, 1, 1, 8)),
-            ),
-          );
-
-      expect(repository.getActivity(activityId), throwsStateError);
-    },
-  );
+    expect(repository.getActivity(plainId), throwsStateError);
+    expect(repository.getActivity(timedId), throwsStateError);
+  });
 
   test('repository reads records for one activity', () async {
     final firstActivityId = await repository.createActivity(
@@ -312,98 +285,5 @@ void main() {
       expect(canceledRecord, isNull);
       expect(activity.totalDuration, const Duration(minutes: 10));
     },
-  );
-
-  test('repository repairs drifted aggregate totals', () async {
-    final activityId = await repository.createActivity(
-      name: 'Questions',
-      careTime: false,
-      unit: 'questions',
-    );
-    await repository.addPlainRecord(
-      activityId,
-      DateTime(2026, 1, 1, 8),
-      value: 3,
-    );
-    await repository.addPlainRecord(
-      activityId,
-      DateTime(2026, 1, 2, 8),
-      value: 5,
-    );
-    await _corruptAggregateTotals(
-      db,
-      activityId,
-      lastRecordId: null,
-      sumTime: const Duration(days: 99),
-      sumValue: 999,
-    );
-
-    await repository.repairAggregateTotals();
-
-    final activity = (await repository.getActivities()).single as PlainActivity;
-    final records = await getCompletedTestRecordsForActivity(db, activityId);
-    final storedActivity = await getTestActivity(db, activityId);
-
-    expect(storedActivity.lastRecordId, records.last.id);
-    expect(activity.occurrenceCount, 2);
-    expect(activity.totalValue, 8);
-  });
-
-  test('repository repair preserves active timed records', () async {
-    final activityId = await repository.createActivity(
-      name: 'Practice',
-      careTime: true,
-      unit: 'pages',
-    );
-    final firstRecordId = await repository.startTimedRecord(
-      activityId,
-      DateTime(2026, 1, 1, 8),
-    );
-    await repository.stopActiveTimedRecord(
-      activityId,
-      DateTime(2026, 1, 1, 8, 10),
-      value: 4,
-    );
-    final activeRecordId = await repository.startTimedRecord(
-      activityId,
-      DateTime(2026, 1, 1, 9),
-    );
-    await _corruptAggregateTotals(
-      db,
-      activityId,
-      lastRecordId: firstRecordId,
-      sumTime: const Duration(days: 99),
-      sumValue: 999,
-    );
-
-    await repository.repairAggregateTotals();
-
-    final storedActivity = await getTestActivity(db, activityId);
-    final activity =
-        (await repository.getActivities()).single as ActiveTimedActivity;
-
-    expect(storedActivity.lastRecordId, activeRecordId);
-    expect(storedActivity.sumTime, const Duration(minutes: 10));
-    expect(storedActivity.sumVal, 4);
-    expect(activity.startedAt, DateTime(2026, 1, 1, 9));
-    expect(activity.totalDuration, const Duration(minutes: 10));
-  });
-}
-
-Future<void> _corruptAggregateTotals(
-  AppDatabase db,
-  int activityId, {
-  required int? lastRecordId,
-  required Duration sumTime,
-  required double sumValue,
-}) async {
-  await (db.update(
-    db.events,
-  )..where((event) => event.id.equals(activityId))).write(
-    EventsCompanion(
-      lastRecordId: Value(lastRecordId),
-      sumTime: Value(sumTime),
-      sumVal: Value(sumValue),
-    ),
   );
 }

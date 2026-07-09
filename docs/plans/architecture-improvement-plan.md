@@ -32,7 +32,7 @@ Rules:
 - UI modules should not create `RecordsCompanion` or `EventsCompanion`.
 - UI modules should not create or access `AppDatabase` directly once a repository seam exists.
 - Record lifecycle changes must be transactional.
-- Cached aggregate totals must be updated in one place.
+- Records are the only persisted source of Activity state and totals.
 
 Completed slice:
 
@@ -46,7 +46,7 @@ Completed slice:
 - Removed inactive step-count UI, fake-data generation, debug DB viewer, and their direct database helper methods.
 - Removed unused/discontinued dependencies `share` and `moor_db_viewer`.
 - Moved activity detail record reads, activity deletion, and description reads/writes behind `ActivityRepository`.
-- Moved record lifecycle writes and Aggregate Totals updates into `RecordLifecycleStore` and the pure `ActivityAggregateTotals` rule object.
+- Moved Record Lifecycle writes into `RecordLifecycleStore` and validation/summary rules into pure `ActivityRecordHistory`.
 - Renamed accidental short-start cleanup from delete semantics to `cancelActiveTimedRecord`.
 - Retired the legacy step schema via ADR 0001 and schema v3 migration.
 - Renamed the uppercase `DAO` module path to `lib/persistence/database/`.
@@ -59,40 +59,21 @@ Next slice:
 3. Add tests for multi-activity counts and stacked time slots.
 4. Keep `flutter analyze`, `flutter test`, and `flutter build windows` green.
 
-### 2. Make Aggregate Totals an Explicit Rule
+### 2. Keep Records as the Single Source of Truth
 
-Current problem: `sumTime`, `sumVal`, and `lastRecordId` are cached on activities and can drift from records if updates happen in multiple places.
+Current status: completed.
 
-Current status:
+- Schema v4 removed `lastRecordId`, `sumTime`, and `sumVal` from Events.
+- `ActivityRecordHistory` validates Plain and Timed Record shapes and computes occurrence count, duration, value, and active state.
+- `ActivitySnapshotStore` loads Events and Records in one join and produces immutable Activity Snapshots from the validated history.
+- `RecordLifecycleStore` rejects missing Activities, wrong-type operations, duplicate starts, and stops before start.
+- The Records table enforces Event foreign keys with cascade deletion, valid timestamp/value shapes, and one active Record per Activity.
+- Migration validates existing histories before rebuilding tables and fails instead of guessing how to repair corrupt data.
+- `ActivityAggregateStore`, cached-total repair, and their duplicate incremental rules were deleted.
 
-- `RecordLifecycleStore` owns plain record add, timed record start, timed record stop, and active timed record cancel writes.
-- `ActivityAggregateTotals` owns plain and timed accumulation rules and fails fast on negative timed durations.
-- `ActivityAggregateSnapshot` rebuilds cached `lastRecordId`, `sumTime`, and `sumVal` from completed records after lifecycle writes, so the next write repairs drifted cached totals instead of compounding them.
-- `ActivityAggregateStore` owns cached snapshot repair for one Activity or all Activities and is reused by `RecordLifecycleStore` and `ActivityRepository.repairAggregateTotals()`.
-- Repair preserves an active Timed Activity record as `lastRecordId` while recomputing `sumTime` and `sumVal` only from completed records.
-- Accidental timed starts under five seconds now cancel directly instead of asking the user to delete or continue.
+Future rule:
 
-Target shape:
-
-- Introduce a small lifecycle module or internal repository helper for aggregate updates.
-- Keep all aggregate mutations behind repository methods.
-- Add tests for every lifecycle transition:
-  - plain record add
-  - timed record start
-  - timed record stop
-  - active timed record cancel
-  - event delete
-  - value and duration accumulation
-
-Short-term approach:
-
-- Keep the current schema.
-- Keep cached totals.
-- Concentrate update and repair rules in `ActivityAggregateStore` and keep tests thick around them.
-
-Longer-term option:
-
-- Recompute aggregate totals from records for some views if cached reads become a measurable correctness or performance liability.
+- Do not add Activity summary caches without a measured performance problem, an invalidation owner, and an ADR.
 
 ### 3. Extract Analytics from Widgets
 
@@ -252,7 +233,7 @@ Rule:
 
 Recommended order from here:
 
-1. Continue hardening Aggregate Totals invariants around malformed record histories and any remaining direct cached-field reads.
+1. Define remaining Unit and numeric-value invariants without adding summary caches.
 2. Audit platform support after Android SDK installation or CI coverage is available.
 
 ## Definition of Done for Each Slice

@@ -42,6 +42,4 @@ abstract interface class RecordLifecycle {
 }
 
 abstract interface class ActivityRepository
-    implements ActivityReader, ActivityWriter, RecordLifecycle {
-  Future<void> repairAggregateTotals();
-}
+    implements ActivityReader, ActivityWriter, RecordLifecycle {}

@@ -10,7 +10,7 @@ Bring this repo from a working prototype to a maintainable Flutter app that can 
 - `flutter analyze` is green under Flutter 3.44 / Dart 3.12 with `flutter_lints` 6.
 - `flutter test` is green with bootstrap, repository, persistence lifecycle, analytics, and structural cleanup tests.
 - Architecture boundaries are checked from parsed Dart import directives instead of brittle source-string assertions.
-- Persistence is mostly behind repository Modules; cached aggregate fields remain and are protected by record lifecycle tests.
+- Persistence is behind repository Modules, and Records are the single source of Activity state and totals.
 - Platform support is Windows-first with sqflite FFI; unused Firebase configuration has been removed.
 - `windows/` and `pubspec.lock` are tracked for reproducible desktop development.
 
@@ -90,10 +90,10 @@ Status: in progress
 - Renamed `DAO` to the lower-case `lib/persistence/database/` module path.
 - Replaced ad hoc string SQL updates in record lifecycle and latest-step reads with typed Drift operations.
 - Continue making record lifecycle operations transactional. Completed for plain record add, timed record start, timed record stop, active timed record cancel, and event delete.
-- Moved record lifecycle writes and Aggregate Totals updates out of `AppDatabase` into `RecordLifecycleStore` plus the pure `ActivityAggregateTotals` rule object.
-- Made Record Lifecycle writes rebuild Aggregate Totals snapshots from completed records after plain add, timed stop, and active timed-record cancel, so drifted cached totals self-heal on the next lifecycle write.
-- Centralized Aggregate Totals snapshot repair in `ActivityAggregateStore` and exposed `ActivityRepository.repairAggregateTotals()` as the explicit rebuild command while keeping cached totals in the schema.
-- Made Aggregate Totals repair preserve an active Timed Activity `lastRecordId` while recomputing `sumTime` and `sumVal` only from completed records.
+- Moved Record Lifecycle writes out of `AppDatabase` into `RecordLifecycleStore`.
+- Removed `lastRecordId`, `sumTime`, and `sumVal` from Events in schema v4; deleted `ActivityAggregateStore`, repair APIs, and the duplicate aggregate rule path.
+- Added Record foreign-key cascade, shape CHECK constraints, and a partial unique index that permits at most one active Record per Activity.
+- Made lifecycle writes reject missing Activities, Activity-type mismatches, duplicate starts, and invalid stop times before committing.
 - Replaced the short timed-record delete prompt with a cancel policy for accidental starts under five seconds.
 - Introduced `ActivityRepository` and migrated activity creation plus the activity-list recording flow to it.
 - Migrated activity detail record reads, deletion, and description edits to `ActivityRepository`.
@@ -106,7 +106,7 @@ Status: in progress
 - Moved activity display-model shaping out of `AppDatabase` and into `ActivityRepository`.
 - Moved unit and statistics table-specific query helpers out of `AppDatabase` and into their repositories.
 - Moved remaining activity-specific table helpers out of `AppDatabase` and into `ActivityRepository` / `RecordLifecycleStore`.
-- Added tests around record lifecycle, aggregate totals, latest step lookup, repository activity creation, and repository activity recording.
+- Added tests around Record Lifecycle invariants, database constraints, migration rejection, repository activity creation, and repository activity recording.
 - Added tests for unit add/list/delete and duplicate-name protection through the repository.
 - Removed inactive step-count and debug/fake-data database methods from the active persistence API.
 - Retired the legacy step schema in ADR 0001 and schema v3 migration, including sentinel record cleanup.
@@ -132,15 +132,14 @@ Status: in progress
 - Extracted statistics chart rendering and `fl_chart` adapters out of the statistics page route.
 - Moved activity-detail and statistics chart view-model construction out of chart adapters and into tested analytics modules.
 - Moved heatmap calendar date geometry, placeholder cells, month spacer weeks, and value-to-level mapping out of Widgets into `heatmap_calendar_model.dart`.
-- Added explicit `ActivityAggregateTotals` invariants for plain and timed record accumulation.
-- Added `ActivityAggregateSnapshot` rebuild rules for cached `lastRecordId`, `sumTime`, and `sumVal`.
-- Added active Timed Activity snapshot rules so Aggregate Totals repair keeps the active record as `lastRecordId` without counting it in completed totals.
-- Added `ActivitySnapshotStore`: activity list reads now use one Events-to-active-Records join instead of N+1 last-record queries, fail fast on malformed active histories, and do not expose `lastRecordId` outside persistence.
+- Added `ActivityRecordHistory` as the single rule for Plain and Timed Record shapes, occurrence counts, duration, values, and active state.
+- Made `ActivitySnapshotStore` read Events and all Records in one join, validate complete histories, and compute totals without cached Event fields.
+- Added schema v4 migration coverage proving old aggregate columns are removed and malformed histories fail migration deterministically.
 - Changed Activity detail navigation to pass only an Activity ID and reload a fresh Activity Snapshot, removing the stale list-snapshot contract.
 - Fixed Statistics end-day handling: queries now include the full selected last day, exclude next-day midnight with a half-open interval, ignore active Records, and load Records plus Activities in one transaction.
 - Corrected the default Statistics window from eight displayed dates to seven inclusive calendar days.
 - Replaced the 790-line historical source-shape regression suite with focused analyzer-AST dependency rules for Domain, Application, Analytics, State, UI, and database bootstrap boundaries. Existing behavior, migration, persistence, and Widget tests remain the owners of product contracts.
-- Define invariants for timed records, plain records, values, and units.
+- Define remaining invariants for units and numeric values.
 
 ## Phase 4: UI Composition
 

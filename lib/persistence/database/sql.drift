@@ -5,3 +5,6 @@ CREATE INDEX records_end_time ON records(end_time);
 CREATE INDEX records_start_time ON records(start_time);
 
 CREATE INDEX records_event_id ON records(event_id);
+
+CREATE UNIQUE INDEX records_one_active_per_event ON records(event_id)
+WHERE end_time IS NULL;

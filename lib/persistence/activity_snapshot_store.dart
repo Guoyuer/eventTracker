@@ -1,6 +1,7 @@
 import 'package:drift/drift.dart';
 
 import '../domain/activity_models.dart';
+import '../domain/activity_record_history.dart';
 import 'database/app_database.dart';
 
 class ActivitySnapshotStore {
@@ -19,13 +20,8 @@ class ActivitySnapshotStore {
   }
 
   Future<List<Activity>> _readSnapshots({int? activityId}) async {
-    final activeRecords = _db.alias(_db.records, 'active_records');
     final query = _db.select(_db.events).join([
-      leftOuterJoin(
-        activeRecords,
-        activeRecords.eventId.equalsExp(_db.events.id) &
-            activeRecords.endTime.isNull(),
-      ),
+      leftOuterJoin(_db.records, _db.records.eventId.equalsExp(_db.events.id)),
     ])..orderBy([OrderingTerm.asc(_db.events.id)]);
     if (activityId != null) {
       query.where(_db.events.id.equals(activityId));
@@ -33,72 +29,68 @@ class ActivitySnapshotStore {
 
     final rows = await query.get();
     final eventsById = <int, Event>{};
-    final activeRecordsByActivityId = <int, List<Record>>{};
+    final recordsByActivityId = <int, List<Record>>{};
     for (final row in rows) {
       final event = row.readTable(_db.events);
       eventsById[event.id] = event;
-      final activeRecord = row.readTableOrNull(activeRecords);
-      if (activeRecord != null) {
-        activeRecordsByActivityId
-            .putIfAbsent(event.id, () => [])
-            .add(activeRecord);
+      final record = row.readTableOrNull(_db.records);
+      if (record != null) {
+        recordsByActivityId.putIfAbsent(event.id, () => []).add(record);
       }
     }
 
     return [
       for (final event in eventsById.values)
-        _snapshotFor(event, activeRecordsByActivityId[event.id] ?? const []),
+        _snapshotFor(event, recordsByActivityId[event.id] ?? const []),
     ];
   }
 
-  Activity _snapshotFor(Event event, List<Record> activeRecords) {
+  Activity _snapshotFor(Event event, List<Record> records) {
+    final history = ActivityRecordHistory.evaluate(
+      activityId: event.id,
+      careTime: event.careTime,
+      records: [
+        for (final record in records)
+          ActivityHistoryRecord(
+            id: record.id,
+            startTime: record.startTime,
+            endTime: record.endTime,
+            value: record.value,
+          ),
+      ],
+    );
+
     if (!event.careTime) {
-      if (activeRecords.isNotEmpty) {
-        throw StateError('Plain Activity ${event.id} has an active Record');
-      }
       return PlainActivity(
         id: event.id,
         name: event.name,
         unit: event.unit,
         description: event.description,
-        occurrenceCount: event.sumTime.inSeconds,
-        totalValue: event.sumVal,
+        occurrenceCount: history.occurrenceCount,
+        totalValue: history.totalValue,
       );
     }
 
-    if (activeRecords.length > 1) {
-      throw StateError(
-        'Timed Activity ${event.id} has ${activeRecords.length} active Records',
-      );
-    }
-
-    if (activeRecords.isEmpty) {
+    final activeStartedAt = history.activeStartedAt;
+    if (activeStartedAt == null) {
       return InactiveTimedActivity(
         id: event.id,
         name: event.name,
         unit: event.unit,
         description: event.description,
-        totalDuration: event.sumTime,
-        totalValue: event.sumVal,
+        totalDuration: history.totalDuration,
+        totalValue: history.totalValue,
       );
     }
 
-    final activeRecord = activeRecords.single;
-    final startedAt = activeRecord.startTime;
-    if (startedAt == null) {
-      throw StateError(
-        'Active Record ${activeRecord.id} for Timed Activity ${event.id} '
-        'has no start time',
-      );
-    }
     return ActiveTimedActivity(
       id: event.id,
       name: event.name,
       unit: event.unit,
       description: event.description,
-      startedAt: startedAt,
-      totalDuration: event.sumTime,
-      totalValue: event.sumVal,
+      startedAt: activeStartedAt,
+      totalDuration: history.totalDuration,
+      totalValue: history.totalValue,
     );
   }
 }

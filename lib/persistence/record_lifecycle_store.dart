@@ -1,15 +1,11 @@
 import 'package:drift/drift.dart';
 
-import '../domain/activity_aggregate_totals.dart';
-import 'activity_aggregate_store.dart';
 import 'database/app_database.dart';
 
 class RecordLifecycleStore {
-  RecordLifecycleStore(this._db, {ActivityAggregateStore? aggregateStore})
-    : _aggregateStore = aggregateStore ?? ActivityAggregateStore(_db);
+  RecordLifecycleStore(this._db);
 
   final AppDatabase _db;
-  final ActivityAggregateStore _aggregateStore;
 
   Future<void> addPlainRecord(
     int activityId,
@@ -17,7 +13,10 @@ class RecordLifecycleStore {
     double? value,
   }) {
     return _db.transaction(() async {
-      await _activityById(activityId);
+      final activity = await _activityById(activityId);
+      if (activity.careTime) {
+        throw StateError('Timed Activity $activityId cannot add Plain Records');
+      }
       await _db
           .into(_db.records)
           .insert(
@@ -27,12 +26,20 @@ class RecordLifecycleStore {
               value: Value(value),
             ),
           );
-      await _aggregateStore.rebuildActivitySnapshot(activityId);
     });
   }
 
   Future<int> startTimedRecord(int activityId, DateTime startTime) {
     return _db.transaction(() async {
+      final activity = await _activityById(activityId);
+      if (!activity.careTime) {
+        throw StateError('Plain Activity $activityId cannot start timing');
+      }
+      final activeRecords = await _activeRecords(activityId);
+      if (activeRecords.isNotEmpty) {
+        throw StateError('Timed Activity $activityId is already active');
+      }
+
       final recordId = await _db
           .into(_db.records)
           .insert(
@@ -41,10 +48,6 @@ class RecordLifecycleStore {
               startTime: Value(startTime),
             ),
           );
-
-      await (_db.update(_db.events)
-            ..where((event) => event.id.equals(activityId)))
-          .write(EventsCompanion(lastRecordId: Value(recordId)));
 
       return recordId;
     });
@@ -59,19 +62,13 @@ class RecordLifecycleStore {
       final activeRecord = await _getActiveTimedRecord(activityId);
       final activeRecordId = activeRecord.id;
 
-      _validateCompletedRecord(
-        activeRecord,
-        completedAt: stoppedAt,
-        value: value,
-      );
+      _validateCompletedRecord(activeRecord, completedAt: stoppedAt);
 
       await (_db.update(
         _db.records,
       )..where((record) => record.id.equals(activeRecordId))).write(
         RecordsCompanion(endTime: Value(stoppedAt), value: Value(value)),
       );
-
-      await _aggregateStore.rebuildActivitySnapshot(activityId);
     });
   }
 
@@ -82,39 +79,32 @@ class RecordLifecycleStore {
       await (_db.delete(
         _db.records,
       )..where((record) => record.id.equals(activeRecord.id))).go();
-
-      await _aggregateStore.rebuildActivitySnapshot(activityId);
     });
   }
 
   void _validateCompletedRecord(
     Record record, {
     required DateTime completedAt,
-    double? value,
   }) {
-    ActivityAggregateRecord(
-      id: record.id,
-      startTime: record.startTime,
-      endTime: completedAt,
-      value: value,
-    ).contribution;
+    final startedAt = record.startTime;
+    if (startedAt == null || completedAt.isBefore(startedAt)) {
+      throw StateError('Timed Record ${record.id} cannot end before it starts');
+    }
   }
 
   Future<Record> _getActiveTimedRecord(int activityId) async {
     final activity = await _activityById(activityId);
-    final activeRecordId = activity.lastRecordId;
-    if (activeRecordId == null) {
-      throw StateError('Activity $activityId has no active timed record.');
+    if (!activity.careTime) {
+      throw StateError('Plain Activity $activityId cannot be timed');
     }
 
-    final activeRecord = await _recordById(activeRecordId);
-    if (activeRecord.eventId != activityId ||
-        activeRecord.startTime == null ||
-        activeRecord.endTime != null) {
-      throw StateError('Activity $activityId has no active timed record.');
+    final activeRecords = await _activeRecords(activityId);
+    if (activeRecords.length != 1 || activeRecords.single.startTime == null) {
+      throw StateError(
+        'Timed Activity $activityId must have exactly one active Record',
+      );
     }
-
-    return activeRecord;
+    return activeRecords.single;
   }
 
   Future<Event> _activityById(int activityId) {
@@ -123,9 +113,11 @@ class RecordLifecycleStore {
     )..where((activity) => activity.id.equals(activityId))).getSingle();
   }
 
-  Future<Record> _recordById(int recordId) {
-    return (_db.select(
-      _db.records,
-    )..where((record) => record.id.equals(recordId))).getSingle();
+  Future<List<Record>> _activeRecords(int activityId) {
+    return (_db.select(_db.records)..where(
+          (record) =>
+              record.eventId.equals(activityId) & record.endTime.isNull(),
+        ))
+        .get();
   }
 }

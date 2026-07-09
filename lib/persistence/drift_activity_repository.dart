@@ -2,29 +2,17 @@ import 'package:drift/drift.dart';
 
 import '../domain/activity_models.dart';
 import '../domain/activity_repository.dart';
-import 'activity_aggregate_store.dart';
 import 'activity_snapshot_store.dart';
 import 'database/app_database.dart';
 import 'record_lifecycle_store.dart';
 
 class DriftActivityRepository implements ActivityRepository {
   DriftActivityRepository(AppDatabase db)
-    : this._(db, ActivityAggregateStore(db), ActivitySnapshotStore(db));
-
-  DriftActivityRepository._(
-    AppDatabase db,
-    ActivityAggregateStore aggregateStore,
-    ActivitySnapshotStore activitySnapshots,
-  ) : _db = db,
-      _aggregateStore = aggregateStore,
-      _activitySnapshots = activitySnapshots,
-      _recordLifecycle = RecordLifecycleStore(
-        db,
-        aggregateStore: aggregateStore,
-      );
+    : _db = db,
+      _activitySnapshots = ActivitySnapshotStore(db),
+      _recordLifecycle = RecordLifecycleStore(db);
 
   final AppDatabase _db;
-  final ActivityAggregateStore _aggregateStore;
   final ActivitySnapshotStore _activitySnapshots;
   final RecordLifecycleStore _recordLifecycle;
 
@@ -129,18 +117,11 @@ class DriftActivityRepository implements ActivityRepository {
 
   @override
   Future<void> deleteActivity(int activityId) async {
-    return _db.transaction(() async {
-      await (_db.delete(
-        _db.records,
-      )..where((record) => record.eventId.equals(activityId))).go();
-      await (_db.delete(
-        _db.events,
-      )..where((activity) => activity.id.equals(activityId))).go();
-    });
-  }
-
-  @override
-  Future<void> repairAggregateTotals() {
-    return _db.transaction(_aggregateStore.rebuildAllActivitySnapshots);
+    final deleted = await (_db.delete(
+      _db.events,
+    )..where((activity) => activity.id.equals(activityId))).go();
+    if (deleted != 1) {
+      throw StateError('Activity $activityId does not exist');
+    }
   }
 }

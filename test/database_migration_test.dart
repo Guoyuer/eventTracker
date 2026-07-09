@@ -27,7 +27,7 @@ void main() {
   });
 
   test(
-    'version 3 migration removes legacy step schema and sentinel records',
+    'version 4 migration removes legacy schema and aggregate caches',
     () async {
       final dbPath = p.join(tempDir.path, 'db.sqlite');
       await _createVersion2DatabaseWithLegacyStepData(dbPath);
@@ -54,8 +54,44 @@ void main() {
           )
           .get();
       expect(legacyArtifacts, isEmpty);
+
+      final eventColumns = await db
+          .customSelect('PRAGMA table_info(events)')
+          .map((row) => row.read<String>('name'))
+          .get();
+      expect(eventColumns, isNot(contains('last_record_id')));
+      expect(eventColumns, isNot(contains('sum_val')));
+      expect(eventColumns, isNot(contains('sum_time')));
+
+      final foreignKeys = await db
+          .customSelect('PRAGMA foreign_key_list(records)')
+          .get();
+      expect(foreignKeys, hasLength(1));
+      expect(foreignKeys.single.read<String>('table'), 'events');
+      expect(foreignKeys.single.read<String>('on_delete'), 'CASCADE');
+
+      final activeIndex = await db
+          .customSelect(
+            "SELECT sql FROM sqlite_master "
+            "WHERE name = 'records_one_active_per_event'",
+          )
+          .getSingle();
+      expect(
+        activeIndex.read<String>('sql'),
+        contains('WHERE end_time IS NULL'),
+      );
     },
   );
+
+  test('version 4 migration rejects malformed record history', () async {
+    final dbPath = p.join(tempDir.path, 'malformed.sqlite');
+    await _createVersion3DatabaseWithMalformedHistory(dbPath);
+
+    final db = AppDatabase(SqfliteQueryExecutor(path: dbPath));
+    addTearDown(db.close);
+
+    await expectLater(db.select(db.events).get(), throwsA(anything));
+  });
 }
 
 Future<void> _createVersion2DatabaseWithLegacyStepData(String dbPath) async {
@@ -142,4 +178,47 @@ Future<void> _createVersion2DatabaseWithLegacyStepData(String dbPath) async {
 
 int _toDriftTimestamp(DateTime value) {
   return value.millisecondsSinceEpoch ~/ 1000;
+}
+
+Future<void> _createVersion3DatabaseWithMalformedHistory(String dbPath) async {
+  final rawDb = await databaseFactoryFfi.openDatabase(dbPath);
+  try {
+    await rawDb.execute('''
+      CREATE TABLE events (
+        id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+        name TEXT NOT NULL UNIQUE,
+        description TEXT NULL,
+        care_time INTEGER NOT NULL,
+        last_record_id INTEGER NULL,
+        unit TEXT NULL,
+        sum_val REAL NOT NULL DEFAULT 0,
+        sum_time REAL NOT NULL DEFAULT 0
+      );
+    ''');
+    await rawDb.execute('''
+      CREATE TABLE records (
+        id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+        event_id INTEGER NOT NULL,
+        start_time INTEGER NULL,
+        end_time INTEGER NULL,
+        value REAL NULL
+      );
+    ''');
+    await rawDb.execute('''
+      CREATE TABLE units (
+        id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+        name TEXT NOT NULL UNIQUE
+      );
+    ''');
+    await rawDb.insert('events', {'id': 1, 'name': 'Read', 'care_time': 0});
+    await rawDb.insert('records', {
+      'id': 1,
+      'event_id': 1,
+      'start_time': _toDriftTimestamp(DateTime(2026, 1, 1, 8)),
+      'end_time': _toDriftTimestamp(DateTime(2026, 1, 1, 9)),
+    });
+    await rawDb.execute('PRAGMA user_version = 3;');
+  } finally {
+    await rawDb.close();
+  }
 }
