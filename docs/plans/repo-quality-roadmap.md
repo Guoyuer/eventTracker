@@ -24,6 +24,13 @@ flutter test
 flutter build windows
 ```
 
+Use the local verification script for repeatability:
+
+```powershell
+.\tool\check.ps1
+.\tool\check.ps1 -WindowsBuild
+```
+
 If a gate is temporarily red, document the exact failure in this file before moving on.
 
 ## Fast Windows Iteration Loop

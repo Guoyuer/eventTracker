@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/rendering.dart';
 
 // ignore: must_be_immutable
 
@@ -8,18 +7,6 @@ enum EventStatus {
   active, //正在进行
   paused, //暂停中，这个暂时不做，会让逻辑复杂。
   notActive, //不在进行
-}
-
-class PageChangedN extends Notification {
-  final DateTimeRange range;
-
-  PageChangedN({required this.range});
-}
-
-class ScrollDirectionN extends Notification {
-  final ScrollDirection direction;
-
-  ScrollDirectionN(this.direction);
 }
 
 class MonthTouchedN extends Notification {
