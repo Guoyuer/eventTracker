@@ -60,6 +60,9 @@ final activityDescriptionProvider =
       .getActivityDescription(activityId);
 });
 
+final activityDescriptionEditingProvider =
+    StateProvider.family<bool, int>((ref, activityId) => false);
+
 final unitListProvider = FutureProvider<List<ActivityUnit>>((ref) {
   return ref.watch(unitRepositoryProvider).getUnits();
 });

@@ -155,6 +155,18 @@ void main() {
     expect(charts, contains('buildActivityHeatmapSeries'));
   });
 
+  test('activity description editing state stays in Riverpod', () {
+    final editor = File('lib/EventsDetails/activity_description_editor.dart')
+        .readAsStringSync();
+    final providers = File('lib/stateProviders.dart').readAsStringSync();
+
+    expect(editor, isNot(contains('ConsumerStatefulWidget')));
+    expect(editor, isNot(contains('TextEditingController')));
+    expect(editor, isNot(contains('setState(')));
+    expect(editor, contains('activityDescriptionEditingProvider'));
+    expect(providers, contains('activityDescriptionEditingProvider'));
+  });
+
   test('database module does not expose record lifecycle convenience methods',
       () {
     final database =

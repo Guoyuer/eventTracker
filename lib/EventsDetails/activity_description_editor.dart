@@ -3,7 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../stateProviders.dart';
 
-class ActivityDescriptionEditor extends ConsumerStatefulWidget {
+class ActivityDescriptionEditor extends ConsumerWidget {
   const ActivityDescriptionEditor({
     Key? key,
     required this.activityId,
@@ -12,41 +12,25 @@ class ActivityDescriptionEditor extends ConsumerStatefulWidget {
   final int activityId;
 
   @override
-  ConsumerState<ActivityDescriptionEditor> createState() =>
-      _ActivityDescriptionEditorState();
-}
-
-class _ActivityDescriptionEditorState
-    extends ConsumerState<ActivityDescriptionEditor> {
-  final TextEditingController _controller = TextEditingController();
-  bool _isEditing = false;
-
-  @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final description =
-        ref.watch(activityDescriptionProvider(widget.activityId));
+  Widget build(BuildContext context, WidgetRef ref) {
+    final description = ref.watch(activityDescriptionProvider(activityId));
 
     return description.when(
-      data: _buildDescription,
+      data: (rawDescription) => _buildDescription(ref, rawDescription),
       error: (error, stackTrace) => Text("加载描述失败"),
       loading: () => Text("加载中"),
     );
   }
 
-  Widget _buildDescription(String? rawDescription) {
-    if (_isEditing) {
+  Widget _buildDescription(WidgetRef ref, String? rawDescription) {
+    final isEditing = ref.watch(activityDescriptionEditingProvider(activityId));
+    if (isEditing) {
       return Center(
-        child: TextField(
+        child: TextFormField(
           textAlign: TextAlign.center,
-          onSubmitted: _saveDescription,
+          initialValue: rawDescription ?? '',
+          onFieldSubmitted: (newValue) => _saveDescription(ref, newValue),
           autofocus: true,
-          controller: _controller,
         ),
       );
     }
@@ -56,10 +40,9 @@ class _ActivityDescriptionEditorState
 
     return InkWell(
       onTap: () {
-        _controller.text = rawDescription ?? '';
-        setState(() {
-          _isEditing = true;
-        });
+        ref
+            .read(activityDescriptionEditingProvider(activityId).notifier)
+            .state = true;
       },
       child: Text(
         displayDescription,
@@ -71,18 +54,13 @@ class _ActivityDescriptionEditorState
     );
   }
 
-  Future<void> _saveDescription(String newValue) async {
+  Future<void> _saveDescription(WidgetRef ref, String newValue) async {
     await ref
         .read(activityRepositoryProvider)
-        .updateActivityDescription(widget.activityId, newValue);
-    ref.invalidate(activityDescriptionProvider(widget.activityId));
-
-    if (!mounted) {
-      return;
-    }
-    setState(() {
-      _isEditing = false;
-    });
+        .updateActivityDescription(activityId, newValue);
+    ref.invalidate(activityDescriptionProvider(activityId));
+    ref.read(activityDescriptionEditingProvider(activityId).notifier).state =
+        false;
   }
 
   String _displayDescription(String? rawDescription) {

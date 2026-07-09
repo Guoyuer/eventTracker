@@ -31,7 +31,7 @@ void main() {
 
     await tester.tap(find.text('Initial'));
     await tester.pump();
-    await tester.enterText(find.byType(TextField), 'Updated');
+    await tester.enterText(find.byType(TextFormField), 'Updated');
     await tester.testTextInput.receiveAction(TextInputAction.done);
     await tester.pump();
     await tester.pump();

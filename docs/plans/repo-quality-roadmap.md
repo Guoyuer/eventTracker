@@ -123,6 +123,7 @@ Status: in progress
 - Make loading, empty, and error states consistent across list/detail/statistics views.
 - Replaced the route pop/push activity-list refresh hack with `activityListProvider` invalidation.
 - Moved activity description editing out of shared common widgets and behind `activityDescriptionProvider`.
+- Moved activity description edit-mode state behind `activityDescriptionEditingProvider`.
 - Moved activity list mutations, activity creation, and unit management from repository factory calls to Riverpod repository providers.
 - Removed incomplete long-press manual time entry controls that opened a picker without applying the selected time.
 - Moved active-timer ticking state out of the whole activity tile and behind `elapsedDurationProvider`.
