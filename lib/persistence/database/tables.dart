@@ -5,13 +5,13 @@ class DurationConverter extends TypeConverter<Duration, double> {
   const DurationConverter();
 
   @override
-  Duration? mapToDart(double? fromDb) {
-    return Duration(seconds: fromDb!.toInt());
+  Duration fromSql(double fromDb) {
+    return Duration(seconds: fromDb.toInt());
   }
 
   @override
-  double? mapToSql(Duration? value) {
-    return value!.inSeconds.toDouble();
+  double toSql(Duration value) {
+    return value.inSeconds.toDouble();
   }
 }
 

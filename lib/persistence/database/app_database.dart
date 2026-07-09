@@ -5,7 +5,7 @@ import 'tables.dart';
 
 part 'app_database.g.dart';
 
-@DriftDatabase(tables: [Units, Events, Records], include: {'sql.moor'})
+@DriftDatabase(tables: [Units, Events, Records], include: {'sql.drift'})
 class AppDatabase extends _$AppDatabase {
   AppDatabase([QueryExecutor? executor])
       : super(executor ?? defaultDatabaseExecutor());

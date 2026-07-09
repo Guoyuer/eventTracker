@@ -147,11 +147,13 @@ Status: in progress
 
 ## Phase 5: Dependency and Platform Modernization
 
-Status: pending
+Status: in progress
 
 - Removed unused Firebase dependency, generated options, and stale Firestore configuration.
 - Removed the single-use `sprintf` dependency after replacing it with Dart string interpolation.
-- Upgrade dependencies in small batches with tests between batches.
+- Upgraded the current-SDK-compatible dependency batch: Drift 2.14, drift_sqflite 2.0, build_runner 2.4, Riverpod 2.4, sqflite/path_provider/sqlite libraries, and fluttertoast. Kept `fl_chart` pinned at 0.63 because 0.65 uses Flutter `TextScaler`, which is not available on Flutter 3.10.
+- Removed unused `cupertino_icons` and stale launcher-icon config.
+- Renamed legacy `sql.moor` to `sql.drift` and regenerated Drift code with the Drift 2 generator.
 - Then evaluate Flutter SDK upgrade separately.
 - Removed unused `share` and discontinued `moor_db_viewer`.
 

@@ -28,7 +28,7 @@ void main() {
         File('lib/persistence/database/tables.dart').readAsStringSync();
     final database =
         File('lib/persistence/database/app_database.dart').readAsStringSync();
-    final sql = File('lib/persistence/database/sql.moor').readAsStringSync();
+    final sql = File('lib/persistence/database/sql.drift').readAsStringSync();
 
     expect(tables, isNot(contains('class Steps')));
     expect(tables, isNot(contains('class StepOffset')));

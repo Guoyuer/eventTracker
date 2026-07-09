@@ -205,13 +205,18 @@ Next slice:
 
 Current problem: several packages are old or discontinued, but upgrading before architecture/test coverage would mix migration bugs with existing design debt.
 
+Current status:
+
+- Current local SDK is Flutter 3.10 / Dart 3.0, so most latest 2026 package versions are SDK-blocked.
+- Upgraded the dependency batch that builds on the current SDK: Drift 2.14, drift_sqflite 2.0, build_runner 2.4, Riverpod 2.4, sqflite/path_provider/sqlite packages, and fluttertoast. Kept `fl_chart` pinned at 0.63 because 0.65 resolves but fails Windows build on Flutter 3.10 due to `TextScaler`.
+- Removed unused `cupertino_icons` and stale `flutter_icons` configuration.
+- Migrated the Drift SQL include from `sql.moor` to `sql.drift` and regenerated `app_database.g.dart`.
+
 Order:
 
 1. Keep tests green while finishing persistence and analytics seams.
-2. Replace or remove remaining discontinued packages.
-3. Upgrade Drift in a dedicated branch/slice.
-4. Upgrade Riverpod separately.
-5. Upgrade Flutter SDK separately.
+2. Upgrade Flutter and Dart SDK in a dedicated platform slice.
+3. After SDK upgrade, revisit the packages still SDK-blocked by Flutter 3.10 / Dart 3.0.
 
 Rule:
 
@@ -221,9 +226,9 @@ Rule:
 
 Recommended order from here:
 
-1. Run dependency modernization in focused batches.
-2. Revisit cached aggregate repair/rebuild options if product usage expands.
-3. Continue shrinking route Widgets by extracting remaining interaction coordinators.
+1. Upgrade Flutter and Dart SDK in a dedicated platform slice.
+2. Remove UI `DateTimeRange` leakage from persistence and analytics seams.
+3. Revisit cached aggregate repair/rebuild options if product usage expands.
 
 ## Definition of Done for Each Slice
 
