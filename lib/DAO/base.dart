@@ -97,14 +97,6 @@ class AppDatabase extends _$AppDatabase {
     return query.map((row) => row.read(records.startTime)!).getSingle();
   }
 
-  ///得到eventId对应事件的LastRecordId
-  Future<int> getLastRecordId(int eventId) async {
-    Event event = await (select(events)
-          ..where((event) => event.id.equals(eventId)))
-        .getSingle();
-    return event.lastRecordId!;
-  }
-
   ///得到所有的记录，不包括active的记录
   Future<List<Record>> getRecordsByEventId(int eventId) => (select(records)
         ..orderBy([(t) => OrderingTerm(expression: t.endTime)])
@@ -169,6 +161,52 @@ class AppDatabase extends _$AppDatabase {
     });
   }
 
+  Future<void> stopActiveTimingRecordInDB(
+    int eventId,
+    DateTime stoppedAt, {
+    double? value,
+  }) {
+    return transaction(() async {
+      final event = await getEventById(eventId);
+      final activeRecordId = event.lastRecordId;
+      if (activeRecordId == null) {
+        throw StateError('Activity $eventId has no active timed record.');
+      }
+
+      final activeRecord = await getRecordById(activeRecordId);
+      if (activeRecord.eventId != eventId ||
+          activeRecord.startTime == null ||
+          activeRecord.endTime != null) {
+        throw StateError('Activity $eventId has no active timed record.');
+      }
+
+      final duration = stoppedAt.difference(activeRecord.startTime!);
+      if (duration.isNegative) {
+        throw ArgumentError.value(
+          stoppedAt,
+          'stoppedAt',
+          'Stop time cannot be before the active record start time.',
+        );
+      }
+
+      await (update(records)
+            ..where((record) => record.id.equals(activeRecordId)))
+          .write(
+        RecordsCompanion(
+          endTime: Value(stoppedAt),
+          value: Value(value),
+        ),
+      );
+
+      await (update(events)..where((event) => event.id.equals(eventId))).write(
+        EventsCompanion(
+          sumTime: Value(event.sumTime + duration),
+          sumVal: Value(event.sumVal + (value ?? 0)),
+        ),
+      );
+    });
+  }
+
   Future deleteActiveTimingRecordInDB(int recordId, int eventId) async {
     return transaction(() async {
       await (delete(records)..where((tbl) => tbl.id.equals(recordId)))
@@ -195,6 +233,15 @@ class AppDatabase extends _$AppDatabase {
                 tbl.id.equals(eventId))) //step3: 更新Event row的lastRecordId
           .write(EventsCompanion(lastRecordId: lastRecordId));
     });
+  }
+
+  Future<void> deleteActiveTimingRecordForEventInDB(int eventId) async {
+    final event = await getEventById(eventId);
+    final activeRecordId = event.lastRecordId;
+    if (activeRecordId == null) {
+      throw StateError('Activity $eventId has no active timed record.');
+    }
+    return deleteActiveTimingRecordInDB(activeRecordId, eventId);
   }
 
   ///////////////////////////////////////event相关///////////////////////////////////

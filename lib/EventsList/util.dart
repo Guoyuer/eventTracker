@@ -68,11 +68,9 @@ Future<void> stopTimingRecord(BuildContext context, DateTime time) async {
   int eventId = EventDataHolder.of(context).event.id;
 
   final repository = activityRepository();
-  int recordId = await repository.getLastRecordId(eventId);
-
   DateTime startTime = await repository.getActivityStartTime(eventId);
   var fiveSeconds = Duration(seconds: 5);
-  Duration thisDuration = DateTime.now().difference(startTime);
+  Duration thisDuration = time.difference(startTime);
   if (thisDuration.compareTo(fiveSeconds) < 0) {
     bool delete = await showDialog<bool>(
             context: context,
@@ -91,7 +89,7 @@ Future<void> stopTimingRecord(BuildContext context, DateTime time) async {
             }) ??
         false;
     if (delete) {
-      await repository.deleteActiveTimedRecord(eventId, recordId);
+      await repository.deleteActiveTimedRecordForActivity(eventId);
       ReloadEventsN().dispatch(context);
       return;
     } else {
@@ -106,8 +104,7 @@ Future<void> stopTimingRecord(BuildContext context, DateTime time) async {
       if (val == null) return;
     }
 
-    await repository.stopTimedRecord(eventId, recordId, time, thisDuration,
-        value: val);
+    await repository.stopActiveTimedRecord(eventId, time, value: val);
     ReloadEventsN().dispatch(context);
   }
 }

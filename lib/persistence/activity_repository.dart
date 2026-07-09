@@ -22,8 +22,6 @@ abstract class ActivityRepository {
 
   Future<DateTime> getActivityStartTime(int activityId);
 
-  Future<int> getLastRecordId(int activityId);
-
   Future<void> addPlainRecord(
     int activityId,
     DateTime endTime, {
@@ -32,15 +30,13 @@ abstract class ActivityRepository {
 
   Future<int> startTimedRecord(int activityId, DateTime startTime);
 
-  Future<void> stopTimedRecord(
+  Future<void> stopActiveTimedRecord(
     int activityId,
-    int recordId,
-    DateTime endTime,
-    Duration duration, {
+    DateTime stoppedAt, {
     double? value,
   });
 
-  Future<void> deleteActiveTimedRecord(int activityId, int recordId);
+  Future<void> deleteActiveTimedRecordForActivity(int activityId);
 
   Future<void> deleteActivity(int activityId);
 }
@@ -101,11 +97,6 @@ class DriftActivityRepository implements ActivityRepository {
   }
 
   @override
-  Future<int> getLastRecordId(int activityId) {
-    return _db.getLastRecordId(activityId);
-  }
-
-  @override
   Future<void> addPlainRecord(
     int activityId,
     DateTime endTime, {
@@ -131,27 +122,21 @@ class DriftActivityRepository implements ActivityRepository {
   }
 
   @override
-  Future<void> stopTimedRecord(
+  Future<void> stopActiveTimedRecord(
     int activityId,
-    int recordId,
-    DateTime endTime,
-    Duration duration, {
+    DateTime stoppedAt, {
     double? value,
   }) {
-    return _db.stopTimingRecordInDB(
-      duration,
-      RecordsCompanion(
-        id: Value(recordId),
-        eventId: Value(activityId),
-        endTime: Value(endTime),
-        value: Value(value),
-      ),
+    return _db.stopActiveTimingRecordInDB(
+      activityId,
+      stoppedAt,
+      value: value,
     );
   }
 
   @override
-  Future<void> deleteActiveTimedRecord(int activityId, int recordId) {
-    return _db.deleteActiveTimingRecordInDB(recordId, activityId);
+  Future<void> deleteActiveTimedRecordForActivity(int activityId) {
+    return _db.deleteActiveTimingRecordForEventInDB(activityId);
   }
 
   @override

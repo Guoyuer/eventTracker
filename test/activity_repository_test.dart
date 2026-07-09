@@ -141,14 +141,8 @@ void main() {
     final start = DateTime(2026, 1, 1, 8);
     final end = DateTime(2026, 1, 1, 8, 25);
 
-    final recordId = await repository.startTimedRecord(activityId, start);
-    await repository.stopTimedRecord(
-      activityId,
-      recordId,
-      end,
-      end.difference(start),
-      value: 4,
-    );
+    await repository.startTimedRecord(activityId, start);
+    await repository.stopActiveTimedRecord(activityId, end, value: 4);
 
     final activities = await repository.getActivities();
     final activity = activities.single as TimingEventModel;
@@ -157,5 +151,40 @@ void main() {
     expect(activity.status, EventStatus.notActive);
     expect(activity.sumDuration, const Duration(minutes: 25));
     expect(activity.sumVal, 4);
+  });
+
+  test('repository stops the active timed record using the provided stop time',
+      () async {
+    final activityId = await repository.createActivity(
+      name: 'Practice',
+      careTime: true,
+    );
+    final start = DateTime(2026, 1, 1, 8);
+    final stoppedAt = DateTime(2026, 1, 1, 8, 25);
+
+    await repository.startTimedRecord(activityId, start);
+    await repository.stopActiveTimedRecord(activityId, stoppedAt);
+
+    final activity =
+        (await repository.getActivities()).single as TimingEventModel;
+    final records = await repository.getActivityRecords(activityId);
+
+    expect(activity.status, EventStatus.notActive);
+    expect(activity.sumDuration, const Duration(minutes: 25));
+    expect(records.single.startTime, start);
+    expect(records.single.endTime, stoppedAt);
+  });
+
+  test('repository fails fast when stopping without an active timed record',
+      () async {
+    final activityId = await repository.createActivity(
+      name: 'Practice',
+      careTime: true,
+    );
+
+    expect(
+      repository.stopActiveTimedRecord(activityId, DateTime(2026, 1, 1, 8)),
+      throwsStateError,
+    );
   });
 }
