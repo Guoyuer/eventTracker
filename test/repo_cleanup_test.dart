@@ -73,6 +73,22 @@ void main() {
     expect(source, isNot(contains('FutureBuilder<String?>')));
   });
 
+  test('ui widgets use repository providers instead of repository factories',
+      () {
+    for (final path in [
+      'lib/EventsList/eventsList.dart',
+      'lib/EventsList/util.dart',
+      'lib/eventEditor.dart',
+      'lib/UnitManager/unitsManagerPage.dart',
+    ]) {
+      final source = File(path).readAsStringSync();
+
+      expect(source, isNot(contains('activityRepository()')));
+      expect(source, isNot(contains('unitRepository()')));
+      expect(source, isNot(contains('statisticsRepository()')));
+    }
+  });
+
   test('database module does not expose record lifecycle convenience methods',
       () {
     final database =

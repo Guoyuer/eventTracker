@@ -6,7 +6,6 @@ import 'package:fluttertoast/fluttertoast.dart';
 
 import '../common/commonWidget.dart';
 import '../domain/activity_models.dart';
-import '../persistence/unit_repository.dart';
 import '../stateProviders.dart';
 
 // ignore: must_be_immutable
@@ -19,7 +18,6 @@ class UnitsManager extends ConsumerStatefulWidget {
 
 class _UnitsManagerState extends ConsumerState<UnitsManager> {
   final TextEditingController _unitNameController = TextEditingController();
-  final UnitRepository _repository = unitRepository();
 
   @override
   void dispose() {
@@ -95,7 +93,7 @@ class _UnitsManagerState extends ConsumerState<UnitsManager> {
 
   Future<void> _deleteUnit(ActivityUnit unit) async {
     try {
-      await _repository.deleteUnit(unit.name);
+      await ref.read(unitRepositoryProvider).deleteUnit(unit.name);
       _refreshUnits();
     } catch (_) {
       showToast("删除失败");
@@ -134,7 +132,7 @@ class _UnitsManagerState extends ConsumerState<UnitsManager> {
 
   Future<void> _addUnit() async {
     try {
-      await _repository.addUnit(_unitNameController.text);
+      await ref.read(unitRepositoryProvider).addUnit(_unitNameController.text);
       _refreshUnits();
       _unitNameController.clear();
       if (!mounted) {

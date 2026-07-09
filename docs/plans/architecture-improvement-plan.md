@@ -150,6 +150,7 @@ Current status:
 - `EventList` watches the provider instead of owning a one-shot future.
 - `ReloadEventsN` now invalidates `activityListProvider` instead of popping and pushing `MainPage`.
 - `ActivityDescriptionEditor` reads and writes descriptions through `activityDescriptionProvider` instead of creating repositories inside shared common widgets.
+- Activity list mutations, activity creation, and unit management now read repositories through Riverpod providers instead of calling repository factories in widgets.
 
 Target shape:
 

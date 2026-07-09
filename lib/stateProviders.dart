@@ -11,6 +11,14 @@ final activityRepositoryProvider = Provider<ActivityRepository>((ref) {
   return activityRepository();
 });
 
+final unitRepositoryProvider = Provider<UnitRepository>((ref) {
+  return unitRepository();
+});
+
+final statisticsRepositoryProvider = Provider<StatisticsRepository>((ref) {
+  return statisticsRepository();
+});
+
 final selectedIndexProvider = StateProvider<int>((ref) {
   return 0;
 });
@@ -35,10 +43,10 @@ final activityDescriptionProvider =
 });
 
 final unitListProvider = FutureProvider<List<ActivityUnit>>((ref) {
-  return unitRepository().getUnits();
+  return ref.watch(unitRepositoryProvider).getUnits();
 });
 
 final statisticsProvider =
     FutureProvider.family<StatisticsData, DateTimeRange>((ref, range) {
-  return statisticsRepository().getStatisticsData(range);
+  return ref.watch(statisticsRepositoryProvider).getStatisticsData(range);
 });

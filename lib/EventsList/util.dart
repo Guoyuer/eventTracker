@@ -2,14 +2,18 @@ part of 'eventsList.dart';
 
 const accidentalTimedRecordThreshold = Duration(seconds: 5);
 
-void refreshActivityList(BuildContext context) {
-  ProviderScope.containerOf(context).invalidate(activityListProvider);
+void refreshActivityList(WidgetRef ref) {
+  ref.invalidate(activityListProvider);
 }
 
-Future<void> startTimingRecord(BuildContext context, DateTime now) async {
+Future<void> startTimingRecord(
+  BuildContext context,
+  WidgetRef ref,
+  DateTime now,
+) async {
   int eventId = EventDataHolder.of(context).event.id;
-  await activityRepository().startTimedRecord(eventId, now);
-  refreshActivityList(context);
+  await ref.read(activityRepositoryProvider).startTimedRecord(eventId, now);
+  refreshActivityList(ref);
 }
 
 Future<double?> inputValDialog(BuildContext ctx, String unit) async {
@@ -56,29 +60,38 @@ Future<double?> inputValDialog(BuildContext ctx, String unit) async {
   }
 }
 
-Future<void> addPlainRecord(BuildContext context, DateTime time) async {
+Future<void> addPlainRecord(
+  BuildContext context,
+  WidgetRef ref,
+  DateTime time,
+) async {
   int eventId = EventDataHolder.of(context).event.id;
 
-  String? unit = await activityRepository().getActivityUnit(eventId);
+  final repository = ref.read(activityRepositoryProvider);
+  String? unit = await repository.getActivityUnit(eventId);
 
   double? val;
   if (unit != null) {
     val = await inputValDialog(context, unit);
     if (val == null) return;
   }
-  await activityRepository().addPlainRecord(eventId, time, value: val);
-  refreshActivityList(context);
+  await repository.addPlainRecord(eventId, time, value: val);
+  refreshActivityList(ref);
 }
 
-Future<void> stopTimingRecord(BuildContext context, DateTime time) async {
+Future<void> stopTimingRecord(
+  BuildContext context,
+  WidgetRef ref,
+  DateTime time,
+) async {
   final event = EventDataHolder.of(context).event as TimingEventModel;
   final eventId = event.id;
 
-  final repository = activityRepository();
+  final repository = ref.read(activityRepositoryProvider);
   final duration = time.difference(event.startTime!);
   if (duration < accidentalTimedRecordThreshold) {
     await repository.cancelActiveTimedRecord(eventId);
-    refreshActivityList(context);
+    refreshActivityList(ref);
     showToast("已取消本次计时");
     return;
   }
@@ -91,7 +104,7 @@ Future<void> stopTimingRecord(BuildContext context, DateTime time) async {
   }
 
   await repository.stopActiveTimedRecord(eventId, time, value: val);
-  refreshActivityList(context);
+  refreshActivityList(ref);
 }
 
 EventStatus getEventStatus(BaseEventModel event) {

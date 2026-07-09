@@ -6,7 +6,6 @@ import '../stateProviders.dart';
 import '../common/commonWidget.dart';
 import '../common/const.dart';
 import '../domain/activity_models.dart';
-import '../persistence/activity_repository.dart';
 
 part 'util.dart';
 
@@ -64,16 +63,16 @@ class _EventListState extends ConsumerState<EventList> {
   }
 }
 
-class EventTileButton extends StatelessWidget {
+class EventTileButton extends ConsumerWidget {
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     BaseEventModel event = EventDataHolder.of(context).event;
     EventStatus status = getEventStatus(event);
     switch (status) {
       case EventStatus.plain:
         return eventListButton(Icon(Icons.add_rounded), Text("新记录"), () {
           DateTime now = DateTime.now();
-          addPlainRecord(context, now);
+          addPlainRecord(context, ref, now);
         }, () {
           showToast("长按 -- 手动指定时间");
           showTimePicker(
@@ -84,7 +83,7 @@ class EventTileButton extends StatelessWidget {
       case EventStatus.notActive:
         return eventListButton(Icon(Icons.play_arrow_outlined), Text("开始"), () {
           DateTime now = DateTime.now();
-          startTimingRecord(context, now);
+          startTimingRecord(context, ref, now);
         }, () {
           showToast("长按 -- 手动指定开始时间");
           showTimePicker(
@@ -95,7 +94,7 @@ class EventTileButton extends StatelessWidget {
       case EventStatus.active:
         return eventListButton(Icon(Icons.stop_circle_outlined), Text("停止"),
             () {
-          stopTimingRecord(context, DateTime.now());
+          stopTimingRecord(context, ref, DateTime.now());
         }, () async {
           showToast("长按 -- 手动指定停止时间");
           final activeEvent = event as TimingEventModel;
@@ -132,12 +131,12 @@ class EventDataHolder extends InheritedWidget {
   }
 }
 
-class EventTile extends StatefulWidget {
+class EventTile extends ConsumerStatefulWidget {
   @override
-  _EventTileState createState() => _EventTileState();
+  ConsumerState<EventTile> createState() => _EventTileState();
 }
 
-class _EventTileState extends State<EventTile>
+class _EventTileState extends ConsumerState<EventTile>
     with SingleTickerProviderStateMixin {
   late final Animation<double> animation;
   late final AnimationController _controller;
@@ -239,7 +238,7 @@ class _EventTileState extends State<EventTile>
                 bool? deleted = await Navigator.of(context)
                     .pushNamed("EventDetails", arguments: event) as bool?;
                 if (deleted != null && deleted) {
-                  refreshActivityList(context);
+                  refreshActivityList(ref);
                 }
               },
               child: Container(

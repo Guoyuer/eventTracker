@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:event_tracker/common/commonWidget.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'domain/activity_models.dart';
-import 'persistence/activity_repository.dart';
 import 'stateProviders.dart';
 
 class EventEditor extends ConsumerStatefulWidget {
@@ -19,7 +18,6 @@ class _EventEditorState extends ConsumerState<EventEditor> {
 
   late String name;
   String? desc;
-  final ActivityRepository _activityRepository = activityRepository();
 
   @override
   Widget build(BuildContext context) {
@@ -122,12 +120,12 @@ class _EventEditorState extends ConsumerState<EventEditor> {
 
     _formKey.currentState!.save();
     try {
-      await _activityRepository.createActivity(
-        name: name,
-        unit: selectedUnit,
-        description: desc,
-        careTime: careTime,
-      );
+      await ref.read(activityRepositoryProvider).createActivity(
+            name: name,
+            unit: selectedUnit,
+            description: desc,
+            careTime: careTime,
+          );
       if (!mounted) {
         return;
       }
