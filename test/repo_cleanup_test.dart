@@ -73,6 +73,14 @@ void main() {
     expect(source, isNot(contains('FutureBuilder<String?>')));
   });
 
+  test('shared text input dialog rebuilds from controller state', () {
+    final source = File('lib/common/commonWidget.dart').readAsStringSync();
+
+    expect(source, contains('ValueListenableBuilder<TextEditingValue>'));
+    expect(source, isNot(contains('StatefulBuilder')));
+    expect(source, isNot(contains('setState(')));
+  });
+
   test('ui widgets use repository providers instead of repository factories',
       () {
     for (final path in [

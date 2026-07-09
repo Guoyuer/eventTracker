@@ -40,33 +40,31 @@ Widget loadingScreen() {
   );
 }
 
-Future<void> displayTextInputDialog(BuildContext context, String title,
-    Function okButton, TextEditingController c) async {
+Future<void> displayTextInputDialog(
+  BuildContext context,
+  String title,
+  Widget Function() okButton,
+  TextEditingController controller,
+) async {
   return showDialog(
       context: context,
       builder: (context) {
-        return StatefulBuilder(builder: (context, setState) {
-          return AlertDialog(
-            title: Text(title),
-            content: TextField(
-              onChanged: (value) {
-                setState(() {});
+        return AlertDialog(
+          title: Text(title),
+          content: TextField(controller: controller),
+          actions: <Widget>[
+            TextButton(
+              child: Text('取消'),
+              onPressed: () {
+                Navigator.pop(context);
               },
-              controller: c,
             ),
-            actions: <Widget>[
-              TextButton(
-                child: Text('取消'),
-                onPressed: () {
-                  setState(() {
-                    Navigator.pop(context);
-                  });
-                },
-              ),
-              okButton(),
-            ],
-          );
-        });
+            ValueListenableBuilder<TextEditingValue>(
+              valueListenable: controller,
+              builder: (context, _, __) => okButton(),
+            ),
+          ],
+        );
       });
 }
 
