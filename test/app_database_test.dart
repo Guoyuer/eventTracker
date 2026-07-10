@@ -1,9 +1,13 @@
+import 'dart:io';
+
 import 'package:drift/drift.dart' hide isNull;
+import 'package:drift_sqflite/drift_sqflite.dart';
 import 'package:event_tracker/persistence/database/app_database.dart';
 import 'package:event_tracker/persistence/database/database_bootstrap.dart';
 import 'package:event_tracker/persistence/record_lifecycle_store.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:path/path.dart' as p;
 
 import 'support/database_test_helpers.dart';
 import 'support/database_test_harness.dart';
@@ -302,4 +306,38 @@ void main() {
       isFalse,
     );
   });
+
+  test(
+    'database opens with durable journal and synchronous settings',
+    () async {
+      // In-memory SQLite databases don't support WAL (journal_mode silently
+      // stays 'memory'), so this needs a real file-backed database to observe
+      // the durability settings applied in beforeOpen.
+      final tempDir = Directory.systemTemp.createTempSync(
+        'event_tracker_wal_test_',
+      );
+      addTearDown(() {
+        if (tempDir.existsSync()) {
+          tempDir.deleteSync(recursive: true);
+        }
+      });
+
+      final db = AppDatabase(
+        SqfliteQueryExecutor(path: p.join(tempDir.path, 'wal.sqlite')),
+      );
+
+      final journalMode = await db
+          .customSelect('PRAGMA journal_mode')
+          .getSingle();
+      final synchronous = await db
+          .customSelect('PRAGMA synchronous')
+          .getSingle();
+
+      expect((journalMode.data.values.first as String).toLowerCase(), 'wal');
+      // 0 = OFF, 1 = NORMAL, 2 = FULL
+      expect(synchronous.data.values.first, 1);
+
+      await db.close();
+    },
+  );
 }

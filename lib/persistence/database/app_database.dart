@@ -17,7 +17,8 @@ class AppDatabase extends _$AppDatabase {
   MigrationStrategy get migration => MigrationStrategy(
     beforeOpen: (details) async {
       await customStatement('PRAGMA foreign_keys = ON');
-      await customStatement('PRAGMA synchronous = OFF');
+      await customStatement('PRAGMA journal_mode = WAL');
+      await customStatement('PRAGMA synchronous = NORMAL');
     },
     onCreate: (Migrator m) {
       return m.createAll();
