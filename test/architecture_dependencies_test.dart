@@ -26,14 +26,11 @@ void main() {
         ..._dartFilesUnder('lib/state'),
         ..._dartFilesUnder('lib/common'),
         ..._dartFilesUnder('lib/activities'),
-        ..._dartFilesUnder('lib/Statistics'),
-        ..._dartFilesUnder('lib/UnitManager'),
+        ..._dartFilesUnder('lib/statistics'),
+        ..._dartFilesUnder('lib/units'),
+        ..._dartFilesUnder('lib/settings'),
         ..._dartFilesUnder('lib/heatmap_calendar'),
-        ...[
-          'lib/main.dart',
-          'lib/activity_editor_page.dart',
-          'lib/settings_page.dart',
-        ].map(File.new),
+        ...['lib/main.dart'].map(File.new),
       ];
 
       _expectNoImports(stateAndUiFiles, _databaseImplementationImports);
@@ -84,7 +81,7 @@ void main() {
       final mutableVariables = <String>[];
       final chartAndUiFiles = <File>[
         ..._dartFilesUnder('lib/activities'),
-        ..._dartFilesUnder('lib/Statistics'),
+        ..._dartFilesUnder('lib/statistics'),
         ..._dartFilesUnder('lib/heatmap_calendar'),
       ];
       for (final file in chartAndUiFiles) {
@@ -120,10 +117,9 @@ bool _outerLayerImports(String uri) {
       _referencesLibModule(uri, 'application') ||
       _referencesLibModule(uri, 'l10n') ||
       _referencesLibModule(uri, 'activities') ||
-      _referencesLibModule(uri, 'Statistics') ||
-      _referencesLibModule(uri, 'UnitManager') ||
-      _referencesLibFile(uri, 'activity_editor_page.dart') ||
-      _referencesLibFile(uri, 'settings_page.dart');
+      _referencesLibModule(uri, 'statistics') ||
+      _referencesLibModule(uri, 'units') ||
+      _referencesLibModule(uri, 'settings');
 }
 
 class _HardCodedCjkVisitor extends RecursiveAstVisitor<void> {

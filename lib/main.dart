@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
-import 'package:event_tracker/settings_page.dart';
+import 'package:event_tracker/settings/settings_page.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'activities/activity_detail_page.dart';
 import 'activities/activity_list_page.dart';
 import 'activities/activity_routes.dart';
-import 'Statistics/statistics.dart';
-import 'UnitManager/units_manager_page.dart';
-import 'activity_editor_page.dart';
+import 'activities/activity_editor_page.dart';
+import 'statistics/statistics.dart';
+import 'units/units_manager_page.dart';
 import 'bootstrap/app_bootstrap.dart';
 import 'bootstrap/error_boundary.dart';
 import 'common/app_chart_theme.dart';

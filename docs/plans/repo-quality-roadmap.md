@@ -90,7 +90,7 @@ Status: completed
 
 ## Phase 2: Persistence Module
 
-Status: in progress
+Status: completed. The "Remaining" items below are standing maintenance rules, not scheduled work.
 
 - Renamed `DAO` to the lower-case `lib/persistence/database/` module path.
 - Replaced ad hoc string SQL updates in record lifecycle and latest-step reads with typed Drift operations.
@@ -123,7 +123,7 @@ Remaining:
 
 ## Phase 3: Domain Model and Aggregation
 
-Status: in progress
+Status: completed.
 
 - Extract activity display models and event status logic out of generated persistence files.
 - Moved activity display-model shaping from `AppDatabase` into `ActivityRepository`.
@@ -151,7 +151,7 @@ Status: in progress
 
 ## Phase 4: UI Composition
 
-Status: in progress
+Status: completed.
 
 - Split large widgets into route, view model, and small render widgets.
 - Make loading, empty, and error states consistent across list/detail/statistics views.
@@ -185,7 +185,7 @@ Status: in progress
 
 ## Phase 5: Dependency and Platform Modernization
 
-Status: in progress
+Status: completed. The "Remaining" items below are standing constraints gated on external tooling (Android SDK, upstream releases), not scheduled work.
 
 - Removed unused Firebase dependency, generated options, and stale Firestore configuration.
 - Removed the single-use `sprintf` dependency after replacing it with Dart string interpolation.

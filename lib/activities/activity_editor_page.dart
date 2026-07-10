@@ -4,11 +4,11 @@ import 'package:event_tracker/common/common_widgets.dart';
 import 'package:event_tracker/common/localized_activity_messages.dart';
 import 'package:event_tracker/l10n/app_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'application/activity_editor_controller.dart';
-import 'domain/activity_models.dart';
-import 'persistence/persistence_providers.dart';
-import 'state/activity_editor_providers.dart';
-import 'state/unit_providers.dart';
+import '../application/activity_editor_controller.dart';
+import '../domain/activity_models.dart';
+import '../persistence/persistence_providers.dart';
+import '../state/activity_editor_providers.dart';
+import '../state/unit_providers.dart';
 
 class ActivityEditorPage extends ConsumerWidget {
   ActivityEditorPage({super.key});
