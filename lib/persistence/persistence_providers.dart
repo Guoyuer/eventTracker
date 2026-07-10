@@ -6,12 +6,13 @@ import '../domain/activity_repository.dart';
 import '../domain/statistics_repository.dart';
 import '../domain/unit_repository.dart';
 import 'database/app_database.dart';
+import 'database/database_bootstrap.dart';
 import 'drift_activity_repository.dart';
 import 'drift_statistics_repository.dart';
 import 'drift_unit_repository.dart';
 
 final appDatabaseProvider = Provider<AppDatabase>((ref) {
-  final database = AppDatabase();
+  final database = AppDatabase(null, defaultUsesWriteAheadLog());
   ref.onDispose(() {
     unawaited(database.close());
   });

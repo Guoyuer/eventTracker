@@ -432,6 +432,7 @@ void main() {
       await db.close();
       final durableDb = AppDatabase(
         SqfliteQueryExecutor(path: p.join(tempDir.path, 'wal.sqlite')),
+        true,
       );
 
       final journalMode = await durableDb
@@ -446,6 +447,50 @@ void main() {
       expect(synchronous.data.values.first, 1);
 
       await durableDb.close();
+    },
+  );
+
+  test(
+    'mobile configuration skips WAL but still applies integrity guards',
+    () async {
+      // Mobile (drift_sqflite) cannot switch to WAL inside beforeOpen's
+      // transaction, so WAL journaling is left off there. Foreign keys and the
+      // record-value triggers must still be applied on every platform.
+      final tempDir = Directory.systemTemp.createTempSync(
+        'event_tracker_no_wal_test_',
+      );
+      addTearDown(() {
+        if (tempDir.existsSync()) {
+          tempDir.deleteSync(recursive: true);
+        }
+      });
+
+      await db.close();
+      final mobileDb = AppDatabase(
+        SqfliteQueryExecutor(path: p.join(tempDir.path, 'no_wal.sqlite')),
+        false,
+      );
+
+      final journalMode = await mobileDb
+          .customSelect('PRAGMA journal_mode')
+          .getSingle();
+      final foreignKeys = await mobileDb
+          .customSelect('PRAGMA foreign_keys')
+          .getSingle();
+      final triggerCount = await mobileDb
+          .customSelect(
+            "SELECT COUNT(*) AS c FROM sqlite_master WHERE type = 'trigger'",
+          )
+          .getSingle();
+
+      expect(
+        (journalMode.data.values.first as String).toLowerCase(),
+        isNot('wal'),
+      );
+      expect(foreignKeys.data.values.first, 1);
+      expect(triggerCount.read<int>('c'), greaterThanOrEqualTo(2));
+
+      await mobileDb.close();
     },
   );
 }

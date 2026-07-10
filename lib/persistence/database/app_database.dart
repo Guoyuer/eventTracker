@@ -8,8 +8,17 @@ part 'app_database.g.dart';
 
 @DriftDatabase(tables: [Units, Activities, Records], include: {'sql.drift'})
 class AppDatabase extends _$AppDatabase {
-  AppDatabase([QueryExecutor? executor])
+  AppDatabase([QueryExecutor? executor, this._useWriteAheadLog = false])
     : super(executor ?? defaultDatabaseExecutor());
+
+  /// Whether to enable WAL journaling with `synchronous = NORMAL` in
+  /// [beforeOpen]. Only safe on desktop, where drift reaches SQLite through the
+  /// FFI executor and connection-level PRAGMas run outside a transaction. On
+  /// mobile, drift_sqflite runs [beforeOpen] inside a transaction where
+  /// `PRAGMA journal_mode = WAL` throws, and sqflite manages journaling itself,
+  /// so this stays off there. Foreign keys and the record-value triggers are
+  /// applied on every platform regardless of this flag.
+  final bool _useWriteAheadLog;
 
   /// 改动此值前必须先运行:
   ///   dart run drift_dev schema dump lib/persistence/database/app_database.dart drift_schemas/
@@ -22,8 +31,10 @@ class AppDatabase extends _$AppDatabase {
   MigrationStrategy get migration => MigrationStrategy(
     beforeOpen: (details) async {
       await customStatement('PRAGMA foreign_keys = ON');
-      await customStatement('PRAGMA journal_mode = WAL');
-      await customStatement('PRAGMA synchronous = NORMAL');
+      if (_useWriteAheadLog) {
+        await customStatement('PRAGMA journal_mode = WAL');
+        await customStatement('PRAGMA synchronous = NORMAL');
+      }
       await _ensureRecordValueTriggers();
     },
     onCreate: (Migrator m) {

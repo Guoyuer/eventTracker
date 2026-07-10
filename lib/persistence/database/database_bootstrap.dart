@@ -36,3 +36,13 @@ bool usesExplicitDatabasePathOnPlatform(
           platform == TargetPlatform.linux ||
           platform == TargetPlatform.macOS);
 }
+
+/// Whether durable WAL journaling should be requested for the current platform.
+///
+/// WAL plus `synchronous = NORMAL` is applied on desktop, where drift reaches
+/// SQLite through the FFI executor and connection-level PRAGMas run outside a
+/// transaction. On mobile, drift_sqflite runs beforeOpen inside a transaction
+/// where `PRAGMA journal_mode = WAL` throws, and sqflite manages journaling
+/// itself, so WAL is left off there.
+bool defaultUsesWriteAheadLog() =>
+    usesExplicitDatabasePathOnPlatform(defaultTargetPlatform, isWeb: kIsWeb);
