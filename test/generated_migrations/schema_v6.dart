@@ -200,7 +200,7 @@ class Records extends Table with TableInfo {
   @override
   List<String> get customConstraints => const [
     'CHECK((start_time IS NULL AND end_time IS NOT NULL)OR(start_time IS NOT NULL AND end_time IS NULL AND value IS NULL)OR(start_time IS NOT NULL AND end_time IS NOT NULL AND end_time >= start_time))',
-    'CHECK(value IS NULL OR abs(value) <= 0.0)',
+    'CHECK(value IS NULL OR abs(value) <= 1000000000000000.0)',
   ];
   @override
   bool get dontWriteConstraints => true;

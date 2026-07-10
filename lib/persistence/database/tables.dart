@@ -48,6 +48,17 @@ class Records extends Table {
         '(start_time IS NOT NULL AND end_time IS NOT NULL '
         'AND end_time >= start_time)'
         ')',
-    'CHECK (value IS NULL OR abs(value) <= 1.7976931348623157e308)',
+    // Bound is written without scientific notation on purpose: drift_dev
+    // 2.34.0 (via sqlparser 0.44.5) re-parses this CHECK text when producing
+    // test/generated_migrations/schema_v6.dart, and its numeric-literal
+    // tokenizer computes `beforeDecimal * pow(10, exponent)` using integer
+    // (not floating-point) exponentiation. For an exponent like 308 that
+    // overflows Dart's 64-bit ints and silently wraps to 0, turning this
+    // bound into `0.0`. A plain decimal literal has no exponent, so it
+    // survives the round trip intact. 1e15 is still far beyond any value
+    // this app will ever record; the real goal of this CHECK is only to
+    // reject non-finite (infinite) doubles as a defense-in-depth backstop
+    // behind validateRecordValue's `isFinite` check.
+    'CHECK (value IS NULL OR abs(value) <= 1000000000000000.0)',
   ];
 }

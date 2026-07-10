@@ -117,7 +117,7 @@ class AppDatabase extends _$AppDatabase {
     final invalidValue = await customSelect('''
       SELECT id FROM records
       WHERE value IS NOT NULL
-        AND abs(value) > 1.7976931348623157e308
+        AND abs(value) > 1000000000000000.0
       LIMIT 1
     ''').getSingleOrNull();
     if (invalidValue != null) {
@@ -205,7 +205,7 @@ class AppDatabase extends _$AppDatabase {
           (start_time IS NOT NULL AND end_time IS NOT NULL
             AND end_time >= start_time)
         ),
-        CHECK (value IS NULL OR abs(value) <= 1.7976931348623157e308)
+        CHECK (value IS NULL OR abs(value) <= 1000000000000000.0)
       )
     ''');
     await customStatement('''

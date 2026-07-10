@@ -230,7 +230,7 @@
         "without_rowid": false,
         "constraints": [
           "CHECK ((start_time IS NULL AND end_time IS NOT NULL) OR (start_time IS NOT NULL AND end_time IS NULL AND value IS NULL) OR (start_time IS NOT NULL AND end_time IS NOT NULL AND end_time >= start_time))",
-          "CHECK (value IS NULL OR abs(value) <= 1.7976931348623157e308)"
+          "CHECK (value IS NULL OR abs(value) <= 1000000000000000.0)"
         ]
       }
     },
@@ -315,7 +315,7 @@
       "sql": [
         {
           "dialect": "sqlite",
-          "sql": "CREATE TABLE IF NOT EXISTS \"records\" (\"id\" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, \"event_id\" INTEGER NOT NULL REFERENCES events (id) ON DELETE CASCADE, \"start_time\" INTEGER NULL, \"end_time\" INTEGER NULL, \"value\" REAL NULL, CHECK ((start_time IS NULL AND end_time IS NOT NULL) OR (start_time IS NOT NULL AND end_time IS NULL AND value IS NULL) OR (start_time IS NOT NULL AND end_time IS NOT NULL AND end_time >= start_time)), CHECK (value IS NULL OR abs(value) <= 1.7976931348623157e308));"
+          "sql": "CREATE TABLE IF NOT EXISTS \"records\" (\"id\" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, \"event_id\" INTEGER NOT NULL REFERENCES events (id) ON DELETE CASCADE, \"start_time\" INTEGER NULL, \"end_time\" INTEGER NULL, \"value\" REAL NULL, CHECK ((start_time IS NULL AND end_time IS NOT NULL) OR (start_time IS NOT NULL AND end_time IS NULL AND value IS NULL) OR (start_time IS NOT NULL AND end_time IS NOT NULL AND end_time >= start_time)), CHECK (value IS NULL OR abs(value) <= 1000000000000000.0));"
         }
       ]
     },
