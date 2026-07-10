@@ -27,7 +27,7 @@ class DriftStatisticsRepository implements StatisticsRepository {
                   (record) => OrderingTerm.asc(record.id),
                 ]))
               .get();
-      final activities = await _db.select(_db.events).get();
+      final activities = await _db.select(_db.activities).get();
 
       return StatisticsData(
         records: [for (final record in records) activityRecordFromRow(record)],

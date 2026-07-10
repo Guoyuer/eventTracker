@@ -72,9 +72,9 @@ void main() {
     await repository.addUnit('pages');
     final unit = (await repository.getUnits()).single;
     await db
-        .into(db.events)
+        .into(db.activities)
         .insert(
-          EventsCompanion(
+          ActivitiesCompanion(
             name: const Value('Read'),
             careTime: const Value(false),
             unitId: Value(unit.id),

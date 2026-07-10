@@ -101,7 +101,7 @@ void main() {
     final activity = await repository.getActivity(activityId);
     expect(activity.name, 'Read');
     expect(activity.unit, isNull);
-    expect((await db.select(db.events).getSingle()).description, isNull);
+    expect((await db.select(db.activities).getSingle()).description, isNull);
     expect(
       repository.createActivity(name: '   ', careTime: false),
       throwsArgumentError,
@@ -168,7 +168,7 @@ void main() {
         .into(db.records)
         .insert(
           RecordsCompanion(
-            eventId: Value(plainId),
+            activityId: Value(plainId),
             startTime: Value(DateTime(2026, 1, 1, 8)),
             endTime: Value(DateTime(2026, 1, 1, 9)),
           ),
@@ -177,7 +177,7 @@ void main() {
         .into(db.records)
         .insert(
           RecordsCompanion(
-            eventId: Value(timedId),
+            activityId: Value(timedId),
             endTime: Value(DateTime(2026, 1, 1, 9)),
           ),
         );

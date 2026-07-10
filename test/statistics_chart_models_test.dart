@@ -6,9 +6,9 @@ void main() {
   test('chart model builds pie slices and stacked time slots', () {
     final model = buildStatisticsChartModel(
       records: [
-        record(id: 1, eventId: 2, end: DateTime(2026, 1, 1, 8)),
-        record(id: 2, eventId: 1, end: DateTime(2026, 1, 1, 9)),
-        record(id: 3, eventId: 2, end: DateTime(2026, 1, 1, 9)),
+        record(id: 1, activityId: 2, end: DateTime(2026, 1, 1, 8)),
+        record(id: 2, activityId: 1, end: DateTime(2026, 1, 1, 9)),
+        record(id: 3, activityId: 2, end: DateTime(2026, 1, 1, 9)),
       ],
       activitiesById: {
         1: activity(id: 1, name: 'Read'),
@@ -37,8 +37,8 @@ void main() {
   test('chart model builds twelve portrait two-hour slots', () {
     final model = buildStatisticsChartModel(
       records: [
-        record(id: 1, eventId: 1, end: DateTime(2026, 1, 1, 8)),
-        record(id: 2, eventId: 1, end: DateTime(2026, 1, 1, 9)),
+        record(id: 1, activityId: 1, end: DateTime(2026, 1, 1, 8)),
+        record(id: 2, activityId: 1, end: DateTime(2026, 1, 1, 9)),
       ],
       activitiesById: {1: activity(id: 1, name: 'Read')},
       colorCount: 10,
@@ -57,8 +57,8 @@ StatisticsActivity activity({required int id, required String name}) {
 
 ActivityRecord record({
   required int id,
-  required int eventId,
+  required int activityId,
   required DateTime end,
 }) {
-  return PlainRecord(id: id, activityId: eventId, endedAt: end);
+  return PlainRecord(id: id, activityId: activityId, endedAt: end);
 }

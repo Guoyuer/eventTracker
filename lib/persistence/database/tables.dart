@@ -9,7 +9,8 @@ class Units extends Table {
   )();
 }
 
-class Events extends Table {
+@DataClassName('ActivityRow')
+class Activities extends Table {
   IntColumn get id => integer().autoIncrement()();
 
   TextColumn get name => text().customConstraint(
@@ -31,8 +32,8 @@ class Events extends Table {
 class Records extends Table {
   IntColumn get id => integer().autoIncrement()();
 
-  IntColumn get eventId =>
-      integer().references(Events, #id, onDelete: KeyAction.cascade)();
+  IntColumn get activityId =>
+      integer().references(Activities, #id, onDelete: KeyAction.cascade)();
 
   DateTimeColumn get startTime => dateTime().nullable()();
 

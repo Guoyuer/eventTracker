@@ -22,7 +22,7 @@ class StatisticsSummary {
 
 StatisticsSummary buildStatisticsSummary({
   required List<ActivityRecord> records,
-  required Map<int, StatisticsActivity> eventsById,
+  required Map<int, StatisticsActivity> activitiesById,
 }) {
   final activityCountsById = <int, int>{};
   final hourlyCountsByActivityName = <String, List<double>>{};
@@ -31,7 +31,7 @@ StatisticsSummary buildStatisticsSummary({
     if (record is! CompletedActivityRecord) {
       continue;
     }
-    final activity = _activityForRecord(record, eventsById);
+    final activity = _activityForRecord(record, activitiesById);
     activityCountsById[record.activityId] =
         (activityCountsById[record.activityId] ?? 0) + 1;
 
@@ -46,7 +46,7 @@ StatisticsSummary buildStatisticsSummary({
     activityCounts: [
       for (final entry in activityCountsById.entries)
         ActivityCount(
-          activity: _activityForId(entry.key, eventsById),
+          activity: _activityForId(entry.key, activitiesById),
           count: entry.value,
         ),
     ],
@@ -62,17 +62,17 @@ List<double> combineStatisticsAdjacentHourSlots(List<double> hourlyValues) {
 
 StatisticsActivity _activityForRecord(
   CompletedActivityRecord record,
-  Map<int, StatisticsActivity> eventsById,
+  Map<int, StatisticsActivity> activitiesById,
 ) {
-  final activity = _activityForId(record.activityId, eventsById);
+  final activity = _activityForId(record.activityId, activitiesById);
   return activity;
 }
 
 StatisticsActivity _activityForId(
   int activityId,
-  Map<int, StatisticsActivity> eventsById,
+  Map<int, StatisticsActivity> activitiesById,
 ) {
-  final activity = eventsById[activityId];
+  final activity = activitiesById[activityId];
   if (activity == null) {
     throw StateError('Missing activity $activityId.');
   }

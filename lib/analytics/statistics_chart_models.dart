@@ -78,7 +78,7 @@ StatisticsChartModel buildStatisticsChartModel({
 
   final summary = buildStatisticsSummary(
     records: records,
-    eventsById: activitiesById,
+    activitiesById: activitiesById,
   );
   final colorIndexByActivityName = _colorIndexByActivityName(
     activitiesById,

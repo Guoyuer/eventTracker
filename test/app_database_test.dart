@@ -198,14 +198,14 @@ void main() {
       careTime: true,
     );
     final invalidRecords = [
-      RecordsCompanion(eventId: Value(activityId)),
+      RecordsCompanion(activityId: Value(activityId)),
       RecordsCompanion(
-        eventId: Value(activityId),
+        activityId: Value(activityId),
         startTime: Value(DateTime(2026, 1, 1, 8)),
         value: const Value(1),
       ),
       RecordsCompanion(
-        eventId: Value(activityId),
+        activityId: Value(activityId),
         startTime: Value(DateTime(2026, 1, 1, 9)),
         endTime: Value(DateTime(2026, 1, 1, 8)),
       ),
@@ -241,7 +241,7 @@ void main() {
           .into(db.records)
           .insert(
             RecordsCompanion(
-              eventId: Value(activityId),
+              activityId: Value(activityId),
               endTime: Value(DateTime(2026, 1, 1, 8)),
               value: Value(maxRecordValue),
             ),
@@ -256,13 +256,65 @@ void main() {
             .into(db.records)
             .insert(
               RecordsCompanion(
-                eventId: Value(activityId),
+                activityId: Value(activityId),
                 endTime: Value(DateTime(2026, 1, 1, 9)),
                 value: Value(maxRecordValue + 1),
               ),
             ),
         throwsA(anything),
       );
+    },
+  );
+
+  test(
+    'Dart and SQLite agree on unit-backed Record value boundaries',
+    () async {
+      final activityId = await insertTestActivity(
+        db,
+        name: 'Reading',
+        careTime: false,
+        unit: 'pages',
+      );
+      final rejectedValues = <double?>[
+        null,
+        0,
+        -1,
+        double.nan,
+        double.infinity,
+        maxRecordValue + 1,
+      ];
+
+      for (final value in rejectedValues) {
+        expect(
+          () => validateRecordValue(value, hasUnit: true),
+          throwsArgumentError,
+        );
+        await expectLater(
+          db
+              .into(db.records)
+              .insert(
+                RecordsCompanion(
+                  activityId: Value(activityId),
+                  endTime: Value(DateTime(2026, 1, 1, 8)),
+                  value: Value(value),
+                ),
+              ),
+          throwsA(anything),
+        );
+      }
+
+      for (final value in [0.5, maxRecordValue]) {
+        expect(validateRecordValue(value, hasUnit: true), value);
+        await db
+            .into(db.records)
+            .insert(
+              RecordsCompanion(
+                activityId: Value(activityId),
+                endTime: Value(DateTime(2026, 1, 1, 9)),
+                value: Value(value),
+              ),
+            );
+      }
     },
   );
 
@@ -281,7 +333,7 @@ void main() {
             .into(db.records)
             .insert(
               RecordsCompanion(
-                eventId: Value(activityId),
+                activityId: Value(activityId),
                 startTime: Value(DateTime(2026, 1, 1, 9)),
               ),
             ),
@@ -292,7 +344,7 @@ void main() {
             .into(db.records)
             .insert(
               RecordsCompanion(
-                eventId: const Value(404),
+                activityId: const Value(404),
                 endTime: Value(DateTime(2026, 1, 1, 9)),
               ),
             ),

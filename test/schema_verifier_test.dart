@@ -11,11 +11,20 @@ void main() {
     verifier = SchemaVerifier(GeneratedHelper());
   });
 
-  test('a freshly created database matches the v6 schema snapshot', () async {
+  test('a freshly created database matches the v7 schema snapshot', () async {
+    final connection = await verifier.startAt(7);
+    final db = AppDatabase(connection);
+
+    await verifier.migrateAndValidate(db, 7);
+
+    await db.close();
+  });
+
+  test('v6 schema upgrades structurally to v7', () async {
     final connection = await verifier.startAt(6);
     final db = AppDatabase(connection);
 
-    await verifier.migrateAndValidate(db, 6);
+    await verifier.migrateAndValidate(db, 7);
 
     await db.close();
   });

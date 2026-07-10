@@ -2,8 +2,84 @@
 
 ## Status
 
-Active. This document reconciles the repo's current documentation and defines
-the execution order after the v6 migration-safety work.
+Active and scope-frozen on 2026-07-10. This is the sole execution contract for
+the repository-quality goal. Historical plans record decisions and evidence;
+they do not create new work.
+
+## Scope Freeze
+
+### Objective
+
+Finish the existing Flutter activity tracker as a maintainable Windows-first
+application with a consistent Activity/Record vocabulary, enforced persistence
+invariants, reproducible generated code, and release gates that prevent
+unreviewed regressions. The goal is complete only when every item in the fixed
+completion criteria below has evidence.
+
+### In Scope
+
+1. Complete and release schema v7: `events` / `event_id` become
+   `activities` / `activity_id`; valid v6 data, IDs, foreign keys, and record
+   value rules remain protected by migration and direct-SQL tests.
+2. Finish the already identified presentation cleanup: rename the remaining
+   legacy UI directories to `activities`, replace mutable chart theme globals
+   with scoped theme state, and preserve UI behavior with focused tests and an
+   English Windows visual inspection.
+3. Close the engineering ratchet: zero lint suppressions, checked-in generated
+   Drift snapshots, a local check command that matches CI, Linux quality CI,
+   and Windows release-build CI.
+4. Close documentation and residual-debt accounting: current domain docs,
+   ADRs, module flow, README, and this plan agree; every remaining known debt
+   is either completed or explicitly recorded as an exclusion below.
+
+### Explicitly Out Of Scope
+
+- New product features, including manual historical start/end-time entry.
+- Cloud sync, accounts, telemetry/crash-reporting vendor selection, or external
+  service integrations.
+- Flutter, Dart, dependency, or platform-toolchain upgrades unless a fixed
+  gate demonstrably fails because of the pinned toolchain.
+- Android/iOS visual validation; the supported release target for this goal is
+  Windows. Existing cross-platform source compatibility is retained where the
+  framework already provides it.
+- Broad redesigns, new modules, or cleanup discovered after this freeze unless
+  the change-control rule is satisfied.
+
+### Fixed Milestones
+
+1. **Schema v7 release boundary:** finish local code-generation, analysis,
+   tests, and Windows build; commit and push the self-contained migration.
+2. **Presentation boundary:** complete only the directory and chart-theme work
+   listed above, with narrow regression tests and the deferred Windows visual
+   check; commit and push separately.
+3. **Closure boundary:** reconcile documentation, run the full local release
+   gate, verify both GitHub CI jobs, classify any residual exclusion, then
+   commit and push the closure.
+
+### Completion Criteria
+
+- Schema v7 has fresh and upgrade structural verification plus raw data
+  retention and direct-SQL value-invariant coverage.
+- `tool/check.ps1 -Codegen -WindowsBuild` succeeds without modifying tracked
+  generated files, and its code-generation commands match CI.
+- `dart format --output=none --set-exit-if-changed .`,
+  `flutter analyze --fatal-infos`, `flutter test`, and `flutter build windows`
+  succeed on the final commit.
+- GitHub reports a green Linux quality job and green Windows release-build job
+  for the final commit.
+- There are no lint suppressions, stale active roadmap instructions, or
+  unclassified debt statements in the authoritative documentation.
+- The English Windows application launches and its primary routes render
+  without a blank screen or overflow.
+
+### Change Control
+
+No newly discovered cleanup, feature, dependency upgrade, or architectural idea
+is added to this goal automatically. It is recorded separately as a follow-up
+only after the fixed milestones are complete, unless it blocks a listed
+completion criterion or is required to correct a regression introduced by this
+scope. Blocking work must state the criterion it unblocks and be committed as
+part of that boundary.
 
 ## Current Snapshot (2026-07-10)
 
@@ -13,7 +89,7 @@ Riverpod, the legacy Step schema and Firebase have been removed, and local CI
 gates exist. `c745245` additionally completed typed user-facing failures, a
 single in-process error boundary, the l10n generator, and localized shell and
 failure messages. The verified baseline is Flutter 3.44.5, clean
-`flutter analyze --fatal-infos`, 123 tests, a Windows release build, and a
+`flutter analyze --fatal-infos`, 126 tests, a Windows release build, and a
 computer-use startup inspection.
 
 The rest of the work is intentional debt elimination, not exploratory module
@@ -24,8 +100,8 @@ privacy and account decision; the error boundary is ready for it.
 
 - `AGENTS.md`, `CONTEXT.md`, and ADRs 0001-0002 define the active product and
   non-negotiable invariants.
-- `docs/superpowers/plans/2026-07-09-production-readiness.md` is the active
-  production backlog. Tasks 1-3 are complete.
+- `docs/superpowers/plans/2026-07-09-production-readiness.md` is historical
+  production-readiness evidence. It does not expand this scope.
 - `docs/plans/*.md`, `docs/architecture/module-flow.md`, and the 2026-07-08
   architecture review explain the path taken to the current architecture.
 - `.superpowers/sdd/progress.md` records CI green for `69b45dd` and deferred
@@ -36,8 +112,8 @@ privacy and account decision; the error boundary is ready for it.
 | Source | Role now | Required action |
 | --- | --- | --- |
 | `CONTEXT.md`, ADRs, `AGENTS.md` | Authoritative constraints | Keep current whenever domain or persistence language changes. |
-| Production-readiness plan | Active backlog | Update its baseline and cross-task dependencies as slices land. |
-| Quality and architecture plans | Historical roadmap plus operational runbook | Remove stale next-slice text; retain Windows iteration and definition-of-done guidance. |
+| Production-readiness plan | Historical backlog | Retain completed-task evidence; do not use it to schedule work. |
+| Quality and architecture plans | Historical roadmap plus operational runbook | Retain context and commands; this plan owns all remaining scheduling. |
 | Module flow | Current architectural map | Update after record-type and schema terminology changes. |
 | 2026-07-08 architecture review | Historical assessment | Mark as superseded: its recommended persistence, state, schema, Firebase, and verification work is complete. |
 | `README.md` | User-facing product truth | Rewrite before feature work: it still documents removed manual long-press entry and obsolete Event terminology. |
@@ -114,19 +190,21 @@ and a green Windows CI build on the commit.
 
 ### 4. Resolve Persistent Terminology and Validation Debt in v7
 
+**Status: implementation and local release gate complete; GitHub checks are
+pending the migration commit.**
+
 **Why now:** v6 has schema dumps and migration tooling, the domain will already
 use `activityId`, and CI will protect the migration.
 
-- Write ADR 0003 to rename the `events` table and event foreign-key names to
-  `activities` and `activity_id`; this is terminology alignment, not a product
-  behavior change.
-- Implement schema v7 as an explicit v6-to-v7 migration, regenerate Drift and
-  v7 schema artifacts, and add `SchemaVerifier` coverage for v6 -> v7. Keep
-  historical v1-v5 behavior covered by the existing data migration tests; do
-  not invent unavailable old schema snapshots.
-- Add a differential boundary matrix proving Dart validation and direct SQLite
-  inserts agree for missing, zero, negative, non-finite, maximum, and
-  over-maximum values.
+- ADR 0003 records the `events` / `event_id` to `activities` / `activity_id`
+  decision without changing product behavior.
+- Schema v7 explicitly rebuilds v6 tables, retains identifiers and valid local
+  history, regenerates schema artifacts, and has SchemaVerifier v6-to-v7 plus
+  raw SQLite data-retention coverage. Historical v1-v5 fixtures remain the
+  source of their migration coverage.
+- SQLite insert/update triggers now enforce the same unit/value contract as
+  Dart validation; a boundary matrix covers missing, zero, negative,
+  non-finite, maximum, and over-maximum values.
 
 **Evidence required:** fresh v7 schema verifier, v6 upgrade test with retained
 data and foreign keys, full migration suite, codegen diff check, Windows build.

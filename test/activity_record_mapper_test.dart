@@ -6,18 +6,23 @@ import 'package:flutter_test/flutter_test.dart';
 void main() {
   test('maps every valid persisted Record shape to its domain type', () {
     final plain = activityRecordFromRow(
-      Record(id: 1, eventId: 7, endTime: DateTime(2026, 7, 10, 8), value: 3),
+      Record(
+        id: 1,
+        activityId: 7,
+        endTime: DateTime(2026, 7, 10, 8),
+        value: 3,
+      ),
     );
     final completedTimed = activityRecordFromRow(
       Record(
         id: 2,
-        eventId: 7,
+        activityId: 7,
         startTime: DateTime(2026, 7, 10, 8),
         endTime: DateTime(2026, 7, 10, 8, 30),
       ),
     );
     final activeTimed = activityRecordFromRow(
-      Record(id: 3, eventId: 7, startTime: DateTime(2026, 7, 10, 9)),
+      Record(id: 3, activityId: 7, startTime: DateTime(2026, 7, 10, 9)),
     );
 
     expect(plain, isA<PlainRecord>());
@@ -34,14 +39,14 @@ void main() {
 
   test('rejects persisted Record shapes outside the domain contract', () {
     expect(
-      () => activityRecordFromRow(Record(id: 1, eventId: 7)),
+      () => activityRecordFromRow(Record(id: 1, activityId: 7)),
       throwsStateError,
     );
     expect(
       () => activityRecordFromRow(
         Record(
           id: 2,
-          eventId: 7,
+          activityId: 7,
           startTime: DateTime(2026, 7, 10, 9),
           value: 1,
         ),
@@ -52,7 +57,7 @@ void main() {
       () => activityRecordFromRow(
         Record(
           id: 3,
-          eventId: 7,
+          activityId: 7,
           startTime: DateTime(2026, 7, 10, 9),
           endTime: DateTime(2026, 7, 10, 8),
         ),

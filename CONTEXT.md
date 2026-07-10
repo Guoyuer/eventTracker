@@ -6,7 +6,8 @@
 
 ## Domain Terms
 
-- **Activity**: A user-defined thing to track, currently stored in the `events` table and displayed as a project in the UI.
+- **Activity**: A user-defined thing to track, stored in the `activities`
+  table and displayed as a project in the UI.
 - **Activity Snapshot**: An immutable Activity read model. Plain, inactive Timed, and active Timed states are separate types; state and totals are derived directly from Records.
 - **Calendar Date Range**: A user-selected inclusive set of whole local calendar days.
 - **Date Interval**: A timestamp interval with explicit half-open semantics: start included, end excluded.
@@ -18,6 +19,9 @@
 - **Unit**: A user-managed entity with a stable database ID and canonical label for numeric values, such as kilometers, pages, or questions. Activities reference Units by ID.
 - **Name Invariant**: Activity and Unit names are trimmed, non-blank, and unique without regard to ASCII letter case. Optional Activity units are trimmed and blank values become absent.
 - **Value Invariant**: Activities without a Unit cannot store values. Activities with a Unit require a positive finite value for every completed Record, and accumulated totals must remain finite.
+- **Persistence Value Invariant**: SQLite triggers enforce the same unit/value
+  contract for direct Record inserts and updates, so repository validation is
+  not the only protection against invalid local data.
 - **Unit Reference Invariant**: An Activity may only use an existing Unit, and a Unit cannot be deleted while an Activity uses it.
 - **Record History**: The single source of truth for an Activity's occurrence count, total duration, total value, and active state. `ActivityRecordHistory` validates every Record before producing a summary.
 - **Record Lifecycle**: Transactional persistence workflow for creating, stopping, or canceling Records while enforcing Activity type and active-record invariants.

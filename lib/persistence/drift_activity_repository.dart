@@ -33,7 +33,7 @@ class DriftActivityRepository implements ActivityRepository {
               ..orderBy([(record) => OrderingTerm(expression: record.endTime)])
               ..where(
                 (record) =>
-                    record.eventId.equals(activityId) &
+                    record.activityId.equals(activityId) &
                     record.endTime.isNotNull(),
               ))
             .get();
@@ -56,7 +56,7 @@ class DriftActivityRepository implements ActivityRepository {
 
     return _db.transaction(() async {
       final existing = await (_db.select(
-        _db.events,
+        _db.activities,
       )..where((row) => row.name.equals(normalizedName))).getSingleOrNull();
       if (existing != null) {
         throw DuplicateActivityName(normalizedName);
@@ -73,9 +73,9 @@ class DriftActivityRepository implements ActivityRepository {
       }
 
       return _db
-          .into(_db.events)
+          .into(_db.activities)
           .insert(
-            EventsCompanion(
+            ActivitiesCompanion(
               name: Value(normalizedName),
               careTime: Value(careTime),
               unitId: Value(selectedUnit?.id),
@@ -87,20 +87,20 @@ class DriftActivityRepository implements ActivityRepository {
 
   @override
   Future<String?> getActivityDescription(int activityId) async {
-    final query = _db.selectOnly(_db.events)
-      ..addColumns([_db.events.description])
-      ..where(_db.events.id.equals(activityId));
+    final query = _db.selectOnly(_db.activities)
+      ..addColumns([_db.activities.description])
+      ..where(_db.activities.id.equals(activityId));
 
     return query
-        .map((row) => row.read(_db.events.description))
+        .map((row) => row.read(_db.activities.description))
         .getSingleOrNull();
   }
 
   @override
   Future<void> updateActivityDescription(int activityId, String description) {
-    return (_db.update(_db.events)
+    return (_db.update(_db.activities)
           ..where((activity) => activity.id.equals(activityId)))
-        .write(EventsCompanion(description: Value(description)));
+        .write(ActivitiesCompanion(description: Value(description)));
   }
 
   @override
@@ -138,7 +138,7 @@ class DriftActivityRepository implements ActivityRepository {
   @override
   Future<void> deleteActivity(int activityId) async {
     final deleted = await (_db.delete(
-      _db.events,
+      _db.activities,
     )..where((activity) => activity.id.equals(activityId))).go();
     if (deleted != 1) {
       throw StateError('Activity $activityId does not exist');

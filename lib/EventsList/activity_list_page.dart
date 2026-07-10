@@ -17,19 +17,19 @@ class EventList extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final events = ref.watch(activityListProvider);
+    final activities = ref.watch(activityListProvider);
     final localizations = AppLocalizations.of(context)!;
     return AsyncStateView<List<Activity>>(
-      value: events,
-      data: (events) => ActivityListView(
-        activities: events,
+      value: activities,
+      data: (activities) => ActivityListView(
+        activities: activities,
         onScrollDirectionChanged: (direction) {
           ref.read(eventListScrollDirProvider.notifier).set(direction);
         },
       ),
       errorMessage: localizations.loadActivitiesFailed,
       emptyMessage: localizations.noActivities,
-      isEmpty: (events) => events.isEmpty,
+      isEmpty: (activities) => activities.isEmpty,
       onRetry: () => ref.invalidate(activityListProvider),
       retryLabel: localizations.retry,
     );

@@ -27,7 +27,7 @@ class RecordLifecycleStore {
           .into(_db.records)
           .insert(
             RecordsCompanion(
-              eventId: Value(activityId),
+              activityId: Value(activityId),
               endTime: Value(endTime),
               value: Value(validatedValue),
             ),
@@ -50,7 +50,7 @@ class RecordLifecycleStore {
           .into(_db.records)
           .insert(
             RecordsCompanion(
-              eventId: Value(activityId),
+              activityId: Value(activityId),
               startTime: Value(startTime),
             ),
           );
@@ -121,16 +121,16 @@ class RecordLifecycleStore {
     return activeRecords.single;
   }
 
-  Future<Event> _activityById(int activityId) {
+  Future<ActivityRow> _activityById(int activityId) {
     return (_db.select(
-      _db.events,
+      _db.activities,
     )..where((activity) => activity.id.equals(activityId))).getSingle();
   }
 
   Future<List<Record>> _activeRecords(int activityId) {
     return (_db.select(_db.records)..where(
           (record) =>
-              record.eventId.equals(activityId) & record.endTime.isNull(),
+              record.activityId.equals(activityId) & record.endTime.isNull(),
         ))
         .get();
   }

@@ -47,7 +47,7 @@ class DriftUnitRepository implements UnitRepository {
         throw StateError('Unit $normalizedName does not exist');
       }
       final usage =
-          await (_db.select(_db.events)
+          await (_db.select(_db.activities)
                 ..where((activity) => activity.unitId.equals(unit.id)))
               .getSingleOrNull();
       if (usage != null) {

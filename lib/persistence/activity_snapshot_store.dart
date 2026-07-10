@@ -20,45 +20,55 @@ class ActivitySnapshotStore {
   }
 
   Future<List<Activity>> _readSnapshots({int? activityId}) async {
-    final query = _db.select(_db.events).join([
-      leftOuterJoin(_db.units, _db.units.id.equalsExp(_db.events.unitId)),
-      leftOuterJoin(_db.records, _db.records.eventId.equalsExp(_db.events.id)),
-    ])..orderBy([OrderingTerm.asc(_db.events.id)]);
+    final query = _db.select(_db.activities).join([
+      leftOuterJoin(
+        _db.units,
+        _db.units.id.equalsExp(_db.activities.unitId),
+      ),
+      leftOuterJoin(
+        _db.records,
+        _db.records.activityId.equalsExp(_db.activities.id),
+      ),
+    ])..orderBy([OrderingTerm.asc(_db.activities.id)]);
     if (activityId != null) {
-      query.where(_db.events.id.equals(activityId));
+      query.where(_db.activities.id.equals(activityId));
     }
 
     final rows = await query.get();
-    final eventsById = <int, Event>{};
+    final activitiesById = <int, ActivityRow>{};
     final recordsByActivityId = <int, List<Record>>{};
     final unitNamesByActivityId = <int, String>{};
     for (final row in rows) {
-      final event = row.readTable(_db.events);
-      eventsById[event.id] = event;
+      final activity = row.readTable(_db.activities);
+      activitiesById[activity.id] = activity;
       final unit = row.readTableOrNull(_db.units);
       if (unit != null) {
-        unitNamesByActivityId[event.id] = unit.name;
+        unitNamesByActivityId[activity.id] = unit.name;
       }
       final record = row.readTableOrNull(_db.records);
       if (record != null) {
-        recordsByActivityId.putIfAbsent(event.id, () => []).add(record);
+        recordsByActivityId.putIfAbsent(activity.id, () => []).add(record);
       }
     }
 
     return [
-      for (final event in eventsById.values)
+      for (final activity in activitiesById.values)
         _snapshotFor(
-          event,
-          recordsByActivityId[event.id] ?? const [],
-          unitNamesByActivityId[event.id],
+          activity,
+          recordsByActivityId[activity.id] ?? const [],
+          unitNamesByActivityId[activity.id],
         ),
     ];
   }
 
-  Activity _snapshotFor(Event event, List<Record> records, String? unit) {
+  Activity _snapshotFor(
+    ActivityRow activity,
+    List<Record> records,
+    String? unit,
+  ) {
     final history = ActivityRecordHistory.evaluate(
-      activityId: event.id,
-      careTime: event.careTime,
+      activityId: activity.id,
+      careTime: activity.careTime,
       hasUnit: unit != null,
       records: [
         for (final record in records)
@@ -71,12 +81,12 @@ class ActivitySnapshotStore {
       ],
     );
 
-    if (!event.careTime) {
+    if (!activity.careTime) {
       return PlainActivity(
-        id: event.id,
-        name: event.name,
+        id: activity.id,
+        name: activity.name,
         unit: unit,
-        description: event.description,
+        description: activity.description,
         occurrenceCount: history.occurrenceCount,
         totalValue: history.totalValue,
       );
@@ -85,20 +95,20 @@ class ActivitySnapshotStore {
     final activeStartedAt = history.activeStartedAt;
     if (activeStartedAt == null) {
       return InactiveTimedActivity(
-        id: event.id,
-        name: event.name,
+        id: activity.id,
+        name: activity.name,
         unit: unit,
-        description: event.description,
+        description: activity.description,
         totalDuration: history.totalDuration,
         totalValue: history.totalValue,
       );
     }
 
     return ActiveTimedActivity(
-      id: event.id,
-      name: event.name,
+      id: activity.id,
+      name: activity.name,
       unit: unit,
-      description: event.description,
+      description: activity.description,
       startedAt: activeStartedAt,
       totalDuration: history.totalDuration,
       totalValue: history.totalValue,

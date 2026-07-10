@@ -12,7 +12,7 @@ ActivityRecord activityRecordFromRow(Record row) {
     }
     return PlainRecord(
       id: row.id,
-      activityId: row.eventId,
+      activityId: row.activityId,
       endedAt: endedAt,
       value: row.value,
     );
@@ -24,7 +24,7 @@ ActivityRecord activityRecordFromRow(Record row) {
     }
     return ActiveTimedRecord(
       id: row.id,
-      activityId: row.eventId,
+      activityId: row.activityId,
       startedAt: startedAt,
     );
   }
@@ -34,7 +34,7 @@ ActivityRecord activityRecordFromRow(Record row) {
   }
   return CompletedTimedRecord(
     id: row.id,
-    activityId: row.eventId,
+    activityId: row.activityId,
     startedAt: startedAt,
     endedAt: endedAt,
     value: row.value,

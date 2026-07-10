@@ -48,10 +48,14 @@ void main() {
   });
 
   test('repository excludes records outside the requested range', () async {
-    final eventId = await insertTestActivity(db, name: 'Read', careTime: false);
+    final activityId = await insertTestActivity(
+      db,
+      name: 'Read',
+      careTime: false,
+    );
 
-    await lifecycle.addPlainRecord(eventId, DateTime(2025, 12, 31, 8));
-    await lifecycle.addPlainRecord(eventId, DateTime(2026, 1, 1, 8));
+    await lifecycle.addPlainRecord(activityId, DateTime(2025, 12, 31, 8));
+    await lifecycle.addPlainRecord(activityId, DateTime(2026, 1, 1, 8));
 
     final data = await repository.getStatisticsData(
       CalendarDateRange(
@@ -68,14 +72,18 @@ void main() {
   });
 
   test('repository includes full end day and excludes next midnight', () async {
-    final eventId = await insertTestActivity(db, name: 'Read', careTime: false);
+    final activityId = await insertTestActivity(
+      db,
+      name: 'Read',
+      careTime: false,
+    );
     for (final recordedAt in [
       DateTime(2025, 12, 31, 23, 59, 59),
       DateTime(2026, 1, 1),
       DateTime(2026, 1, 31, 23, 59, 59),
       DateTime(2026, 2, 1),
     ]) {
-      await lifecycle.addPlainRecord(eventId, recordedAt);
+      await lifecycle.addPlainRecord(activityId, recordedAt);
     }
 
     final data = await repository.getStatisticsData(

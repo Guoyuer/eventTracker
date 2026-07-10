@@ -6,7 +6,7 @@ import 'tables.dart';
 
 part 'app_database.g.dart';
 
-@DriftDatabase(tables: [Units, Events, Records], include: {'sql.drift'})
+@DriftDatabase(tables: [Units, Activities, Records], include: {'sql.drift'})
 class AppDatabase extends _$AppDatabase {
   AppDatabase([QueryExecutor? executor])
     : super(executor ?? defaultDatabaseExecutor());
@@ -16,7 +16,7 @@ class AppDatabase extends _$AppDatabase {
   ///   dart run drift_dev schema generate drift_schemas/ test/generated_migrations/
   /// 然后在 test/schema_verifier_test.dart 中为新版本加一条 migrateAndValidate 用例。
   @override
-  int get schemaVersion => 6;
+  int get schemaVersion => 7;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -24,6 +24,7 @@ class AppDatabase extends _$AppDatabase {
       await customStatement('PRAGMA foreign_keys = ON');
       await customStatement('PRAGMA journal_mode = WAL');
       await customStatement('PRAGMA synchronous = NORMAL');
+      await _ensureRecordValueTriggers();
     },
     onCreate: (Migrator m) {
       return m.createAll();
@@ -34,12 +35,15 @@ class AppDatabase extends _$AppDatabase {
       }
       if (from < 4) {
         await _prepareDataForVersion5();
-        await _migrateToVersion4(m);
+        await _migrateToVersion4();
       } else if (from < 5) {
         await _migrateToVersion5(m);
       }
       if (from < 6) {
         await _migrateToVersion6();
+      }
+      if (from < 7) {
+        await _migrateToVersion7();
       }
     },
   );
@@ -51,7 +55,7 @@ class AppDatabase extends _$AppDatabase {
     await customStatement('DROP TABLE IF EXISTS steps');
   }
 
-  Future<void> _migrateToVersion4(Migrator migrator) async {
+  Future<void> _migrateToVersion4() async {
     final malformedRecord = await customSelect('''
       SELECT records.id
       FROM records
@@ -88,27 +92,11 @@ class AppDatabase extends _$AppDatabase {
         '${duplicateActive.read<int>('event_id')} with multiple active Records',
       );
     }
-
-    await migrator.alterTable(TableMigration(records));
-    await customStatement(
-      'CREATE INDEX IF NOT EXISTS records_end_time ON records(end_time)',
-    );
-    await customStatement(
-      'CREATE INDEX IF NOT EXISTS records_start_time ON records(start_time)',
-    );
-    await customStatement(
-      'CREATE INDEX IF NOT EXISTS records_event_id ON records(event_id)',
-    );
-    await customStatement(
-      'CREATE UNIQUE INDEX IF NOT EXISTS records_one_active_per_event '
-      'ON records(event_id) WHERE end_time IS NULL',
-    );
   }
 
   Future<void> _migrateToVersion5(Migrator migrator) async {
     await _prepareDataForVersion5();
     await migrator.alterTable(TableMigration(units));
-    await migrator.alterTable(TableMigration(records));
   }
 
   Future<void> _prepareDataForVersion5() async {
@@ -182,7 +170,7 @@ class AppDatabase extends _$AppDatabase {
         name TEXT NOT NULL COLLATE NOCASE UNIQUE
           CHECK (name = trim(name) AND length(name) > 0),
         description TEXT NULL,
-        care_time INTEGER NOT NULL,
+        care_time INTEGER NOT NULL CHECK (care_time IN (0, 1)),
         unit_id INTEGER NULL REFERENCES units(id) ON DELETE RESTRICT
       )
     ''');
@@ -224,5 +212,95 @@ class AppDatabase extends _$AppDatabase {
       'CREATE UNIQUE INDEX records_one_active_per_event '
       'ON records(event_id) WHERE end_time IS NULL',
     );
+  }
+
+  Future<void> _migrateToVersion7() async {
+    await customStatement('ALTER TABLE events RENAME TO events_v6');
+    await customStatement('ALTER TABLE records RENAME TO records_v6');
+
+    await customStatement('''
+      CREATE TABLE activities (
+        id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+        name TEXT NOT NULL COLLATE NOCASE UNIQUE
+          CHECK (name = trim(name) AND length(name) > 0),
+        description TEXT NULL,
+        care_time INTEGER NOT NULL CHECK (care_time IN (0, 1)),
+        unit_id INTEGER NULL REFERENCES units(id) ON DELETE RESTRICT
+      )
+    ''');
+    await customStatement('''
+      INSERT INTO activities (id, name, description, care_time, unit_id)
+      SELECT id, name, description, care_time, unit_id FROM events_v6
+    ''');
+    await customStatement('''
+      CREATE TABLE records (
+        id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+        activity_id INTEGER NOT NULL REFERENCES activities(id) ON DELETE CASCADE,
+        start_time INTEGER NULL,
+        end_time INTEGER NULL,
+        value REAL NULL,
+        CHECK (
+          (start_time IS NULL AND end_time IS NOT NULL) OR
+          (start_time IS NOT NULL AND end_time IS NULL AND value IS NULL) OR
+          (start_time IS NOT NULL AND end_time IS NOT NULL
+            AND end_time >= start_time)
+        ),
+        CHECK (value IS NULL OR abs(value) <= 1000000000000000.0)
+      )
+    ''');
+    await customStatement('''
+      INSERT INTO records (id, activity_id, start_time, end_time, value)
+      SELECT id, event_id, start_time, end_time, value FROM records_v6
+    ''');
+    await customStatement('DROP TABLE records_v6');
+    await customStatement('DROP TABLE events_v6');
+    await customStatement('CREATE INDEX records_end_time ON records(end_time)');
+    await customStatement(
+      'CREATE INDEX records_start_time ON records(start_time)',
+    );
+    await customStatement(
+      'CREATE INDEX records_activity_id ON records(activity_id)',
+    );
+    await customStatement(
+      'CREATE UNIQUE INDEX records_one_active_per_activity '
+      'ON records(activity_id) WHERE end_time IS NULL',
+    );
+  }
+
+  Future<void> _ensureRecordValueTriggers() async {
+    await customStatement('''
+      CREATE TRIGGER IF NOT EXISTS records_value_matches_activity_unit_insert
+      BEFORE INSERT ON records
+      BEGIN
+        SELECT CASE
+          WHEN (SELECT unit_id FROM activities WHERE id = NEW.activity_id)
+                 IS NULL AND NEW.value IS NOT NULL
+          THEN RAISE(ABORT, 'Unitless Activities cannot have Record values')
+          WHEN (SELECT unit_id FROM activities WHERE id = NEW.activity_id)
+                 IS NOT NULL
+               AND NEW.end_time IS NOT NULL
+               AND (NEW.value IS NULL OR NEW.value <= 0
+                    OR abs(NEW.value) > 1000000000000000.0)
+          THEN RAISE(ABORT, 'Unit-backed Activities require positive Record values')
+        END;
+      END
+    ''');
+    await customStatement('''
+      CREATE TRIGGER IF NOT EXISTS records_value_matches_activity_unit_update
+      BEFORE UPDATE OF activity_id, end_time, value ON records
+      BEGIN
+        SELECT CASE
+          WHEN (SELECT unit_id FROM activities WHERE id = NEW.activity_id)
+                 IS NULL AND NEW.value IS NOT NULL
+          THEN RAISE(ABORT, 'Unitless Activities cannot have Record values')
+          WHEN (SELECT unit_id FROM activities WHERE id = NEW.activity_id)
+                 IS NOT NULL
+               AND NEW.end_time IS NOT NULL
+               AND (NEW.value IS NULL OR NEW.value <= 0
+                    OR abs(NEW.value) > 1000000000000000.0)
+          THEN RAISE(ABORT, 'Unit-backed Activities require positive Record values')
+        END;
+      END
+    ''');
   }
 }

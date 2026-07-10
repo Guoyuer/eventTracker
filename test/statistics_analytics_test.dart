@@ -4,19 +4,19 @@ import 'package:flutter_test/flutter_test.dart';
 
 void main() {
   test('statistics summary counts records per activity in record order', () {
-    final eventsById = {
-      1: event(id: 1, name: 'Read'),
-      2: event(id: 2, name: 'Run'),
+    final activitiesById = {
+      1: activity(id: 1, name: 'Read'),
+      2: activity(id: 2, name: 'Run'),
     };
     final records = [
-      record(id: 1, eventId: 2, end: DateTime(2026, 1, 1, 8)),
-      record(id: 2, eventId: 1, end: DateTime(2026, 1, 1, 9)),
-      record(id: 3, eventId: 2, end: DateTime(2026, 1, 1, 10)),
+      record(id: 1, activityId: 2, end: DateTime(2026, 1, 1, 8)),
+      record(id: 2, activityId: 1, end: DateTime(2026, 1, 1, 9)),
+      record(id: 3, activityId: 2, end: DateTime(2026, 1, 1, 10)),
     ];
 
     final summary = buildStatisticsSummary(
       records: records,
-      eventsById: eventsById,
+      activitiesById: activitiesById,
     );
 
     expect(summary.totalCount, 3);
@@ -28,19 +28,19 @@ void main() {
   });
 
   test('statistics summary groups hourly counts by activity name', () {
-    final eventsById = {
-      1: event(id: 1, name: 'Read'),
-      2: event(id: 2, name: 'Run'),
+    final activitiesById = {
+      1: activity(id: 1, name: 'Read'),
+      2: activity(id: 2, name: 'Run'),
     };
     final records = [
-      record(id: 1, eventId: 1, end: DateTime(2026, 1, 1, 8, 30)),
-      record(id: 2, eventId: 1, end: DateTime(2026, 1, 1, 8, 45)),
-      record(id: 3, eventId: 2, end: DateTime(2026, 1, 1, 9)),
+      record(id: 1, activityId: 1, end: DateTime(2026, 1, 1, 8, 30)),
+      record(id: 2, activityId: 1, end: DateTime(2026, 1, 1, 8, 45)),
+      record(id: 3, activityId: 2, end: DateTime(2026, 1, 1, 9)),
     ];
 
     final summary = buildStatisticsSummary(
       records: records,
-      eventsById: eventsById,
+      activitiesById: activitiesById,
     );
 
     expect(summary.hourlyCountsByActivityName['Read']![8], 2);
@@ -53,8 +53,10 @@ void main() {
     () {
       expect(
         () => buildStatisticsSummary(
-          records: [record(id: 1, eventId: 404, end: DateTime(2026, 1, 1))],
-          eventsById: {},
+          records: [
+            record(id: 1, activityId: 404, end: DateTime(2026, 1, 1)),
+          ],
+          activitiesById: {},
         ),
         throwsStateError,
       );
@@ -71,14 +73,14 @@ void main() {
   });
 }
 
-StatisticsActivity event({required int id, required String name}) {
+StatisticsActivity activity({required int id, required String name}) {
   return StatisticsActivity(id: id, name: name);
 }
 
 ActivityRecord record({
   required int id,
-  required int eventId,
+  required int activityId,
   required DateTime end,
 }) {
-  return PlainRecord(id: id, activityId: eventId, endedAt: end);
+  return PlainRecord(id: id, activityId: activityId, endedAt: end);
 }
