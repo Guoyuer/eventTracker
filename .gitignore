@@ -24,7 +24,6 @@ doc/api/
 .VSCodeCounter/
 lib/persistence/database/*.g.dart
 
-android/
 web/
 ios/
 .idea/
