@@ -10,6 +10,10 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase([QueryExecutor? executor])
     : super(executor ?? defaultDatabaseExecutor());
 
+  /// 改动此值前必须先运行:
+  ///   dart run drift_dev schema dump lib/persistence/database/app_database.dart drift_schemas/
+  ///   dart run drift_dev schema generate drift_schemas/ test/generated_migrations/
+  /// 然后在 test/schema_verifier_test.dart 中为新版本加一条 migrateAndValidate 用例。
   @override
   int get schemaVersion => 6;
 
