@@ -69,29 +69,60 @@ final class ActiveTimedActivity extends TimedActivity {
   final DateTime startedAt;
 }
 
-class ActivityRecord {
+sealed class ActivityRecord {
   const ActivityRecord({
     required this.id,
-    required this.eventId,
-    required this.endTime,
-    this.startTime,
+    required this.activityId,
     this.value,
   });
 
   final int id;
-  final int eventId;
-  final DateTime? startTime;
-  final DateTime endTime;
+  final int activityId;
   final double? value;
+}
 
-  DateTime get requiredStartTime {
-    return startTime ??
-        (throw StateError('Timed Record $id has no start time'));
-  }
+sealed class CompletedActivityRecord extends ActivityRecord {
+  const CompletedActivityRecord({
+    required super.id,
+    required super.activityId,
+    required this.endedAt,
+    super.value,
+  });
 
-  double get requiredValue {
-    return value ?? (throw StateError('Record $id has no value'));
-  }
+  final DateTime endedAt;
+}
+
+final class PlainRecord extends CompletedActivityRecord {
+  const PlainRecord({
+    required super.id,
+    required super.activityId,
+    required super.endedAt,
+    super.value,
+  });
+}
+
+final class CompletedTimedRecord extends CompletedActivityRecord {
+  const CompletedTimedRecord({
+    required super.id,
+    required super.activityId,
+    required this.startedAt,
+    required super.endedAt,
+    super.value,
+  });
+
+  final DateTime startedAt;
+
+  Duration get duration => endedAt.difference(startedAt);
+}
+
+final class ActiveTimedRecord extends ActivityRecord {
+  const ActiveTimedRecord({
+    required super.id,
+    required super.activityId,
+    required this.startedAt,
+  }) : super(value: null);
+
+  final DateTime startedAt;
 }
 
 class StatisticsActivity {

@@ -13,7 +13,7 @@ Riverpod, the legacy Step schema and Firebase have been removed, and local CI
 gates exist. `c745245` additionally completed typed user-facing failures, a
 single in-process error boundary, the l10n generator, and localized shell and
 failure messages. The verified baseline is Flutter 3.44.5, clean
-`flutter analyze --fatal-infos`, 118 tests, a Windows release build, and a
+`flutter analyze --fatal-infos`, 122 tests, a Windows release build, and a
 computer-use startup inspection.
 
 The rest of the work is intentional debt elimination, not exploratory module
@@ -56,6 +56,8 @@ privacy and account decision; the error boundary is ready for it.
 ## Execution Order
 
 ### 1. Make the Domain Record Contract Total
+
+**Status: completed in the current worktree.**
 
 **Why first:** it removes the final nullable runtime-shaped model before the
 schema and naming migration expand the blast radius.

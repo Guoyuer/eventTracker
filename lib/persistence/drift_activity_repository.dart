@@ -4,6 +4,7 @@ import '../domain/activity_failure.dart';
 import '../domain/activity_models.dart';
 import '../domain/activity_repository.dart';
 import '../domain/input_validation.dart';
+import 'activity_record_mapper.dart';
 import 'activity_snapshot_store.dart';
 import 'database/app_database.dart';
 import 'record_lifecycle_store.dart';
@@ -36,16 +37,7 @@ class DriftActivityRepository implements ActivityRepository {
                     record.endTime.isNotNull(),
               ))
             .get();
-    return [
-      for (final record in records)
-        ActivityRecord(
-          id: record.id,
-          eventId: record.eventId,
-          startTime: record.startTime,
-          endTime: record.endTime!,
-          value: record.value,
-        ),
-    ];
+    return [for (final record in records) activityRecordFromRow(record)];
   }
 
   @override

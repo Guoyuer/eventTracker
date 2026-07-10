@@ -110,20 +110,54 @@ String activityRecordLabel({
   required Activity activity,
   required ActivityRecord record,
 }) {
-  if (activity is TimedActivity) {
-    final startTimeStr = DateFormat(
-      'MM-dd kk:mm',
-    ).format(record.requiredStartTime);
-    final endTimeStr = DateFormat('MM-dd kk:mm').format(record.endTime);
-    if (activity.unit != null) {
-      return '$startTimeStr ~ $endTimeStr, ${record.requiredValue.toInt()}${activity.requiredUnit}  ';
-    }
+  return switch ((activity, record)) {
+    (TimedActivity(), final CompletedTimedRecord timedRecord) =>
+      _timedRecordLabel(
+        timedRecord,
+        activity.unit ?? '',
+        hasUnit: activity.unit != null,
+      ),
+    (PlainActivity(), final PlainRecord plainRecord) => _plainRecordLabel(
+      plainRecord,
+      activity.unit ?? '',
+      hasUnit: activity.unit != null,
+    ),
+    (_, ActiveTimedRecord()) => throw StateError(
+      'Active Records do not have detail labels',
+    ),
+    _ => throw StateError('Activity and Record shapes do not match'),
+  };
+}
+
+String _timedRecordLabel(
+  CompletedTimedRecord record,
+  String unit, {
+  required bool hasUnit,
+}) {
+  final startTimeStr = DateFormat('MM-dd kk:mm').format(record.startedAt);
+  final endTimeStr = DateFormat('MM-dd kk:mm').format(record.endedAt);
+  if (!hasUnit) {
     return '$startTimeStr ~ $endTimeStr  ';
   }
-
-  final endTimeStr = DateFormat('kk:mm').format(record.endTime);
-  if (activity.unit != null) {
-    return '$endTimeStr, ${record.requiredValue.toInt()}${activity.requiredUnit}  ';
+  final value = record.value;
+  if (value == null) {
+    throw StateError('Unit-backed Record ${record.id} has no value');
   }
-  return '$endTimeStr  ';
+  return '$startTimeStr ~ $endTimeStr, ${value.toInt()}$unit  ';
+}
+
+String _plainRecordLabel(
+  PlainRecord record,
+  String unit, {
+  required bool hasUnit,
+}) {
+  final endTimeStr = DateFormat('kk:mm').format(record.endedAt);
+  if (!hasUnit) {
+    return '$endTimeStr  ';
+  }
+  final value = record.value;
+  if (value == null) {
+    throw StateError('Unit-backed Record ${record.id} has no value');
+  }
+  return '$endTimeStr, ${value.toInt()}$unit  ';
 }

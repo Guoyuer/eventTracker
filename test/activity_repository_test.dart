@@ -202,7 +202,7 @@ void main() {
     final records = await repository.getActivityRecords(firstActivityId);
 
     expect(records, hasLength(1));
-    expect(records.single.eventId, firstActivityId);
+    expect(records.single.activityId, firstActivityId);
   });
 
   test('repository updates activity description', () async {
@@ -272,8 +272,9 @@ void main() {
       final records = await repository.getActivityRecords(activityId);
 
       expect(activity.totalDuration, const Duration(minutes: 25));
-      expect(records.single.startTime, start);
-      expect(records.single.endTime, stoppedAt);
+      final record = records.single as CompletedTimedRecord;
+      expect(record.startedAt, start);
+      expect(record.endedAt, stoppedAt);
     },
   );
 

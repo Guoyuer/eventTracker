@@ -44,14 +44,19 @@ ActivityHeatmapSeries buildActivityHeatmapSeries({
   required ActivityDetailMetric metric,
   required DateTime now,
 }) {
+  final completedRecords = records.whereType<CompletedActivityRecord>().toList(
+    growable: false,
+  );
   final data = <DateTime, double>{};
   final range = CalendarDateRange(
-    firstDay: records.isEmpty ? getDate(now) : getDate(records.first.endTime),
+    firstDay: completedRecords.isEmpty
+        ? getDate(now)
+        : getDate(completedRecords.first.endedAt),
     lastDay: getDate(now),
   );
 
-  for (final record in records) {
-    final date = getDate(record.endTime);
+  for (final record in completedRecords) {
+    final date = getDate(record.endedAt);
     data[date] = (data[date] ?? 0) + _dailyRecordValue(record, metric);
   }
 
@@ -72,8 +77,8 @@ ActivityTimeSlotSeries buildActivityTimeSlotSeries({
   }
 
   final values = List<double>.filled(24, 0);
-  for (final record in records) {
-    final end = record.endTime;
+  for (final record in records.whereType<CompletedActivityRecord>()) {
+    final end = record.endedAt;
     values[end.hour] += _timeSlotRecordValue(record, metric);
   }
 
@@ -88,21 +93,23 @@ List<ActivityRecord> recordsInMonth(
   DateTime month,
 ) {
   return records
+      .whereType<CompletedActivityRecord>()
       .where(
         (record) =>
-            record.endTime.month == month.month &&
-            record.endTime.year == month.year,
+            record.endedAt.month == month.month &&
+            record.endedAt.year == month.year,
       )
       .toList();
 }
 
 List<ActivityRecord> recordsOnDay(List<ActivityRecord> records, DateTime day) {
   return records
+      .whereType<CompletedActivityRecord>()
       .where(
         (record) =>
-            record.endTime.month == day.month &&
-            record.endTime.year == day.year &&
-            record.endTime.day == day.day,
+            record.endedAt.month == day.month &&
+            record.endedAt.year == day.year &&
+            record.endedAt.day == day.day,
       )
       .toList();
 }
@@ -113,22 +120,29 @@ List<double> combineAdjacentHourSlots(List<double> hourlyValues) {
   ];
 }
 
-double _dailyRecordValue(ActivityRecord record, ActivityDetailMetric metric) {
+double _dailyRecordValue(
+  CompletedActivityRecord record,
+  ActivityDetailMetric metric,
+) {
   switch (metric) {
     case ActivityDetailMetric.duration:
-      return record.endTime
-          .difference(record.requiredStartTime)
-          .inMinutes
-          .toDouble();
+      if (record case CompletedTimedRecord(:final duration)) {
+        return duration.inMinutes.toDouble();
+      }
+      throw StateError('Duration metrics require completed timed Records');
     case ActivityDetailMetric.count:
       return 1;
     case ActivityDetailMetric.value:
-      return record.requiredValue;
+      final value = record.value;
+      if (value == null) {
+        throw StateError('Value metrics require Record values');
+      }
+      return value;
   }
 }
 
 double _timeSlotRecordValue(
-  ActivityRecord record,
+  CompletedActivityRecord record,
   ActivityDetailMetric metric,
 ) {
   switch (metric) {
@@ -137,7 +151,11 @@ double _timeSlotRecordValue(
     case ActivityDetailMetric.count:
       return 1;
     case ActivityDetailMetric.value:
-      return record.requiredValue;
+      final value = record.value;
+      if (value == null) {
+        throw StateError('Value metrics require Record values');
+      }
+      return value;
   }
 }
 
@@ -146,13 +164,10 @@ ActivityTimeSlotSeries _buildDurationTimeSlotSeries(
 ) {
   final seconds = List<double>.filled(24, 0);
 
-  for (final record in records) {
+  for (final record in records.whereType<CompletedTimedRecord>()) {
     _addDurationByHour(
       seconds,
-      DateInterval(
-        start: record.requiredStartTime,
-        endExclusive: record.endTime,
-      ),
+      DateInterval(start: record.startedAt, endExclusive: record.endedAt),
     );
   }
 

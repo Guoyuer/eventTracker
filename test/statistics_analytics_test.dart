@@ -80,5 +80,5 @@ ActivityRecord record({
   required int eventId,
   required DateTime end,
 }) {
-  return ActivityRecord(id: id, eventId: eventId, endTime: end);
+  return PlainRecord(id: id, activityId: eventId, endedAt: end);
 }

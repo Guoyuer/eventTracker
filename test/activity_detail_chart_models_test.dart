@@ -54,17 +54,17 @@ void main() {
       occurrenceCount: 0,
       totalValue: 0,
     );
-    final timedRecord = ActivityRecord(
+    final timedRecord = CompletedTimedRecord(
       id: 1,
-      eventId: 1,
-      startTime: DateTime(2026, 1, 1, 8),
-      endTime: DateTime(2026, 1, 1, 8, 30),
+      activityId: 1,
+      startedAt: DateTime(2026, 1, 1, 8),
+      endedAt: DateTime(2026, 1, 1, 8, 30),
       value: 4,
     );
-    final plainRecord = ActivityRecord(
+    final plainRecord = PlainRecord(
       id: 2,
-      eventId: 2,
-      endTime: DateTime(2026, 1, 1, 9),
+      activityId: 2,
+      endedAt: DateTime(2026, 1, 1, 9),
       value: 12,
     );
 
@@ -80,5 +80,5 @@ void main() {
 }
 
 ActivityRecord record({required int id, required DateTime end, double? value}) {
-  return ActivityRecord(id: id, eventId: 1, endTime: end, value: value);
+  return PlainRecord(id: id, activityId: 1, endedAt: end, value: value);
 }

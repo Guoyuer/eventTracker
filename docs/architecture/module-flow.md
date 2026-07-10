@@ -171,14 +171,14 @@ flowchart LR
   Database["schema v6"] --> Shape["FK + CHECK + one-active index"]
   Snapshot["ActivitySnapshotStore"] --> History["ActivityRecordHistory"]
   ParsedImports["parsed import directives"] --> Boundaries["durable layer boundaries"]
-  Next["Next: sealed ActivityRecord and v7 terminology migration"]
+  RecordTypes["sealed ActivityRecord shapes"] --> Next["Next: v7 terminology migration"]
 ```
 
 Records are the sole persisted fact for Activity state and totals. The first four
 nodes are already enforced. Next work is tracked in
-`docs/plans/2026-07-10-unified-quality-execution.md`: make record shapes
-unrepresentable, localize the UI without crossing layer boundaries, then migrate
-the persistence terminology from Events to Activities. Product behavior stays in
-unit, persistence, migration, and Widget tests. The architecture suite checks
-only dependency direction from parsed Dart syntax, so internal renames and
-implementation changes do not create false regressions.
+`docs/plans/2026-07-10-unified-quality-execution.md`: finish UI localization
+without crossing layer boundaries, then migrate persistence terminology from
+Events to Activities. Product behavior stays in unit, persistence, migration,
+and Widget tests. The architecture suite checks only dependency direction from
+parsed Dart syntax, so internal renames and implementation changes do not create
+false regressions.

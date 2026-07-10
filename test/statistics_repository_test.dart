@@ -1,4 +1,5 @@
 import 'package:event_tracker/domain/date_range.dart';
+import 'package:event_tracker/domain/activity_models.dart';
 import 'package:event_tracker/domain/statistics_repository.dart';
 import 'package:event_tracker/persistence/database/app_database.dart';
 import 'package:event_tracker/persistence/drift_statistics_repository.dart';
@@ -41,7 +42,7 @@ void main() {
       ),
     );
 
-    expect(data.records.map((record) => record.eventId), [readId, runId]);
+    expect(data.records.map((record) => record.activityId), [readId, runId]);
     expect(data.activitiesById[readId]!.name, 'Read');
     expect(data.activitiesById[runId]!.name, 'Run');
   });
@@ -60,7 +61,10 @@ void main() {
     );
 
     expect(data.records, hasLength(1));
-    expect(data.records.single.endTime, DateTime(2026, 1, 1, 8));
+    expect(
+      (data.records.single as CompletedActivityRecord).endedAt,
+      DateTime(2026, 1, 1, 8),
+    );
   });
 
   test('repository includes full end day and excludes next midnight', () async {
@@ -81,10 +85,10 @@ void main() {
       ),
     );
 
-    expect(data.records.map((record) => record.endTime), [
-      DateTime(2026, 1, 1),
-      DateTime(2026, 1, 31, 23, 59, 59),
-    ]);
+    expect(
+      data.records.map((record) => (record as CompletedActivityRecord).endedAt),
+      [DateTime(2026, 1, 1), DateTime(2026, 1, 31, 23, 59, 59)],
+    );
   });
 
   test('repository excludes active Records from Statistics', () async {

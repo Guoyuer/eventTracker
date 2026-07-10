@@ -10,7 +10,9 @@
 - **Activity Snapshot**: An immutable Activity read model. Plain, inactive Timed, and active Timed states are separate types; state and totals are derived directly from Records.
 - **Calendar Date Range**: A user-selected inclusive set of whole local calendar days.
 - **Date Interval**: A timestamp interval with explicit half-open semantics: start included, end excluded.
-- **Record**: One occurrence of an activity. A record can have an `endTime`, optional `startTime`, and optional numeric `value`.
+- **Record**: One occurrence of an activity represented as a sealed domain type:
+  `PlainRecord` has an end time, `CompletedTimedRecord` has start and end times,
+  and `ActiveTimedRecord` has only a start time and no value.
 - **Timed Activity**: An activity where duration matters. It creates an active record at start and completes that record at stop.
 - **Plain Activity**: An activity where only occurrence time matters. It creates a completed record immediately.
 - **Unit**: A user-managed entity with a stable database ID and canonical label for numeric values, such as kilometers, pages, or questions. Activities reference Units by ID.

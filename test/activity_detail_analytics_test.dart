@@ -157,11 +157,14 @@ ActivityRecord record({
   DateTime? end,
   double? value,
 }) {
-  return ActivityRecord(
+  if (start == null) {
+    return PlainRecord(id: id, activityId: 1, endedAt: end!, value: value);
+  }
+  return CompletedTimedRecord(
     id: id,
-    eventId: 1,
-    startTime: start,
-    endTime: end!,
+    activityId: 1,
+    startedAt: start,
+    endedAt: end!,
     value: value,
   );
 }

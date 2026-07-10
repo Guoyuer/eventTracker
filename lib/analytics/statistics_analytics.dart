@@ -30,15 +30,18 @@ StatisticsSummary buildStatisticsSummary({
   final hourlyCountsByActivityName = LinkedHashMap<String, List<double>>();
 
   for (final record in records) {
+    if (record is! CompletedActivityRecord) {
+      continue;
+    }
     final activity = _activityForRecord(record, eventsById);
-    activityCountsById[record.eventId] =
-        (activityCountsById[record.eventId] ?? 0) + 1;
+    activityCountsById[record.activityId] =
+        (activityCountsById[record.activityId] ?? 0) + 1;
 
     final hourlyCounts = hourlyCountsByActivityName.putIfAbsent(
       activity.name,
       () => List<double>.filled(24, 0),
     );
-    hourlyCounts[record.endTime.hour] += 1;
+    hourlyCounts[record.endedAt.hour] += 1;
   }
 
   return StatisticsSummary(
@@ -60,10 +63,10 @@ List<double> combineStatisticsAdjacentHourSlots(List<double> hourlyValues) {
 }
 
 StatisticsActivity _activityForRecord(
-  ActivityRecord record,
+  CompletedActivityRecord record,
   Map<int, StatisticsActivity> eventsById,
 ) {
-  final activity = _activityForId(record.eventId, eventsById);
+  final activity = _activityForId(record.activityId, eventsById);
   return activity;
 }
 
