@@ -1,5 +1,6 @@
 import 'package:drift/drift.dart';
 
+import '../domain/input_validation.dart';
 import 'database/app_database.dart';
 
 class RecordLifecycleStore {
@@ -13,6 +14,7 @@ class RecordLifecycleStore {
     double? value,
   }) {
     return _db.transaction(() async {
+      final validatedValue = validateOptionalFiniteValue(value);
       final activity = await _activityById(activityId);
       if (activity.careTime) {
         throw StateError('Timed Activity $activityId cannot add Plain Records');
@@ -23,7 +25,7 @@ class RecordLifecycleStore {
             RecordsCompanion(
               eventId: Value(activityId),
               endTime: Value(endTime),
-              value: Value(value),
+              value: Value(validatedValue),
             ),
           );
     });
@@ -59,6 +61,7 @@ class RecordLifecycleStore {
     double? value,
   }) {
     return _db.transaction(() async {
+      final validatedValue = validateOptionalFiniteValue(value);
       final activeRecord = await _getActiveTimedRecord(activityId);
       final activeRecordId = activeRecord.id;
 
@@ -67,7 +70,10 @@ class RecordLifecycleStore {
       await (_db.update(
         _db.records,
       )..where((record) => record.id.equals(activeRecordId))).write(
-        RecordsCompanion(endTime: Value(stoppedAt), value: Value(value)),
+        RecordsCompanion(
+          endTime: Value(stoppedAt),
+          value: Value(validatedValue),
+        ),
       );
     });
   }

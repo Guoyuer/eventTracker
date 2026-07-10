@@ -46,6 +46,7 @@ void main() {
 
       expect(records, hasLength(1));
       expect(records.single.eventId, 1);
+      expect((await db.select(db.events).getSingle()).name, 'Read');
 
       final legacyArtifacts = await db
           .customSelect(
@@ -91,6 +92,20 @@ void main() {
     addTearDown(db.close);
 
     await expectLater(db.select(db.events).get(), throwsA(anything));
+  });
+
+  test('version 5 migration normalizes existing names and units', () async {
+    final dbPath = p.join(tempDir.path, 'version4.sqlite');
+    await _createVersion4DatabaseWithUnnormalizedNames(dbPath);
+
+    final db = AppDatabase(SqfliteQueryExecutor(path: dbPath));
+    addTearDown(db.close);
+
+    final activity = await db.select(db.events).getSingle();
+    final unit = await db.select(db.units).getSingle();
+    expect(activity.name, 'Read');
+    expect(activity.unit, 'pages');
+    expect(unit.name, 'pages');
   });
 }
 
@@ -147,7 +162,7 @@ Future<void> _createVersion2DatabaseWithLegacyStepData(String dbPath) async {
 
     await rawDb.insert('events', {
       'id': 1,
-      'name': 'Read',
+      'name': '  Read  ',
       'care_time': 0,
       'last_record_id': 1,
       'sum_val': 0,
@@ -218,6 +233,51 @@ Future<void> _createVersion3DatabaseWithMalformedHistory(String dbPath) async {
       'end_time': _toDriftTimestamp(DateTime(2026, 1, 1, 9)),
     });
     await rawDb.execute('PRAGMA user_version = 3;');
+  } finally {
+    await rawDb.close();
+  }
+}
+
+Future<void> _createVersion4DatabaseWithUnnormalizedNames(String dbPath) async {
+  final rawDb = await databaseFactoryFfi.openDatabase(dbPath);
+  try {
+    await rawDb.execute('''
+      CREATE TABLE events (
+        id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+        name TEXT NOT NULL UNIQUE,
+        description TEXT NULL,
+        care_time INTEGER NOT NULL,
+        unit TEXT NULL
+      );
+    ''');
+    await rawDb.execute('''
+      CREATE TABLE records (
+        id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+        event_id INTEGER NOT NULL REFERENCES events(id) ON DELETE CASCADE,
+        start_time INTEGER NULL,
+        end_time INTEGER NULL,
+        value REAL NULL
+      );
+    ''');
+    await rawDb.execute('''
+      CREATE TABLE units (
+        id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+        name TEXT NOT NULL UNIQUE
+      );
+    ''');
+    await rawDb.insert('events', {
+      'id': 1,
+      'name': '  Read  ',
+      'care_time': 0,
+      'unit': '  pages  ',
+    });
+    await rawDb.insert('units', {'id': 1, 'name': '  pages  '});
+    await rawDb.insert('records', {
+      'id': 1,
+      'event_id': 1,
+      'end_time': _toDriftTimestamp(DateTime(2026, 1, 1, 8)),
+    });
+    await rawDb.execute('PRAGMA user_version = 4;');
   } finally {
     await rawDb.close();
   }

@@ -73,8 +73,24 @@ void main() {
     await repository.createActivity(name: 'Read', careTime: false);
 
     expect(
-      repository.createActivity(name: 'Read', careTime: true),
+      repository.createActivity(name: 'READ', careTime: true),
       throwsA(anything),
+    );
+  });
+
+  test('repository normalizes activity names and optional units', () async {
+    final activityId = await repository.createActivity(
+      name: '  Read  ',
+      careTime: false,
+      unit: '   ',
+    );
+
+    final activity = await repository.getActivity(activityId);
+    expect(activity.name, 'Read');
+    expect(activity.unit, isNull);
+    expect(
+      repository.createActivity(name: '   ', careTime: false),
+      throwsArgumentError,
     );
   });
 

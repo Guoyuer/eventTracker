@@ -135,11 +135,12 @@ Status: in progress
 - Added `ActivityRecordHistory` as the single rule for Plain and Timed Record shapes, occurrence counts, duration, values, and active state.
 - Made `ActivitySnapshotStore` read Events and all Records in one join, validate complete histories, and compute totals without cached Event fields.
 - Added schema v4 migration coverage proving old aggregate columns are removed and malformed histories fail migration deterministically.
+- Added schema v5 name/value constraints: Activity and Unit names are canonical, non-blank, and case-insensitively unique; optional units normalize blank text to null; Record values must be finite. Repository and migration tests cover normalization and rejection paths.
 - Changed Activity detail navigation to pass only an Activity ID and reload a fresh Activity Snapshot, removing the stale list-snapshot contract.
 - Fixed Statistics end-day handling: queries now include the full selected last day, exclude next-day midnight with a half-open interval, ignore active Records, and load Records plus Activities in one transaction.
 - Corrected the default Statistics window from eight displayed dates to seven inclusive calendar days.
 - Replaced the 790-line historical source-shape regression suite with focused analyzer-AST dependency rules for Domain, Application, Analytics, State, UI, and database bootstrap boundaries. Existing behavior, migration, persistence, and Widget tests remain the owners of product contracts.
-- Define remaining invariants for units and numeric values.
+- Decide separately whether deleting a Unit should clear existing Activity labels before introducing a Unit foreign key.
 
 ## Phase 4: UI Composition
 

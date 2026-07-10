@@ -1,3 +1,5 @@
+import 'input_validation.dart';
+
 class ActivityHistoryRecord {
   const ActivityHistoryRecord({
     required this.id,
@@ -31,6 +33,7 @@ class ActivityRecordHistory {
     DateTime? activeStartedAt;
 
     for (final record in records) {
+      validateOptionalFiniteValue(record.value);
       final startedAt = record.startTime;
       final endedAt = record.endTime;
 

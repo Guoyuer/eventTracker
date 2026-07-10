@@ -245,6 +245,40 @@ void main() {
     },
   );
 
+  test('record lifecycle rejects non-finite numeric values', () async {
+    final plainId = await insertTestActivity(
+      db,
+      name: 'Questions',
+      careTime: false,
+    );
+    final timedId = await insertTestActivity(
+      db,
+      name: 'Running',
+      careTime: true,
+    );
+    await lifecycle.startTimedRecord(timedId, DateTime(2026, 1, 1, 8));
+
+    await expectLater(
+      lifecycle.addPlainRecord(
+        plainId,
+        DateTime(2026, 1, 1, 8),
+        value: double.nan,
+      ),
+      throwsArgumentError,
+    );
+    await expectLater(
+      lifecycle.stopActiveTimedRecord(
+        timedId,
+        DateTime(2026, 1, 1, 9),
+        value: double.infinity,
+      ),
+      throwsArgumentError,
+    );
+
+    expect(await getCompletedTestRecordsForActivity(db, plainId), isEmpty);
+    expect((await db.select(db.records).get()).single.endTime, isNull);
+  });
+
   test('default database executor uses explicit paths on desktop only', () {
     expect(
       usesExplicitDatabasePathOnPlatform(TargetPlatform.windows, isWeb: false),

@@ -1,6 +1,7 @@
 import 'package:drift/drift.dart';
 
 import '../domain/activity_models.dart';
+import '../domain/input_validation.dart';
 import '../domain/unit_repository.dart';
 import 'database/app_database.dart';
 
@@ -18,14 +19,18 @@ class DriftUnitRepository implements UnitRepository {
   }
 
   @override
-  Future<int> addUnit(String name) {
-    return _db.into(_db.units).insert(UnitsCompanion(name: Value(name)));
+  Future<int> addUnit(String name) async {
+    final normalizedName = normalizeRequiredName(name, field: 'unitName');
+    return _db
+        .into(_db.units)
+        .insert(UnitsCompanion(name: Value(normalizedName)));
   }
 
   @override
-  Future<void> deleteUnit(String name) {
-    return (_db.delete(
+  Future<void> deleteUnit(String name) async {
+    final normalizedName = normalizeRequiredName(name, field: 'unitName');
+    await (_db.delete(
       _db.units,
-    )..where((unit) => unit.name.equals(name))).go();
+    )..where((unit) => unit.name.equals(normalizedName))).go();
   }
 }

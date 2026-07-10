@@ -47,6 +47,13 @@ void main() {
   test('repository keeps database uniqueness for unit names', () async {
     await repository.addUnit('pages');
 
-    expect(repository.addUnit('pages'), throwsA(anything));
+    expect(repository.addUnit('PAGES'), throwsA(anything));
+  });
+
+  test('repository normalizes names and rejects blank units', () async {
+    await repository.addUnit('  pages  ');
+
+    expect((await repository.getUnits()).single.name, 'pages');
+    expect(repository.addUnit('   '), throwsArgumentError);
   });
 }

@@ -11,7 +11,7 @@ class AppDatabase extends _$AppDatabase {
     : super(executor ?? defaultDatabaseExecutor());
 
   @override
-  int get schemaVersion => 4;
+  int get schemaVersion => 5;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -27,7 +27,10 @@ class AppDatabase extends _$AppDatabase {
         await _migrateToVersion3();
       }
       if (from < 4) {
+        await _prepareDataForVersion5();
         await _migrateToVersion4(m);
+      } else if (from < 5) {
+        await _migrateToVersion5(m);
       }
     },
   );
@@ -92,5 +95,61 @@ class AppDatabase extends _$AppDatabase {
       'CREATE UNIQUE INDEX IF NOT EXISTS records_one_active_per_event '
       'ON records(event_id) WHERE end_time IS NULL',
     );
+  }
+
+  Future<void> _migrateToVersion5(Migrator migrator) async {
+    await _prepareDataForVersion5();
+    await migrator.alterTable(TableMigration(events));
+    await migrator.alterTable(TableMigration(units));
+    await migrator.alterTable(TableMigration(records));
+  }
+
+  Future<void> _prepareDataForVersion5() async {
+    await _validateNamesForVersion5('events');
+    await _validateNamesForVersion5('units');
+
+    final invalidValue = await customSelect('''
+      SELECT id FROM records
+      WHERE value IS NOT NULL
+        AND abs(value) > 1.7976931348623157e308
+      LIMIT 1
+    ''').getSingleOrNull();
+    if (invalidValue != null) {
+      throw StateError(
+        'Cannot migrate non-finite Record value '
+        '${invalidValue.read<int>('id')}',
+      );
+    }
+
+    await customStatement('UPDATE events SET name = trim(name)');
+    await customStatement(
+      "UPDATE events SET unit = NULLIF(trim(unit), '') WHERE unit IS NOT NULL",
+    );
+    await customStatement('UPDATE units SET name = trim(name)');
+  }
+
+  Future<void> _validateNamesForVersion5(String table) async {
+    final blankName = await customSelect(
+      'SELECT id FROM $table WHERE length(trim(name)) = 0 LIMIT 1',
+    ).getSingleOrNull();
+    if (blankName != null) {
+      throw StateError(
+        'Cannot migrate blank $table name ${blankName.read<int>('id')}',
+      );
+    }
+
+    final duplicateName = await customSelect('''
+      SELECT lower(trim(name)) AS normalized_name
+      FROM $table
+      GROUP BY lower(trim(name))
+      HAVING COUNT(*) > 1
+      LIMIT 1
+    ''').getSingleOrNull();
+    if (duplicateName != null) {
+      throw StateError(
+        'Cannot migrate duplicate $table name '
+        '${duplicateName.read<String>('normalized_name')}',
+      );
+    }
   }
 }

@@ -69,6 +69,7 @@ Current status: completed.
 - `RecordLifecycleStore` rejects missing Activities, wrong-type operations, duplicate starts, and stops before start.
 - The Records table enforces Event foreign keys with cascade deletion, valid timestamp/value shapes, and one active Record per Activity.
 - Migration validates existing histories before rebuilding tables and fails instead of guessing how to repair corrupt data.
+- Schema v5 and domain input validation canonicalize Activity/Unit names and reject non-finite Record values at both application and database boundaries.
 - `ActivityAggregateStore`, cached-total repair, and their duplicate incremental rules were deleted.
 
 Future rule:
@@ -233,7 +234,7 @@ Rule:
 
 Recommended order from here:
 
-1. Define remaining Unit and numeric-value invariants without adding summary caches.
+1. Make an explicit product decision for Unit deletion semantics before adding any Activity-to-Unit foreign key.
 2. Audit platform support after Android SDK installation or CI coverage is available.
 
 ## Definition of Done for Each Slice

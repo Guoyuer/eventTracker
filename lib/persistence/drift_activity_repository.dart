@@ -2,6 +2,7 @@ import 'package:drift/drift.dart';
 
 import '../domain/activity_models.dart';
 import '../domain/activity_repository.dart';
+import '../domain/input_validation.dart';
 import 'activity_snapshot_store.dart';
 import 'database/app_database.dart';
 import 'record_lifecycle_store.dart';
@@ -52,14 +53,16 @@ class DriftActivityRepository implements ActivityRepository {
     required bool careTime,
     String? unit,
     String? description,
-  }) {
+  }) async {
+    final normalizedName = normalizeRequiredName(name, field: 'activityName');
+    final normalizedUnit = normalizeOptionalName(unit, field: 'unitName');
     return _db
         .into(_db.events)
         .insert(
           EventsCompanion(
-            name: Value(name),
+            name: Value(normalizedName),
             careTime: Value(careTime),
-            unit: Value(unit),
+            unit: Value(normalizedUnit),
             description: Value(description),
           ),
         );
