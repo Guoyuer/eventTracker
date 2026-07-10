@@ -2,9 +2,9 @@
 
 ## Status
 
-Active and scope-frozen on 2026-07-10. This is the sole execution contract for
-the repository-quality goal. Historical plans record decisions and evidence;
-they do not create new work.
+Complete on 2026-07-10. This is the final execution record for the
+repository-quality goal. Historical plans record decisions and evidence; they
+do not create new work.
 
 ## Scope Freeze
 
