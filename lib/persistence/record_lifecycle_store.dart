@@ -17,7 +17,7 @@ class RecordLifecycleStore {
       final activity = await _activityById(activityId);
       final validatedValue = validateRecordValue(
         value,
-        hasUnit: activity.unit != null,
+        hasUnit: activity.unitId != null,
       );
       if (activity.careTime) {
         throw StateError('Timed Activity $activityId cannot add Plain Records');
@@ -68,7 +68,7 @@ class RecordLifecycleStore {
       final activity = await _activityById(activityId);
       final validatedValue = validateRecordValue(
         value,
-        hasUnit: activity.unit != null,
+        hasUnit: activity.unitId != null,
       );
       final activeRecordId = activeRecord.id;
 

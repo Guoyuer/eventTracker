@@ -13,7 +13,7 @@
 - **Record**: One occurrence of an activity. A record can have an `endTime`, optional `startTime`, and optional numeric `value`.
 - **Timed Activity**: An activity where duration matters. It creates an active record at start and completes that record at stop.
 - **Plain Activity**: An activity where only occurrence time matters. It creates a completed record immediately.
-- **Unit**: A user-managed label for numeric values, such as kilometers, pages, or questions.
+- **Unit**: A user-managed entity with a stable database ID and canonical label for numeric values, such as kilometers, pages, or questions. Activities reference Units by ID.
 - **Name Invariant**: Activity and Unit names are trimmed, non-blank, and unique without regard to ASCII letter case. Optional Activity units are trimmed and blank values become absent.
 - **Value Invariant**: Activities without a Unit cannot store values. Activities with a Unit require a positive finite value for every completed Record, and accumulated totals must remain finite.
 - **Unit Reference Invariant**: An Activity may only use an existing Unit, and a Unit cannot be deleted while an Activity uses it.

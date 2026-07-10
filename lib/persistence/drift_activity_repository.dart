@@ -56,11 +56,12 @@ class DriftActivityRepository implements ActivityRepository {
   }) async {
     final normalizedName = normalizeRequiredName(name, field: 'activityName');
     final normalizedUnit = normalizeOptionalName(unit, field: 'unitName');
+    Unit? selectedUnit;
     if (normalizedUnit != null) {
-      final unitExists = await (_db.select(
+      selectedUnit = await (_db.select(
         _db.units,
       )..where((row) => row.name.equals(normalizedUnit))).getSingleOrNull();
-      if (unitExists == null) {
+      if (selectedUnit == null) {
         throw StateError('Unit $normalizedUnit does not exist');
       }
     }
@@ -70,7 +71,7 @@ class DriftActivityRepository implements ActivityRepository {
           EventsCompanion(
             name: Value(normalizedName),
             careTime: Value(careTime),
-            unit: Value(normalizedUnit),
+            unitId: Value(selectedUnit?.id),
             description: Value(description),
           ),
         );

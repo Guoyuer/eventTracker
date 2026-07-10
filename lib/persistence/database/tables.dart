@@ -1,5 +1,14 @@
 import 'package:drift/drift.dart';
 
+class Units extends Table {
+  IntColumn get id => integer().autoIncrement()();
+
+  TextColumn get name => text().customConstraint(
+    'NOT NULL COLLATE NOCASE UNIQUE '
+    'CHECK (name = trim(name) AND length(name) > 0)',
+  )();
+}
+
 class Events extends Table {
   IntColumn get id => integer().autoIncrement()();
 
@@ -12,12 +21,11 @@ class Events extends Table {
 
   BoolColumn get careTime => boolean()();
 
-  TextColumn get unit => text().nullable()();
-
-  @override
-  List<String> get customConstraints => [
-    'CHECK (unit IS NULL OR (unit = trim(unit) AND length(unit) > 0))',
-  ];
+  IntColumn get unitId => integer().nullable().references(
+    Units,
+    #id,
+    onDelete: KeyAction.restrict,
+  )();
 }
 
 class Records extends Table {
@@ -42,13 +50,4 @@ class Records extends Table {
         ')',
     'CHECK (value IS NULL OR abs(value) <= 1.7976931348623157e308)',
   ];
-}
-
-class Units extends Table {
-  IntColumn get id => integer().autoIncrement()();
-
-  TextColumn get name => text().customConstraint(
-    'NOT NULL COLLATE NOCASE UNIQUE '
-    'CHECK (name = trim(name) AND length(name) > 0)',
-  )();
 }

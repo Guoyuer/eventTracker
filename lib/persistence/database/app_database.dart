@@ -11,7 +11,7 @@ class AppDatabase extends _$AppDatabase {
     : super(executor ?? defaultDatabaseExecutor());
 
   @override
-  int get schemaVersion => 5;
+  int get schemaVersion => 6;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -31,6 +31,9 @@ class AppDatabase extends _$AppDatabase {
         await _migrateToVersion4(m);
       } else if (from < 5) {
         await _migrateToVersion5(m);
+      }
+      if (from < 6) {
+        await _migrateToVersion6();
       }
     },
   );
@@ -80,7 +83,6 @@ class AppDatabase extends _$AppDatabase {
       );
     }
 
-    await migrator.alterTable(TableMigration(events));
     await migrator.alterTable(TableMigration(records));
     await customStatement(
       'CREATE INDEX IF NOT EXISTS records_end_time ON records(end_time)',
@@ -99,7 +101,6 @@ class AppDatabase extends _$AppDatabase {
 
   Future<void> _migrateToVersion5(Migrator migrator) async {
     await _prepareDataForVersion5();
-    await migrator.alterTable(TableMigration(events));
     await migrator.alterTable(TableMigration(units));
     await migrator.alterTable(TableMigration(records));
   }
@@ -151,5 +152,71 @@ class AppDatabase extends _$AppDatabase {
         '${duplicateName.read<String>('normalized_name')}',
       );
     }
+  }
+
+  Future<void> _migrateToVersion6() async {
+    final danglingUnit = await customSelect('''
+      SELECT events.id FROM events
+      LEFT JOIN units ON units.name = events.unit
+      WHERE events.unit IS NOT NULL AND units.id IS NULL
+      LIMIT 1
+    ''').getSingleOrNull();
+    if (danglingUnit != null) {
+      throw StateError(
+        'Cannot migrate Activity ${danglingUnit.read<int>('id')} '
+        'with an unknown Unit',
+      );
+    }
+
+    await customStatement('ALTER TABLE events RENAME TO events_legacy');
+    await customStatement('ALTER TABLE records RENAME TO records_legacy');
+    await customStatement('''
+      CREATE TABLE events (
+        id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+        name TEXT NOT NULL COLLATE NOCASE UNIQUE
+          CHECK (name = trim(name) AND length(name) > 0),
+        description TEXT NULL,
+        care_time INTEGER NOT NULL,
+        unit_id INTEGER NULL REFERENCES units(id) ON DELETE RESTRICT
+      )
+    ''');
+    await customStatement('''
+      INSERT INTO events (id, name, description, care_time, unit_id)
+      SELECT events_legacy.id, events_legacy.name, events_legacy.description,
+        events_legacy.care_time,
+        (SELECT units.id FROM units WHERE units.name = events_legacy.unit)
+      FROM events_legacy
+    ''');
+    await customStatement('''
+      CREATE TABLE records (
+        id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+        event_id INTEGER NOT NULL REFERENCES events(id) ON DELETE CASCADE,
+        start_time INTEGER NULL,
+        end_time INTEGER NULL,
+        value REAL NULL,
+        CHECK (
+          (start_time IS NULL AND end_time IS NOT NULL) OR
+          (start_time IS NOT NULL AND end_time IS NULL AND value IS NULL) OR
+          (start_time IS NOT NULL AND end_time IS NOT NULL
+            AND end_time >= start_time)
+        ),
+        CHECK (value IS NULL OR abs(value) <= 1.7976931348623157e308)
+      )
+    ''');
+    await customStatement('''
+      INSERT INTO records (id, event_id, start_time, end_time, value)
+      SELECT id, event_id, start_time, end_time, value FROM records_legacy
+    ''');
+    await customStatement('DROP TABLE records_legacy');
+    await customStatement('DROP TABLE events_legacy');
+    await customStatement('CREATE INDEX records_end_time ON records(end_time)');
+    await customStatement(
+      'CREATE INDEX records_start_time ON records(start_time)',
+    );
+    await customStatement('CREATE INDEX records_event_id ON records(event_id)');
+    await customStatement(
+      'CREATE UNIQUE INDEX records_one_active_per_event '
+      'ON records(event_id) WHERE end_time IS NULL',
+    );
   }
 }

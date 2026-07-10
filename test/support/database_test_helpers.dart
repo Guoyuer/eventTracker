@@ -7,14 +7,24 @@ Future<int> insertTestActivity(
   required bool careTime,
   String? unit,
   String? description,
-}) {
+}) async {
+  int? unitId;
+  if (unit != null) {
+    var storedUnit = await (db.select(
+      db.units,
+    )..where((row) => row.name.equals(unit))).getSingleOrNull();
+    storedUnit ??= await db
+        .into(db.units)
+        .insertReturning(UnitsCompanion(name: Value(unit)));
+    unitId = storedUnit.id;
+  }
   return db
       .into(db.events)
       .insert(
         EventsCompanion(
           name: Value(name),
           careTime: Value(careTime),
-          unit: Value(unit),
+          unitId: Value(unitId),
           description: Value(description),
         ),
       );

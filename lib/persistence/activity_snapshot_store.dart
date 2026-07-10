@@ -21,6 +21,7 @@ class ActivitySnapshotStore {
 
   Future<List<Activity>> _readSnapshots({int? activityId}) async {
     final query = _db.select(_db.events).join([
+      leftOuterJoin(_db.units, _db.units.id.equalsExp(_db.events.unitId)),
       leftOuterJoin(_db.records, _db.records.eventId.equalsExp(_db.events.id)),
     ])..orderBy([OrderingTerm.asc(_db.events.id)]);
     if (activityId != null) {
@@ -30,9 +31,14 @@ class ActivitySnapshotStore {
     final rows = await query.get();
     final eventsById = <int, Event>{};
     final recordsByActivityId = <int, List<Record>>{};
+    final unitNamesByActivityId = <int, String>{};
     for (final row in rows) {
       final event = row.readTable(_db.events);
       eventsById[event.id] = event;
+      final unit = row.readTableOrNull(_db.units);
+      if (unit != null) {
+        unitNamesByActivityId[event.id] = unit.name;
+      }
       final record = row.readTableOrNull(_db.records);
       if (record != null) {
         recordsByActivityId.putIfAbsent(event.id, () => []).add(record);
@@ -41,15 +47,19 @@ class ActivitySnapshotStore {
 
     return [
       for (final event in eventsById.values)
-        _snapshotFor(event, recordsByActivityId[event.id] ?? const []),
+        _snapshotFor(
+          event,
+          recordsByActivityId[event.id] ?? const [],
+          unitNamesByActivityId[event.id],
+        ),
     ];
   }
 
-  Activity _snapshotFor(Event event, List<Record> records) {
+  Activity _snapshotFor(Event event, List<Record> records, String? unit) {
     final history = ActivityRecordHistory.evaluate(
       activityId: event.id,
       careTime: event.careTime,
-      hasUnit: event.unit != null,
+      hasUnit: unit != null,
       records: [
         for (final record in records)
           ActivityHistoryRecord(
@@ -65,7 +75,7 @@ class ActivitySnapshotStore {
       return PlainActivity(
         id: event.id,
         name: event.name,
-        unit: event.unit,
+        unit: unit,
         description: event.description,
         occurrenceCount: history.occurrenceCount,
         totalValue: history.totalValue,
@@ -77,7 +87,7 @@ class ActivitySnapshotStore {
       return InactiveTimedActivity(
         id: event.id,
         name: event.name,
-        unit: event.unit,
+        unit: unit,
         description: event.description,
         totalDuration: history.totalDuration,
         totalValue: history.totalValue,
@@ -87,7 +97,7 @@ class ActivitySnapshotStore {
     return ActiveTimedActivity(
       id: event.id,
       name: event.name,
-      unit: event.unit,
+      unit: unit,
       description: event.description,
       startedAt: activeStartedAt,
       totalDuration: history.totalDuration,

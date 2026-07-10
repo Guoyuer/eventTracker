@@ -104,7 +104,7 @@ void main() {
     final activity = await db.select(db.events).getSingle();
     final unit = await db.select(db.units).getSingle();
     expect(activity.name, 'Read');
-    expect(activity.unit, 'pages');
+    expect(activity.unitId, unit.id);
     expect(unit.name, 'pages');
   });
 }

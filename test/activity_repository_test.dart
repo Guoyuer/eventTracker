@@ -67,7 +67,7 @@ void main() {
 
       expect(activity.name, 'Read');
       expect(activity.careTime, false);
-      expect(activity.unit, 'pages');
+      expect(activity.unitId, isA<int>());
       expect(activity.description, 'Books and articles');
     },
   );

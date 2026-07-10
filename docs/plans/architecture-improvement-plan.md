@@ -70,6 +70,7 @@ Current status: completed.
 - The Records table enforces Event foreign keys with cascade deletion, valid timestamp/value shapes, and one active Record per Activity.
 - Migration validates existing histories before rebuilding tables and fails instead of guessing how to repair corrupt data.
 - Schema v5 and domain input validation canonicalize Activity/Unit names and reject non-finite Record values at both application and database boundaries.
+- Schema v6 stores Activity-to-Unit references as `unitId`, maps legacy labels during migration, and prevents deletion of Units still in use.
 - Repository and Record History rules now prevent dangling Unit writes/deletes and enforce the same Unit/value contract used by the UI.
 - `ActivityAggregateStore`, cached-total repair, and their duplicate incremental rules were deleted.
 
@@ -235,7 +236,7 @@ Rule:
 
 Recommended order from here:
 
-1. Make an explicit product decision for Unit deletion semantics before adding any Activity-to-Unit foreign key.
+1. Keep the Unit deletion workflow explicit; do not weaken the RESTRICT boundary with silent nulling.
 2. Audit platform support after Android SDK installation or CI coverage is available.
 
 ## Definition of Done for Each Slice

@@ -60,13 +60,14 @@ void main() {
 
   test('repository refuses to delete a Unit used by an Activity', () async {
     await repository.addUnit('pages');
+    final unit = (await repository.getUnits()).single;
     await db
         .into(db.events)
         .insert(
-          const EventsCompanion(
-            name: Value('Read'),
-            careTime: Value(false),
-            unit: Value('pages'),
+          EventsCompanion(
+            name: const Value('Read'),
+            careTime: const Value(false),
+            unitId: Value(unit.id),
           ),
         );
 
