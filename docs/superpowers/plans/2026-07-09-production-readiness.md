@@ -4,7 +4,7 @@
 
 ## 执行状态（交接快照，2026-07-09）
 
-**Task 1–3 已完成**（提交 `b80f539`、`7d9069a`、`49d0e24`+`36a5f3d`+`ca9c69f`），**从 Task 4 继续**。每个已完成 Task 都经过独立 spec+quality 审查。执行中的发现，后续 Task 必须遵守：
+**Task 1–4 已完成**（最近为 `c745245`），**从 Task 5 继续**。Task 6 已完成生成器、应用 shell 与失败消息的本地化基础，但全 UI 迁移和防回归守卫仍未完成。具体执行顺序以 `docs/plans/2026-07-10-unified-quality-execution.md` 为准；本文件保留每个生产级缺口的设计与验收细节。每个已完成 Task 都经过独立 spec+quality 审查。执行中的发现，后续 Task 必须遵守：
 
 - **当前基线已变**：`flutter test` 是 **118 个测试**。analyze 依旧必须 `No issues found!`（CI 用 `--fatal-infos`）。
 - **`drift` 被钉在 2.34.0**（Task 3 Step 0 走了预案 B；原因见 pubspec.yaml 内注释）。不要解开，除非 drift_dev 修复了 schema 工具与 drift 2.34.1+ 的不兼容。

@@ -5,6 +5,21 @@
 Active. This document reconciles the repo's current documentation and defines
 the execution order after the v6 migration-safety work.
 
+## Current Snapshot (2026-07-10)
+
+The architectural deepening proposed by the historical review is complete:
+repositories isolate Drift, Records are the source of truth, state is owned by
+Riverpod, the legacy Step schema and Firebase have been removed, and local CI
+gates exist. `c745245` additionally completed typed user-facing failures, a
+single in-process error boundary, the l10n generator, and localized shell and
+failure messages. The verified baseline is Flutter 3.44.5, clean
+`flutter analyze --fatal-infos`, 118 tests, a Windows release build, and a
+computer-use startup inspection.
+
+The rest of the work is intentional debt elimination, not exploratory module
+creation. Crash-reporting service selection is excluded because it requires a
+privacy and account decision; the error boundary is ready for it.
+
 ## Evidence Reviewed
 
 - `AGENTS.md`, `CONTEXT.md`, and ADRs 0001-0002 define the active product and
@@ -40,67 +55,98 @@ the execution order after the v6 migration-safety work.
 
 ## Execution Order
 
-### 0. Establish One Current Truth
+### 1. Make the Domain Record Contract Total
 
-- Repair the current regression test that still expects `StateError` after the
-  already-introduced `ActivityBusy` failure.
-- Update `README.md`, module-flow schema references, and stale historical plan
-  headings. Do not delete history; label it accurately.
-- Align CI, `tool/check.ps1`, and plan commands on the current build_runner
-  invocation. Add CI timeout and cancellation of superseded runs.
+**Why first:** it removes the final nullable runtime-shaped model before the
+schema and naming migration expand the blast radius.
 
-### 1. Complete User-Visible Failure Handling and Localization Together
+- Replace `ActivityRecord` with sealed `PlainRecord`, `CompletedTimedRecord`,
+  and `ActiveTimedRecord` types. A completed record has an end time; active
+  records have no value; domain consumers never call throwing nullable getters.
+- Rename the domain identity to `activityId`, map persistence rows once at the
+  adapter boundary, and use exhaustive switches in analytics and chart models.
+- Delete unreachable aggregate-overflow code only after boundary tests prove
+  the individual record bound makes it impossible to reach.
 
-Original production-readiness Tasks 4 and 6 must be one coherent slice.
+**Evidence required:** domain, analytics, repository, and detail-chart tests;
+strict analysis; full test suite; Windows release build.
 
-- Keep typed domain failures and let unexpected errors propagate to the single
-  application error boundary.
-- Add `ActivityFailureMessages`, a pure-Dart application value object injected
-  by the localized UI. Controllers must not hardcode temporary Chinese text.
-- Add global error-boundary tests that prove a zone error is reported once and
-  restore global Flutter handlers after test execution.
-- Establish English and Chinese ARB catalogs, localize the shell and the
-  failure messages, then remove every remaining user-facing hardcoded string.
+### 2. Finish Localization and Give UI Its Regression Owner
 
-### 2. Make Record Shapes Unrepresentable
+**Why next:** l10n foundation exists, but user-facing strings remain scattered;
+widget tests must assert localized text rather than hardcoded Chinese.
 
-Complete production-readiness Task 5 before broad cosmetic cleanup.
+- Move every user-visible literal from UI/common/chart adapters into English and
+  Chinese ARB keys. Do not localize domain or analytics; inject presentation
+  values through UI adapters as the failure-message contract already does.
+- Make `AsyncStateView` receive localized empty and retry text rather than own
+  Chinese defaults.
+- Add a no-hardcoded-user-string guard that ignores comments and l10n sources.
+- Add widget coverage for the activity list, recording value dialog, editor
+  validation, Unit-in-use delete rejection, Statistics date range, and detail
+  record presentation in both supported locales where the behavior differs.
 
-- Replace nullable `ActivityRecord` fields with sealed Plain, completed-timed,
-  and active-timed record types.
-- Rename the domain field `eventId` to `activityId`.
-- Migrate every repository, analytics, UI, fake, and test consumer through
-  exhaustive switches.
+**Evidence required:** l10n generation, widget tests, source guard, full suite,
+and an English Windows visual inspection.
 
-### 3. Add UI Regression Ownership
+### 3. Raise the Engineering Ratchet Before the Database Rename
 
-- After l10n is stable, add widget coverage for the activity list, editor,
-  unit deletion restriction, statistics range, and activity detail flows.
-- Add source guards only for durable rules: no hardcoded user strings, no
-  mutable top-level state, and architecture import boundaries.
+**Why before v7:** the next migration is deliberately high-risk and needs
+enforced platform and static checks.
 
-### 4. Finish Static and Presentation Hygiene
+- Replace the deprecated/no-op build-runner flag consistently in CI and local
+  guidance; make CI also verify l10n generation is current.
+- Add job timeout and concurrency cancellation, then a `windows-latest` build
+  job. Linux analysis and tests are retained; Windows build is an additional
+  runtime contract, not a replacement.
+- Tighten the first auto-fixable lint batch, fix the resulting code, and use no
+  new ignore comments.
 
-- Enable all remaining lint rules in reviewable batches; use no new ignores.
-- Rename source files to snake_case and then migrate directory names only with
-  architecture-test updates in the same slice.
-- Move chart styling from mutable globals into a `ThemeExtension`.
+**Evidence required:** local scripts match CI commands, a green Linux CI run,
+and a green Windows CI build on the commit.
 
-### 5. Resolve Persistent Terminology Debt
+### 4. Resolve Persistent Terminology and Validation Debt in v7
 
-- Create an ADR for `Events -> Activities` terminology alignment.
-- Migrate schema v6 to v7, table names, foreign keys, generated outputs,
-  migration snapshots, test fixtures, and documentation together.
-- Add a differential validation test that proves Dart write validation and SQL
-  constraints accept and reject the same boundary-value matrix.
+**Why now:** v6 has schema dumps and migration tooling, the domain will already
+use `activityId`, and CI will protect the migration.
 
-### 6. Release Readiness Audit
+- Write ADR 0003 to rename the `events` table and event foreign-key names to
+  `activities` and `activity_id`; this is terminology alignment, not a product
+  behavior change.
+- Implement schema v7 as an explicit v6-to-v7 migration, regenerate Drift and
+  v7 schema artifacts, and add `SchemaVerifier` coverage for v6 -> v7. Keep
+  historical v1-v5 behavior covered by the existing data migration tests; do
+  not invent unavailable old schema snapshots.
+- Add a differential boundary matrix proving Dart validation and direct SQLite
+  inserts agree for missing, zero, negative, non-finite, maximum, and
+  over-maximum values.
 
-- Add a Windows GitHub Actions build job; the app is Windows-first and Linux
-  analysis/test alone cannot prove the runner remains buildable.
-- Run the complete local gate, inspect the Windows app visually through
-  computer-use, read CI results, and remove every resolved deferred note from
-  the SDD ledger.
+**Evidence required:** fresh v7 schema verifier, v6 upgrade test with retained
+data and foreign keys, full migration suite, codegen diff check, Windows build.
+
+### 5. Remove Naming, Lint, and Presentation State Debt
+
+- Complete the remaining correctness lint batch, then rename files and finally
+  directories to current snake_case/Activity terminology in reviewable commits.
+  Update architecture tests in the same commit; do not preserve compatibility
+  import facades.
+- Replace mutable chart globals with a `ThemeExtension`, add a narrow guard for
+  mutable top-level declarations, and test the chart theme lookup.
+- Strengthen imprecise tests called out by the SDD ledger, including specific
+  SQLite constraint expectations and deterministic database teardown.
+
+**Evidence required:** empty lint-suppression list, no source guard violations,
+full tests, Windows build, and visual chart inspection.
+
+### 6. Completion Audit and Documentation Closure
+
+- Update `CONTEXT.md`, module flow, README, ADR index, and active plan at each
+  terminology or behavior change. Historical plans remain labeled history, not
+  duplicate roadmaps.
+- Re-run format, codegen, l10n generation, analysis, tests, Windows build, and
+  computer-use flows. Inspect GitHub CI on both operating systems.
+- Resolve or explicitly classify every deferred SDD finding; leave no stale
+  baseline count, obsolete command, or unowned product claim.
 
 ## Commit Policy
 
