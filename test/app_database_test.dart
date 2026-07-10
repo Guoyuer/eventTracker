@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:drift/drift.dart' hide isNull;
 import 'package:drift_sqflite/drift_sqflite.dart';
+import 'package:event_tracker/domain/input_validation.dart';
 import 'package:event_tracker/persistence/database/app_database.dart';
 import 'package:event_tracker/persistence/database/database_bootstrap.dart';
 import 'package:event_tracker/persistence/record_lifecycle_store.dart';
@@ -214,6 +215,55 @@ void main() {
     }
     expect(await db.select(db.records).get(), isEmpty);
   });
+
+  test(
+    'SQL CHECK bound on records.value matches domain.maxRecordValue',
+    () async {
+      // validateRecordValue rejects values above maxRecordValue before they
+      // ever reach the database, but the records table also carries a SQL
+      // CHECK (abs(value) <= 1000000000000000.0) as a defense-in-depth
+      // backstop. That bound is written as a plain decimal literal (not a
+      // reference to maxRecordValue) because drift_dev's schema
+      // dump/generate tooling cannot statically verify a customConstraint
+      // that isn't a constant string literal (confirmed: interpolating the
+      // constant there silently drops the CHECK from the generated schema).
+      // This test keeps the literal SQL bound and the Dart constant in sync
+      // by exercising the real CHECK directly against maxRecordValue.
+      final activityId = await insertTestActivity(
+        db,
+        name: 'Lifting',
+        careTime: false,
+        unit: 'kg',
+      );
+
+      await db
+          .into(db.records)
+          .insert(
+            RecordsCompanion(
+              eventId: Value(activityId),
+              endTime: Value(DateTime(2026, 1, 1, 8)),
+              value: Value(maxRecordValue),
+            ),
+          );
+      expect(
+        (await getCompletedTestRecordsForActivity(db, activityId)).single.value,
+        maxRecordValue,
+      );
+
+      await expectLater(
+        db
+            .into(db.records)
+            .insert(
+              RecordsCompanion(
+                eventId: Value(activityId),
+                endTime: Value(DateTime(2026, 1, 1, 9)),
+                value: Value(maxRecordValue + 1),
+              ),
+            ),
+        throwsA(anything),
+      );
+    },
+  );
 
   test(
     'database enforces one active record and activity foreign key',

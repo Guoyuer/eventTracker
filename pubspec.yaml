@@ -53,6 +53,9 @@ dev_dependencies:
   build_runner: ^2.15.1
   drift_dev: ^2.34.0
   flutter_lints: ^6.0.0
+  # ^2.4.0 (as originally planned) does not resolve against
+  # sqflite_common_ffi's constraints; 3.3.4 was already the version the pub
+  # solver transitively resolved to, so it's pinned explicitly here instead.
   sqlite3: ^3.3.4
 
 # For information on the generic Dart part of this file, see the

@@ -1,5 +1,6 @@
 import 'package:drift/drift.dart';
 
+import '../../domain/input_validation.dart';
 import 'database_bootstrap.dart';
 import 'tables.dart';
 
@@ -117,7 +118,7 @@ class AppDatabase extends _$AppDatabase {
     final invalidValue = await customSelect('''
       SELECT id FROM records
       WHERE value IS NOT NULL
-        AND abs(value) > 1000000000000000.0
+        AND abs(value) > $maxRecordValue
       LIMIT 1
     ''').getSingleOrNull();
     if (invalidValue != null) {
@@ -205,7 +206,7 @@ class AppDatabase extends _$AppDatabase {
           (start_time IS NOT NULL AND end_time IS NOT NULL
             AND end_time >= start_time)
         ),
-        CHECK (value IS NULL OR abs(value) <= 1000000000000000.0)
+        CHECK (value IS NULL OR abs(value) <= $maxRecordValue)
       )
     ''');
     await customStatement('''
