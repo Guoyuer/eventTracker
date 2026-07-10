@@ -7,10 +7,10 @@ This document keeps the current architecture visible while the repo is being ref
 ```mermaid
 flowchart LR
   subgraph UI["UI routes and widgets"]
-    EventList["EventList"]
-    EventDetails["EventDetails"]
+    ActivityList["ActivityListPage"]
+    ActivityDetails["ActivityDetailPage"]
     Statistics["Statistics"]
-    EventEditor["EventEditor"]
+    ActivityEditor["ActivityEditorPage"]
     UnitManager["UnitManager"]
   end
 
@@ -54,11 +54,11 @@ flowchart LR
     DatabaseBootstrap["DatabaseBootstrap"]
   end
 
-  EventList --> ActivityListProvider
-  EventList --> ActivityListController
-  EventEditor --> ActivityEditorController
-  EventDetails --> ActivityDetailController
-  EventDetails --> ActivitySnapshotProvider
+  ActivityList --> ActivityListProvider
+  ActivityList --> ActivityListController
+  ActivityEditor --> ActivityEditorController
+  ActivityDetails --> ActivityDetailController
+  ActivityDetails --> ActivitySnapshotProvider
   UnitManager --> UnitManagementController
   Statistics --> StatisticsProvider
 
@@ -99,14 +99,14 @@ flowchart LR
 ```mermaid
 flowchart LR
   subgraph Before["Before: shallow call chain"]
-    B1["EventTile"] --> B2["ActivityListController"]
+    B1["ActivityTile"] --> B2["ActivityListController"]
     B2 --> B3["ActivityRecordingController"]
     B3 --> B4["ActivityRecordingActions"]
     B4 --> B5["broad ActivityRepository"]
   end
 
   subgraph After["After: one application interface"]
-    A1["EventTile UI Adapter"] --> A2["ActivityListController"]
+    A1["ActivityTile UI Adapter"] --> A2["ActivityListController"]
     A2 --> A3["RecordLifecycle"]
     A3 --> A4["DriftActivityRepository"]
   end
@@ -138,11 +138,11 @@ Production wiring projects one `DriftActivityRepository` Adapter through three n
 
 ```mermaid
 flowchart LR
-  Before["Events query"] --> N1["N last-record queries"]
+  Before["Activities query"] --> N1["N last-record queries"]
   N1 --> Mutable["mutable model + EventStatus"]
   Mutable --> Stale["detail receives stale snapshot"]
 
-  After["one Events / all Records join"] --> Snapshot["ActivitySnapshotStore"]
+  After["one Activities / all Records join"] --> Snapshot["ActivitySnapshotStore"]
   Snapshot --> Sealed["sealed immutable Activity types"]
   Sealed --> Route["detail route passes ID and reloads"]
 ```
@@ -171,7 +171,7 @@ flowchart LR
   Database["schema v7"] --> Shape["FK + CHECK + triggers + one-active index"]
   Snapshot["ActivitySnapshotStore"] --> History["ActivityRecordHistory"]
   ParsedImports["parsed import directives"] --> Boundaries["durable layer boundaries"]
-  RecordTypes["sealed ActivityRecord shapes"] --> Next["Next: directory terminology and chart theme cleanup"]
+  RecordTypes["sealed ActivityRecord shapes"] --> Next["Next: documentation closure and CI evidence"]
 ```
 
 Records are the sole persisted fact for Activity state and totals. The first four

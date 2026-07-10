@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 
 import 'heat_map_building_blocks.dart';
 import 'heatmap_calendar_model.dart';
-import '../common/const.dart';
+import '../common/app_chart_theme.dart';
 
 class HeatMapSetting {
   final Map<int, Color> colorMap; //int indicates level
@@ -11,7 +11,7 @@ class HeatMapSetting {
   final double monthTileMargin;
 
   const HeatMapSetting({
-    this.colorMap = heatmapColorMap,
+    required this.colorMap,
     this.dayTileSize = 15,
     this.dayTileMargin = 5,
     this.monthTileMargin = 2,
@@ -44,29 +44,34 @@ class HeatMapDataHolder extends InheritedWidget {
 }
 
 class HeatMapCalendar extends StatelessWidget {
-  final HeatMapSetting setting;
-  final HeatMapCalendarModel model;
+  final HeatMapSetting? setting;
+  final Map<DateTime, double> input;
+  final DateTimeRange dateRange;
   final ValueChanged<DateTime>? onMonthTouched;
   final ValueChanged<DateTime>? onDayTouched;
 
-  HeatMapCalendar({
+  const HeatMapCalendar({
     super.key,
-    this.setting = const HeatMapSetting(),
-    required Map<DateTime, double> input,
-    required DateTimeRange dateRange,
+    this.setting,
+    required this.input,
+    required this.dateRange,
     this.onMonthTouched,
     this.onDayTouched,
-  }) : model = buildHeatMapCalendarModel(
-         start: dateRange.start,
-         end: dateRange.end,
-         input: input,
-         maxLevel: _maxColorLevel(setting.colorMap),
-       );
+  });
 
   @override
   Widget build(BuildContext context) {
+    final resolvedSetting =
+        setting ??
+        HeatMapSetting(colorMap: AppChartTheme.of(context).heatmapColors);
+    final model = buildHeatMapCalendarModel(
+      start: dateRange.start,
+      end: dateRange.end,
+      input: input,
+      maxLevel: _maxColorLevel(resolvedSetting.colorMap),
+    );
     return HeatMapDataHolder(
-      setting: setting,
+      setting: resolvedSetting,
       model: model,
       onMonthTouched: onMonthTouched,
       onDayTouched: onDayTouched,

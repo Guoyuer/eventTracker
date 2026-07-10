@@ -10,8 +10,8 @@ import 'persistence/persistence_providers.dart';
 import 'state/activity_editor_providers.dart';
 import 'state/unit_providers.dart';
 
-class EventEditor extends ConsumerWidget {
-  EventEditor({super.key});
+class ActivityEditorPage extends ConsumerWidget {
+  ActivityEditorPage({super.key});
 
   final _formKey = GlobalKey<FormState>();
 

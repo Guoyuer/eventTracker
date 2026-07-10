@@ -2,13 +2,15 @@ import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:event_tracker/settings_page.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'EventsDetails/activity_detail_page.dart';
-import 'EventsList/activity_list_page.dart';
+import 'activities/activity_detail_page.dart';
+import 'activities/activity_list_page.dart';
+import 'activities/activity_routes.dart';
 import 'Statistics/statistics.dart';
 import 'UnitManager/units_manager_page.dart';
 import 'activity_editor_page.dart';
 import 'bootstrap/app_bootstrap.dart';
 import 'bootstrap/error_boundary.dart';
+import 'common/app_chart_theme.dart';
 import 'l10n/app_localizations.dart';
 import 'state/activity_list_providers.dart';
 import 'state/app_navigation_providers.dart';
@@ -17,7 +19,7 @@ void main() {
   runGuarded(
     () async {
       await bootstrapApp();
-      runApp(ProviderScope(child: EventTracker()));
+      runApp(const ProviderScope(child: ActivityTrackerApp()));
     },
     onError: (error, stackTrace) {
       FlutterError.presentError(
@@ -27,8 +29,8 @@ void main() {
   );
 }
 
-class EventTracker extends StatelessWidget {
-  const EventTracker({super.key});
+class ActivityTrackerApp extends StatelessWidget {
+  const ActivityTrackerApp({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -37,13 +39,14 @@ class EventTracker extends StatelessWidget {
       localizationsDelegates: AppLocalizations.localizationsDelegates,
       supportedLocales: AppLocalizations.supportedLocales,
       routes: {
-        "eventEditor": (context) => EventEditor(),
-        "unitsManager": (context) => UnitsManager(),
-        "EventDetails": (context) => EventDetailsWrapper(),
+        ActivityRoutes.editor: (context) => ActivityEditorPage(),
+        'unitsManager': (context) => UnitsManager(),
+        ActivityRoutes.detail: (context) => const ActivityDetailRoute(),
       },
       theme: ThemeData(
-        primarySwatch: Colors.blue,
+        colorScheme: ColorScheme.fromSeed(seedColor: Colors.blue),
         visualDensity: VisualDensity.adaptivePlatformDensity,
+        extensions: const [AppChartTheme.standard],
       ),
       home: MainPage(),
     );
@@ -57,7 +60,7 @@ class FAB extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final selectIdx = ref.watch(selectedIndexProvider);
-    final scrollDirection = ref.watch(eventListScrollDirProvider);
+    final scrollDirection = ref.watch(activityListScrollDirectionProvider);
 
     bool visible = selectIdx == 0 && scrollDirection == ScrollDirection.forward;
     return Visibility(
@@ -67,7 +70,7 @@ class FAB extends ConsumerWidget {
         onPressed: () async {
           var added = await Navigator.of(
             parentContext,
-          ).pushNamed("eventEditor");
+          ).pushNamed(ActivityRoutes.editor);
           if (added != null) {
             ref.invalidate(activityListProvider);
           }
@@ -79,7 +82,7 @@ class FAB extends ConsumerWidget {
 
 class MainPage extends ConsumerWidget {
   final List<Widget> pages = const [
-    EventList(),
+    ActivityListPage(),
     StatisticPage(),
     SettingPage(),
   ];

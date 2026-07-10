@@ -1,5 +1,5 @@
 import 'package:event_tracker/common/async_state.dart';
-import 'package:event_tracker/common/const.dart';
+import 'package:event_tracker/common/app_chart_theme.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -11,21 +11,21 @@ import '../l10n/app_localizations.dart';
 import 'activity_description_editor.dart';
 import 'activity_detail_charts.dart';
 
-class EventDetailsWrapper extends StatelessWidget {
-  const EventDetailsWrapper({super.key});
+class ActivityDetailRoute extends StatelessWidget {
+  const ActivityDetailRoute({super.key});
 
   @override
   Widget build(BuildContext context) {
     final arguments = ModalRoute.of(context)?.settings.arguments;
     if (arguments is! int) {
-      throw StateError('EventDetails requires an Activity id');
+      throw StateError('ActivityDetailRoute requires an Activity id');
     }
-    return EventDetails(activityId: arguments);
+    return ActivityDetailPage(activityId: arguments);
   }
 }
 
-class EventDetails extends ConsumerWidget {
-  const EventDetails({super.key, required this.activityId});
+class ActivityDetailPage extends ConsumerWidget {
+  const ActivityDetailPage({super.key, required this.activityId});
 
   final int activityId;
 
@@ -73,7 +73,7 @@ class EventDetails extends ConsumerWidget {
             alignment: Alignment.center,
             child: Text(
               AppLocalizations.of(context)!.activityDescription,
-              style: chartTitleStyle,
+              style: AppChartTheme.of(context).titleStyle,
             ),
           ),
           Align(

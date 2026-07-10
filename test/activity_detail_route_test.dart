@@ -1,4 +1,5 @@
-import 'package:event_tracker/EventsDetails/activity_detail_page.dart';
+import 'package:event_tracker/activities/activity_detail_page.dart';
+import 'package:event_tracker/activities/activity_routes.dart';
 import 'package:event_tracker/domain/activity_models.dart';
 import 'package:event_tracker/domain/activity_repository.dart';
 import 'package:event_tracker/persistence/persistence_providers.dart';
@@ -29,13 +30,13 @@ void main() {
           activityWriterProvider.overrideWithValue(_FakeActivityWriter()),
         ],
         child: localizedTestApp(
-          routes: {'EventDetails': (_) => const EventDetailsWrapper()},
+          routes: {ActivityRoutes.detail: (_) => const ActivityDetailRoute()},
           home: Builder(
             builder: (context) {
               return TextButton(
                 onPressed: () => Navigator.of(
                   context,
-                ).pushNamed('EventDetails', arguments: 7),
+                ).pushNamed(ActivityRoutes.detail, arguments: 7),
                 child: const Text('open'),
               );
             },

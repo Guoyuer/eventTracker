@@ -7,7 +7,7 @@ import '../domain/activity_models.dart';
 import '../persistence/persistence_providers.dart';
 import 'mutable_state.dart';
 
-final eventListScrollDirProvider =
+final activityListScrollDirectionProvider =
     NotifierProvider<MutableState<ScrollDirection>, ScrollDirection>(
       () => MutableState(ScrollDirection.forward),
     );

@@ -1,5 +1,5 @@
 import 'package:event_tracker/analytics/activity_detail_chart_models.dart';
-import 'package:event_tracker/common/const.dart';
+import 'package:event_tracker/common/app_chart_theme.dart';
 import 'package:event_tracker/domain/activity_models.dart';
 import 'package:event_tracker/heatmap_calendar/heat_map.dart';
 import 'package:fl_chart/fl_chart.dart';
@@ -36,6 +36,7 @@ class _ActivityDetailChartsState extends State<ActivityDetailCharts> {
 
   @override
   Widget build(BuildContext context) {
+    final chartTheme = AppChartTheme.of(context);
     final model = buildActivityDetailChartModel(
       records: widget.records,
       activity: widget.activity,
@@ -52,8 +53,8 @@ class _ActivityDetailChartsState extends State<ActivityDetailCharts> {
 
     return Column(
       children: [
-        _chartCard(_buildHeatmap(context, model)),
-        _chartCard(_buildTimeSlotChart(context, model)),
+        _chartCard(_buildHeatmap(context, model, chartTheme)),
+        _chartCard(_buildTimeSlotChart(context, model, chartTheme)),
       ],
     );
   }
@@ -62,7 +63,11 @@ class _ActivityDetailChartsState extends State<ActivityDetailCharts> {
     return Card(elevation: 10, child: child);
   }
 
-  Widget _buildHeatmap(BuildContext context, ActivityDetailChartModel model) {
+  Widget _buildHeatmap(
+    BuildContext context,
+    ActivityDetailChartModel model,
+    AppChartTheme chartTheme,
+  ) {
     final localizations = AppLocalizations.of(context)!;
     return Column(
       children: [
@@ -71,7 +76,7 @@ class _ActivityDetailChartsState extends State<ActivityDetailCharts> {
             localizations.statisticsForMetric(
               _metricLabel(localizations, model.metric),
             ),
-            style: chartTitleStyle,
+            style: chartTheme.titleStyle,
           ),
         ),
         Container(
@@ -155,12 +160,13 @@ class _ActivityDetailChartsState extends State<ActivityDetailCharts> {
   Widget _buildTimeSlotChart(
     BuildContext context,
     ActivityDetailChartModel model,
+    AppChartTheme chartTheme,
   ) {
     return Column(
       children: [
         Text(
           AppLocalizations.of(context)!.timeSlotActivity,
-          style: chartTitleStyle,
+          style: chartTheme.titleStyle,
         ),
         SizedBox(height: 10),
         Container(
@@ -192,7 +198,10 @@ class _ActivityDetailChartsState extends State<ActivityDetailCharts> {
                 ),
               ),
               borderData: FlBorderData(show: false),
-              barGroups: _barGroups(model.timeSlotBars),
+              barGroups: _barGroups(
+                model.timeSlotBars,
+                chartTheme.timeSlotGradient,
+              ),
             ),
           ),
         ),
@@ -200,16 +209,17 @@ class _ActivityDetailChartsState extends State<ActivityDetailCharts> {
     );
   }
 
-  List<BarChartGroupData> _barGroups(List<ActivityTimeSlotBar> bars) {
-    return [for (final bar in bars) _barGroup(bar.x, bar.value)];
+  List<BarChartGroupData> _barGroups(
+    List<ActivityTimeSlotBar> bars,
+    LinearGradient gradient,
+  ) {
+    return [for (final bar in bars) _barGroup(bar.x, bar.value, gradient)];
   }
 
-  BarChartGroupData _barGroup(int x, double value) {
+  BarChartGroupData _barGroup(int x, double value, LinearGradient gradient) {
     return BarChartGroupData(
       x: x,
-      barRods: [
-        BarChartRodData(toY: value, width: 15, gradient: gradientColors),
-      ],
+      barRods: [BarChartRodData(toY: value, width: 15, gradient: gradient)],
     );
   }
 

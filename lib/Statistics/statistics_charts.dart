@@ -1,4 +1,5 @@
 import 'package:event_tracker/analytics/statistics_chart_models.dart';
+import 'package:event_tracker/common/app_chart_theme.dart';
 import 'package:event_tracker/domain/statistics_repository.dart'
     show StatisticsData;
 import 'package:fl_chart/fl_chart.dart';
@@ -13,6 +14,7 @@ class StatisticsCharts extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final chartTheme = AppChartTheme.of(context);
     final model = buildStatisticsChartModel(
       records: statisticsData.records,
       activitiesById: statisticsData.activitiesById,
@@ -28,8 +30,8 @@ class StatisticsCharts extends StatelessWidget {
 
     return Column(
       children: [
-        _chartCard(_PieStatisticsChart(model)),
-        _chartCard(_TimeSlotStatisticsChart(model)),
+        _chartCard(_PieStatisticsChart(model, chartTheme)),
+        _chartCard(_TimeSlotStatisticsChart(model, chartTheme)),
       ],
     );
   }
@@ -41,8 +43,9 @@ class StatisticsCharts extends StatelessWidget {
 
 class _PieStatisticsChart extends StatelessWidget {
   final StatisticsChartModel model;
+  final AppChartTheme chartTheme;
 
-  const _PieStatisticsChart(this.model);
+  const _PieStatisticsChart(this.model, this.chartTheme);
 
   @override
   Widget build(BuildContext context) {
@@ -50,7 +53,7 @@ class _PieStatisticsChart extends StatelessWidget {
       children: [
         Text(
           AppLocalizations.of(context)!.countStatistics,
-          style: TextStyle(fontSize: 20),
+          style: chartTheme.titleStyle,
         ),
         SizedBox(height: 10),
         SizedBox(
@@ -117,8 +120,9 @@ class _PieStatisticsChart extends StatelessWidget {
 
 class _TimeSlotStatisticsChart extends StatelessWidget {
   final StatisticsChartModel model;
+  final AppChartTheme chartTheme;
 
-  const _TimeSlotStatisticsChart(this.model);
+  const _TimeSlotStatisticsChart(this.model, this.chartTheme);
 
   @override
   Widget build(BuildContext context) {
@@ -134,7 +138,7 @@ class _TimeSlotStatisticsChart extends StatelessWidget {
         children: [
           Text(
             AppLocalizations.of(context)!.timeSlotActivity,
-            style: TextStyle(fontSize: 20),
+            style: chartTheme.titleStyle,
           ),
           SizedBox(height: 10),
           SizedBox(

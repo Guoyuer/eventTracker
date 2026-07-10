@@ -89,8 +89,9 @@ Riverpod, the legacy Step schema and Firebase have been removed, and local CI
 gates exist. `c745245` additionally completed typed user-facing failures, a
 single in-process error boundary, the l10n generator, and localized shell and
 failure messages. The verified baseline is Flutter 3.44.5, clean
-`flutter analyze --fatal-infos`, 126 tests, a Windows release build, and a
-computer-use startup inspection.
+`flutter analyze --fatal-infos`, 128 tests, a Windows release build, and an
+English computer-use inspection of the Activities, Statistics, and Settings
+routes.
 
 The rest of the work is intentional debt elimination, not exploratory module
 creation. Crash-reporting service selection is excluded because it requires a
@@ -151,7 +152,7 @@ strict analysis; full test suite; Windows release build.
 
 ### 2. Finish Localization and Give UI Its Regression Owner
 
-**Status: implementation complete; English Windows visual inspection pending.**
+**Status: complete.**
 
 **Why next:** l10n foundation exists, but user-facing strings remain scattered;
 widget tests must assert localized text rather than hardcoded Chinese.
@@ -166,12 +167,13 @@ widget tests must assert localized text rather than hardcoded Chinese.
   the existing architecture test also prevents domain, application, and
   analytics from importing l10n.
 
-**Evidence required:** l10n generation, widget tests, source guard, full suite,
-and an English Windows visual inspection.
+**Evidence:** l10n generation, widget tests, source guard, full suite, and an
+English Windows visual inspection of all three primary routes.
 
 ### 3. Raise the Engineering Ratchet Before the Database Rename
 
-**Status: implementation complete; await GitHub Linux and Windows checks.**
+**Status: implementation complete; the Windows source-generation CI repair is
+pushed and its GitHub checks are pending.**
 
 **Why before v7:** the next migration is deliberately high-risk and needs
 enforced platform and static checks.
@@ -211,28 +213,26 @@ data and foreign keys, full migration suite, codegen diff check, Windows build.
 
 ### 5. Remove Naming, Lint, and Presentation State Debt
 
-**Status: lint suppression removal and source-file snake_case migration
-complete; directory terminology and chart theme state remain.**
+**Status: implementation and local release gate complete; GitHub checks are
+pending the presentation commit.**
 
-- Complete the remaining correctness lint batch, then rename files and finally
-  directories to current snake_case/Activity terminology in reviewable commits.
-  Update architecture tests in the same commit; do not preserve compatibility
-  import facades.
-- All previous lint suppressions are gone. Source files now use snake_case
-  names without compatibility imports; legacy UI directories are intentionally
-  deferred to the v7 `Events -> Activities` terminology migration.
+- The activity UI now lives in `lib/activities/`; page, tile, route, and
+  provider identifiers use Activity terminology without compatibility facades.
+  Architecture tests reject the retired directories and mutable top-level
+  declarations in chart/UI modules.
 - Delete verified dead UI and analytics data paths as separate, behavior-neutral
   commits. The first cleanup removes the unused selection helper and the
   unrendered heatmap unit/configuration pipeline.
-- Replace mutable chart globals with a `ThemeExtension`, add a narrow guard for
-  mutable top-level declarations, and test the chart theme lookup.
+- Mutable chart globals are replaced by `AppChartTheme`, a `ThemeExtension`
+  that owns title, heatmap, and time-slot styles. The lookup and the source
+  guard have focused regression tests.
 - Strengthen imprecise tests called out by the SDD ledger, including specific
   SQLite constraint expectations and deterministic database teardown. The
   file-backed WAL test now closes its shared in-memory harness before opening
   a second AppDatabase, removing Drift's multiple-database warning.
 
-**Evidence required:** empty lint-suppression list, no source guard violations,
-full tests, Windows build, and visual chart inspection.
+**Evidence:** empty lint-suppression list, no source guard violations, full
+tests, Windows build, and English Windows visual inspection.
 
 ### 6. Completion Audit and Documentation Closure
 

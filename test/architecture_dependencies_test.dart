@@ -25,8 +25,7 @@ void main() {
       final stateAndUiFiles = <File>[
         ..._dartFilesUnder('lib/state'),
         ..._dartFilesUnder('lib/common'),
-        ..._dartFilesUnder('lib/EventsList'),
-        ..._dartFilesUnder('lib/EventsDetails'),
+        ..._dartFilesUnder('lib/activities'),
         ..._dartFilesUnder('lib/Statistics'),
         ..._dartFilesUnder('lib/UnitManager'),
         ..._dartFilesUnder('lib/heatmap_calendar'),
@@ -76,6 +75,40 @@ void main() {
             'Move user-visible strings into lib/l10n:\n${violations.join('\n')}',
       );
     });
+
+    test('legacy activity UI paths and mutable chart globals stay retired', () {
+      expect(Directory('lib/EventsList').existsSync(), isFalse);
+      expect(Directory('lib/EventsDetails').existsSync(), isFalse);
+      expect(File('lib/common/const.dart').existsSync(), isFalse);
+
+      final mutableVariables = <String>[];
+      final chartAndUiFiles = <File>[
+        ..._dartFilesUnder('lib/activities'),
+        ..._dartFilesUnder('lib/Statistics'),
+        ..._dartFilesUnder('lib/heatmap_calendar'),
+      ];
+      for (final file in chartAndUiFiles) {
+        final unit = parseFile(
+          path: path.normalize(file.absolute.path),
+          featureSet: FeatureSet.latestLanguageVersion(),
+        ).unit;
+        for (final declaration
+            in unit.declarations.whereType<TopLevelVariableDeclaration>()) {
+          if (!declaration.variables.isFinal &&
+              !declaration.variables.isConst) {
+            mutableVariables.add(path.normalize(file.path));
+          }
+        }
+      }
+
+      expect(
+        mutableVariables,
+        isEmpty,
+        reason:
+            'Use an immutable ThemeExtension or widget state instead:\n'
+            '${mutableVariables.join('\n')}',
+      );
+    });
   });
 }
 
@@ -86,8 +119,7 @@ bool _outerLayerImports(String uri) {
       _referencesLibModule(uri, 'state') ||
       _referencesLibModule(uri, 'application') ||
       _referencesLibModule(uri, 'l10n') ||
-      _referencesLibModule(uri, 'EventsList') ||
-      _referencesLibModule(uri, 'EventsDetails') ||
+      _referencesLibModule(uri, 'activities') ||
       _referencesLibModule(uri, 'Statistics') ||
       _referencesLibModule(uri, 'UnitManager') ||
       _referencesLibFile(uri, 'activity_editor_page.dart') ||

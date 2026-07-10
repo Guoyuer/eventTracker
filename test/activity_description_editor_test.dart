@@ -1,4 +1,4 @@
-import 'package:event_tracker/EventsDetails/activity_description_editor.dart';
+import 'package:event_tracker/activities/activity_description_editor.dart';
 import 'package:event_tracker/domain/activity_models.dart';
 import 'package:event_tracker/domain/activity_repository.dart';
 import 'package:event_tracker/persistence/persistence_providers.dart';

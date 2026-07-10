@@ -10,10 +10,11 @@ import '../l10n/app_localizations.dart';
 import '../persistence/persistence_providers.dart';
 import '../state/activity_list_providers.dart';
 
-import 'events_list_helpers.dart';
+import 'activity_list_helpers.dart';
+import 'activity_routes.dart';
 
-class EventList extends ConsumerWidget {
-  const EventList({super.key});
+class ActivityListPage extends ConsumerWidget {
+  const ActivityListPage({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -24,7 +25,7 @@ class EventList extends ConsumerWidget {
       data: (activities) => ActivityListView(
         activities: activities,
         onScrollDirectionChanged: (direction) {
-          ref.read(eventListScrollDirProvider.notifier).set(direction);
+          ref.read(activityListScrollDirectionProvider.notifier).set(direction);
         },
       ),
       errorMessage: localizations.loadActivitiesFailed,
@@ -79,14 +80,14 @@ class _ActivityListViewState extends State<ActivityListView> {
       controller: _scrollController,
       itemCount: widget.activities.length,
       itemBuilder: (ctx, idx) {
-        return EventTile(activity: widget.activities[idx]);
+        return ActivityTile(activity: widget.activities[idx]);
       },
     );
   }
 }
 
-class EventTileButton extends ConsumerWidget {
-  const EventTileButton({super.key, required this.activity});
+class ActivityTileAction extends ConsumerWidget {
+  const ActivityTileAction({super.key, required this.activity});
 
   final Activity activity;
 
@@ -111,7 +112,7 @@ class EventTileButton extends ConsumerWidget {
   Future<void> _submitRecording(
     BuildContext context,
     WidgetRef ref,
-    Activity event,
+    Activity activity,
     DateTime recordedAt,
   ) {
     final controller = ActivityListController(
@@ -122,22 +123,22 @@ class EventTileButton extends ConsumerWidget {
     );
 
     return controller.recordActivity(
-      event,
+      activity,
       recordedAt,
       requestValue: (unit) => inputValDialog(context, unit),
     );
   }
 }
 
-class EventTile extends ConsumerWidget {
-  const EventTile({super.key, required this.activity});
+class ActivityTile extends ConsumerWidget {
+  const ActivityTile({super.key, required this.activity});
 
   final Activity activity;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final activity = this.activity;
-    final eventInfo = EventTileInfo(activity);
+    final activityInfo = ActivityTileInfo(activity);
     final isActive = activity is ActiveTimedActivity;
 
     return Card(
@@ -160,7 +161,7 @@ class EventTile extends ConsumerWidget {
                 showDetail: (activityId) async {
                   return await Navigator.of(
                         context,
-                      ).pushNamed("EventDetails", arguments: activityId)
+                      ).pushNamed(ActivityRoutes.detail, arguments: activityId)
                       as bool?;
                 },
               );
@@ -177,7 +178,7 @@ class EventTile extends ConsumerWidget {
                   Expanded(
                     child: Container(
                       margin: EdgeInsets.only(left: 5),
-                      child: eventInfo,
+                      child: activityInfo,
                     ),
                   ),
                 ],
@@ -187,7 +188,7 @@ class EventTile extends ConsumerWidget {
           Positioned.fill(
             child: Container(
               alignment: Alignment.centerRight,
-              child: EventTileButton(activity: activity),
+              child: ActivityTileAction(activity: activity),
             ),
           ),
         ],
@@ -234,37 +235,47 @@ class _ActiveTimingHighlightState extends State<ActiveTimingHighlight>
   }
 }
 
-class EventTileInfo extends StatelessWidget {
-  final Activity event;
+class ActivityTileInfo extends StatelessWidget {
+  final Activity activity;
 
-  const EventTileInfo(this.event, {super.key});
+  const ActivityTileInfo(this.activity, {super.key});
 
   @override
   Widget build(BuildContext context) {
     final localizations = AppLocalizations.of(context)!;
-    return switch (event) {
+    return switch (activity) {
       ActiveTimedActivity active => LapsedTimeStr(startTime: active.startedAt),
       TimedActivity timed => _timingInfo(localizations, timed),
       PlainActivity plain => _plainInfo(localizations, plain),
     };
   }
 
-  Widget _timingInfo(AppLocalizations localizations, TimedActivity event) {
+  Widget _timingInfo(AppLocalizations localizations, TimedActivity activity) {
     var summary = localizations.notStarted;
-    if (event.totalDuration.inMicroseconds != 0) {
+    if (activity.totalDuration.inMicroseconds != 0) {
       summary = localizations.completedDuration(
-        formatDuration(localizations, event.totalDuration),
+        formatDuration(localizations, activity.totalDuration),
       );
     }
 
-    return _summaryInfo(localizations, summary, event.unit, event.totalValue);
+    return _summaryInfo(
+      localizations,
+      summary,
+      activity.unit,
+      activity.totalValue,
+    );
   }
 
-  Widget _plainInfo(AppLocalizations localizations, PlainActivity event) {
-    final summary = event.occurrenceCount == 0
+  Widget _plainInfo(AppLocalizations localizations, PlainActivity activity) {
+    final summary = activity.occurrenceCount == 0
         ? localizations.notStarted
-        : localizations.completedCount(event.occurrenceCount);
-    return _summaryInfo(localizations, summary, event.unit, event.totalValue);
+        : localizations.completedCount(activity.occurrenceCount);
+    return _summaryInfo(
+      localizations,
+      summary,
+      activity.unit,
+      activity.totalValue,
+    );
   }
 
   Widget _summaryInfo(

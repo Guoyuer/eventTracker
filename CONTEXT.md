@@ -36,8 +36,7 @@
 - Local persistence: Drift over sqflite in `lib/persistence/database/`
 - Drift repository Adapters: `lib/persistence/drift_*_repository.dart`
 - Activity Snapshot query and validation: `lib/persistence/activity_snapshot_store.dart`
-- Activity list and recording flow: `lib/EventsList/`
-- Activity detail analytics: `lib/EventsDetails/`
+- Activity list, recording, and detail flow: `lib/activities/`
 - Cross-activity statistics: `lib/Statistics/`
 - Unit management: `lib/UnitManager/`
 
