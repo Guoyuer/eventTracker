@@ -173,8 +173,8 @@ English Windows visual inspection of all three primary routes.
 
 ### 3. Raise the Engineering Ratchet Before the Database Rename
 
-**Status: implementation complete; final GitHub CI is pending the closure
-commit.**
+**Status: implementation complete; completion requires a green latest-master
+GitHub CI run.**
 
 **Why before v7:** the next migration is deliberately high-risk and needs
 enforced platform and static checks.
@@ -193,8 +193,8 @@ and a green Windows CI build on the commit.
 
 ### 4. Resolve Persistent Terminology and Validation Debt in v7
 
-**Status: implementation and local release gate complete; final GitHub CI is
-pending the closure commit.**
+**Status: implementation and local release gate complete; completion requires
+a green latest-master GitHub CI run.**
 
 **Why now:** v6 has schema dumps and migration tooling, the domain will already
 use `activityId`, and CI will protect the migration.
@@ -214,8 +214,8 @@ data and foreign keys, full migration suite, codegen diff check, Windows build.
 
 ### 5. Remove Naming, Lint, and Presentation State Debt
 
-**Status: implementation and local release gate complete; final GitHub CI is
-pending the closure commit.**
+**Status: implementation and local release gate complete; completion requires
+a green latest-master GitHub CI run.**
 
 - The activity UI now lives in `lib/activities/`; page, tile, route, and
   provider identifiers use Activity terminology without compatibility facades.
@@ -239,8 +239,8 @@ tests, Windows build, and English Windows visual inspection.
 
 ### 6. Completion Audit and Documentation Closure
 
-**Status: local audit and release gate complete; final GitHub CI is pending the
-closure commit.**
+**Status: local audit and release gate complete; completion requires a green
+latest-master GitHub CI run.**
 
 - Update `CONTEXT.md`, module flow, README, ADRs, and active plan at each
   terminology or behavior change. Historical plans remain classified as
