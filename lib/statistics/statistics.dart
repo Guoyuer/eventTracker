@@ -26,13 +26,16 @@ class StatisticPage extends ConsumerWidget {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Container(
-                margin: EdgeInsets.only(left: 10),
-                height: 40,
-                child: Center(
+              Expanded(
+                child: Container(
+                  margin: EdgeInsets.only(left: 10),
+                  height: 40,
+                  alignment: Alignment.centerLeft,
                   child: Text(
                     localizations.statisticsRange(timeLStr, timeRStr),
                     style: TextStyle(fontSize: 20),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
                   ),
                 ),
               ),
