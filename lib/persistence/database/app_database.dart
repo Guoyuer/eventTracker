@@ -20,10 +20,10 @@ class AppDatabase extends _$AppDatabase {
   /// applied on every platform regardless of this flag.
   final bool _useWriteAheadLog;
 
-  /// 改动此值前必须先运行:
-  ///   dart run drift_dev schema dump lib/persistence/database/app_database.dart drift_schemas/
-  ///   dart run drift_dev schema generate drift_schemas/ test/generated_migrations/
-  /// 然后在 test/schema_verifier_test.dart 中为新版本加一条 migrateAndValidate 用例。
+  /// 改动此值前先编辑 tables.dart, 然后运行 `.\tool\schema.ps1` 重新生成
+  /// Drift 代码与 schema 快照。schema_verifier_test.dart 会自动覆盖每个已生成
+  /// 快照的版本, 无需手加用例; 仍需在 onUpgrade 增加迁移步骤, 并在
+  /// test/database_migration_test.dart 补数据迁移测试。
   @override
   int get schemaVersion => 7;
 

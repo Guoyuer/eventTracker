@@ -43,6 +43,13 @@ repository query shapes, or dependency versions that affect code generation.
 The current `build_runner` no longer accepts `--delete-conflicting-outputs`;
 run `dart run build_runner build` directly.
 
+When bumping the schema version, run `.\tool\schema.ps1` after editing
+`tables.dart` and `schemaVersion`. It regenerates l10n, Drift code, and the
+schema snapshots, then prints the remaining manual steps (the `onUpgrade` step
+and a data-migration test). `schema_verifier_test.dart` is parameterized over
+`GeneratedHelper.versions`, so a new snapshot is structurally verified without
+adding a test case.
+
 If a gate is temporarily red, document the exact failure in this file before moving on.
 
 ## Fast Windows Iteration Loop

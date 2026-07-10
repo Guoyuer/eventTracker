@@ -11,21 +11,25 @@ void main() {
     verifier = SchemaVerifier(GeneratedHelper());
   });
 
-  test('a freshly created database matches the v7 schema snapshot', () async {
-    final connection = await verifier.startAt(7);
-    final db = AppDatabase(connection);
+  // Every version with a generated snapshot must migrate structurally to the
+  // current schema. Driving this off GeneratedHelper.versions means a new
+  // schema version is covered as soon as its snapshot is generated
+  // (`tool/schema.ps1`), with no hand-added case here. The latest version
+  // migrating to itself doubles as the fresh-create check.
+  final versions = GeneratedHelper.versions;
+  final latest = versions.last;
 
-    await verifier.migrateAndValidate(db, 7);
+  for (final from in versions) {
+    final label = from == latest
+        ? 'a freshly created database matches the v$latest schema snapshot'
+        : 'v$from schema upgrades structurally to v$latest';
+    test(label, () async {
+      final connection = await verifier.startAt(from);
+      final db = AppDatabase(connection);
 
-    await db.close();
-  });
+      await verifier.migrateAndValidate(db, latest);
 
-  test('v6 schema upgrades structurally to v7', () async {
-    final connection = await verifier.startAt(6);
-    final db = AppDatabase(connection);
-
-    await verifier.migrateAndValidate(db, 7);
-
-    await db.close();
-  });
+      await db.close();
+    });
+  }
 }
