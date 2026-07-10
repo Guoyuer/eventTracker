@@ -14,10 +14,10 @@ class ActivityDetailCharts extends StatefulWidget {
   final List<ActivityRecord> records;
 
   const ActivityDetailCharts({
-    Key? key,
+    super.key,
     required this.activity,
     required this.records,
-  }) : super(key: key);
+  });
 
   @override
   State<ActivityDetailCharts> createState() => _ActivityDetailChartsState();

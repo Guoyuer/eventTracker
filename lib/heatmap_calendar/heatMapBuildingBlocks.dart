@@ -6,7 +6,7 @@ import 'heatmap_calendar_model.dart';
 
 //最上层组件，只需给日期区间即可
 class HeatMapDisplay extends StatelessWidget {
-  const HeatMapDisplay();
+  const HeatMapDisplay({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -22,7 +22,7 @@ class HeatMapDisplay extends StatelessWidget {
 class YearTile extends StatelessWidget {
   final HeatMapYearBlock year;
 
-  YearTile(this.year) {
+  YearTile(this.year, {super.key}) {
     assert(year.start.year == year.end.year);
   }
 
@@ -38,7 +38,7 @@ class MonthTile extends StatelessWidget {
   //已经可以自行决定长宽了。小修正：如果end是月的最后一天且恰是周六，那便再补一列空白的。为了视觉效果。论文提一下
 
   final HeatMapMonthBlock monthBlock; // 2021-4-1 ~ 2021-4-13
-  MonthTile(this.monthBlock) {
+  MonthTile(this.monthBlock, {super.key}) {
     assert(monthBlock.start.month == monthBlock.end.month);
   }
 
@@ -80,7 +80,7 @@ class MonthTile extends StatelessWidget {
 class WeekTile extends StatelessWidget {
   final HeatMapWeekColumn week;
 
-  const WeekTile(this.week);
+  const WeekTile(this.week, {super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -97,7 +97,7 @@ class WeekTile extends StatelessWidget {
 class DayTile extends StatelessWidget {
   final HeatMapDayCell cell;
 
-  const DayTile({Key? key, required this.cell}) : super(key: key);
+  const DayTile({super.key, required this.cell});
 
   @override
   Widget build(BuildContext context) {

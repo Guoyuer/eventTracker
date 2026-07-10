@@ -28,6 +28,8 @@ void main() {
 }
 
 class EventTracker extends StatelessWidget {
+  const EventTracker({super.key});
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -50,7 +52,7 @@ class EventTracker extends StatelessWidget {
 
 class FAB extends ConsumerWidget {
   final BuildContext parentContext;
-  const FAB(this.parentContext);
+  const FAB(this.parentContext, {super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -76,7 +78,13 @@ class FAB extends ConsumerWidget {
 }
 
 class MainPage extends ConsumerWidget {
-  final List<Widget> pages = [EventList(), StatisticPage(), SettingPage()];
+  final List<Widget> pages = const [
+    EventList(),
+    StatisticPage(),
+    SettingPage(),
+  ];
+
+  const MainPage({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {

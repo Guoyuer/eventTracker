@@ -11,7 +11,7 @@ import 'state/activity_editor_providers.dart';
 import 'state/unit_providers.dart';
 
 class EventEditor extends ConsumerWidget {
-  EventEditor({Key? key}) : super(key: key);
+  EventEditor({super.key});
 
   final _formKey = GlobalKey<FormState>();
 

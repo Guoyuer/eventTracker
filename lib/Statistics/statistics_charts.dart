@@ -9,7 +9,7 @@ import '../l10n/app_localizations.dart';
 class StatisticsCharts extends StatelessWidget {
   final StatisticsData statisticsData;
 
-  const StatisticsCharts(this.statisticsData, {Key? key}) : super(key: key);
+  const StatisticsCharts(this.statisticsData, {super.key});
 
   @override
   Widget build(BuildContext context) {

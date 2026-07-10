@@ -8,8 +8,7 @@ import '../persistence/persistence_providers.dart';
 import '../state/activity_detail_providers.dart';
 
 class ActivityDescriptionEditor extends ConsumerWidget {
-  const ActivityDescriptionEditor({Key? key, required this.activityId})
-    : super(key: key);
+  const ActivityDescriptionEditor({super.key, required this.activityId});
 
   final int activityId;
 

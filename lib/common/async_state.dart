@@ -5,7 +5,7 @@ enum AsyncStateLayout { page, card, inline }
 
 class AsyncStateView<T> extends StatelessWidget {
   const AsyncStateView({
-    Key? key,
+    super.key,
     required this.value,
     required this.data,
     required this.errorMessage,
@@ -15,8 +15,7 @@ class AsyncStateView<T> extends StatelessWidget {
     this.isEmpty,
     this.onRetry,
   }) : assert(isEmpty == null || emptyMessage != null),
-       assert(onRetry == null || retryLabel != null),
-       super(key: key);
+       assert(onRetry == null || retryLabel != null);
 
   final AsyncValue<T> value;
   final Widget Function(T value) data;

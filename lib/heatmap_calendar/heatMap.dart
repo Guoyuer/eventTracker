@@ -25,12 +25,13 @@ class HeatMapDataHolder extends InheritedWidget {
   final ValueChanged<DateTime>? onDayTouched;
 
   const HeatMapDataHolder({
+    super.key,
     required this.setting,
     required this.model,
     this.onMonthTouched,
     this.onDayTouched,
-    required Widget child,
-  }) : super(child: child);
+    required super.child,
+  });
 
   @override
   bool updateShouldNotify(HeatMapDataHolder oldWidget) {
@@ -49,7 +50,7 @@ class HeatMapCalendar extends StatelessWidget {
   final ValueChanged<DateTime>? onDayTouched;
 
   HeatMapCalendar({
-    Key? key,
+    super.key,
     this.setting = const HeatMapSetting(),
     required Map<DateTime, double> input,
     required DateTimeRange dateRange,
@@ -60,8 +61,7 @@ class HeatMapCalendar extends StatelessWidget {
          end: dateRange.end,
          input: input,
          maxLevel: _maxColorLevel(setting.colorMap),
-       ),
-       super(key: key);
+       );
 
   @override
   Widget build(BuildContext context) {

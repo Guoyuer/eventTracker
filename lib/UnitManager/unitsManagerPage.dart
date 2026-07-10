@@ -11,7 +11,7 @@ import '../persistence/persistence_providers.dart';
 import '../state/unit_providers.dart';
 
 class UnitsManager extends ConsumerWidget {
-  const UnitsManager();
+  const UnitsManager({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {

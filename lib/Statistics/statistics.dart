@@ -11,6 +11,8 @@ import '../state/statistics_providers.dart';
 import '../l10n/app_localizations.dart';
 
 class StatisticPage extends ConsumerWidget {
+  const StatisticPage({super.key});
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final range = ref.watch(selectedStatisticsRangeProvider);
@@ -81,7 +83,7 @@ class StatisticPage extends ConsumerWidget {
 }
 
 class Charts extends ConsumerWidget {
-  const Charts(this.range);
+  const Charts(this.range, {super.key});
 
   final CalendarDateRange range;
 
