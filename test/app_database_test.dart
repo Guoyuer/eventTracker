@@ -10,6 +10,7 @@ import 'package:event_tracker/persistence/record_lifecycle_store.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:path/path.dart' as p;
+import 'package:sqflite/sqflite.dart';
 
 import 'support/database_test_helpers.dart';
 import 'support/database_test_harness.dart';
@@ -22,11 +23,8 @@ void main() {
 
   setUp(() {
     db = openTestDatabase();
+    addTearDown(db.close);
     lifecycle = RecordLifecycleStore(db);
-  });
-
-  tearDown(() async {
-    await db.close();
   });
 
   test('plain lifecycle writes completed records', () async {
@@ -53,11 +51,11 @@ void main() {
   test('lifecycle rejects missing activities without orphan records', () async {
     await expectLater(
       lifecycle.addPlainRecord(404, DateTime(2026, 1, 1, 8)),
-      throwsA(anything),
+      throwsStateError,
     );
     await expectLater(
       lifecycle.startTimedRecord(404, DateTime(2026, 1, 1, 8)),
-      throwsA(anything),
+      throwsStateError,
     );
 
     expect(await db.select(db.records).get(), isEmpty);
@@ -212,7 +210,10 @@ void main() {
     ];
 
     for (final record in invalidRecords) {
-      await expectLater(db.into(db.records).insert(record), throwsA(anything));
+      await expectLater(
+        db.into(db.records).insert(record),
+        throwsA(isA<DatabaseException>()),
+      );
     }
     expect(await db.select(db.records).get(), isEmpty);
   });
@@ -261,7 +262,7 @@ void main() {
                 value: Value(maxRecordValue + 1),
               ),
             ),
-        throwsA(anything),
+        throwsA(isA<DatabaseException>()),
       );
     },
   );
@@ -299,7 +300,7 @@ void main() {
                   value: Value(value),
                 ),
               ),
-          throwsA(anything),
+          throwsA(isA<DatabaseException>()),
         );
       }
 
@@ -337,7 +338,7 @@ void main() {
                 startTime: Value(DateTime(2026, 1, 1, 9)),
               ),
             ),
-        throwsA(anything),
+        throwsA(isA<DatabaseException>()),
       );
       await expectLater(
         db
@@ -348,7 +349,7 @@ void main() {
                 endTime: Value(DateTime(2026, 1, 1, 9)),
               ),
             ),
-        throwsA(anything),
+        throwsA(isA<DatabaseException>()),
       );
     },
   );

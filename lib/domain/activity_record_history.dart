@@ -45,7 +45,6 @@ class ActivityRecordHistory {
         }
         occurrenceCount++;
         totalValue += validateRecordValue(record.value, hasUnit: hasUnit) ?? 0;
-        _validateTotalValue(totalValue);
         continue;
       }
 
@@ -79,7 +78,6 @@ class ActivityRecordHistory {
       }
       totalDuration += duration;
       totalValue += validateRecordValue(record.value, hasUnit: hasUnit) ?? 0;
-      _validateTotalValue(totalValue);
     }
 
     return ActivityRecordHistory._(
@@ -94,10 +92,4 @@ class ActivityRecordHistory {
   final Duration totalDuration;
   final double totalValue;
   final DateTime? activeStartedAt;
-
-  static void _validateTotalValue(double value) {
-    if (!value.isFinite) {
-      throw StateError('Activity Record value total overflowed');
-    }
-  }
 }

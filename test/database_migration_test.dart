@@ -91,7 +91,7 @@ void main() {
     final db = AppDatabase(SqfliteQueryExecutor(path: dbPath));
     addTearDown(db.close);
 
-    await expectLater(db.select(db.activities).get(), throwsA(anything));
+    await expectLater(db.select(db.activities).get(), throwsStateError);
   });
 
   test('version 5 migration normalizes existing names and units', () async {

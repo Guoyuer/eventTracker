@@ -1,4 +1,5 @@
 import 'package:event_tracker/domain/activity_record_history.dart';
+import 'package:event_tracker/domain/input_validation.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
@@ -105,14 +106,14 @@ void main() {
     );
   });
 
-  test('history rejects a Record value above the SQL/Dart bound '
-      '(previously: a finite-value sum that overflows)', () {
-    // validateRecordValue now caps individual values at maxRecordValue
-    // (1e15), mirroring the records table's SQL CHECK. double.maxFinite
-    // used to pass that per-record check (it's finite), so two of them
-    // could only be caught once summed, via _validateTotalValue's
-    // overflow guard below. Now the first record is rejected up front by
-    // validateRecordValue itself, before totalValue is ever summed.
+  test('database bounds make aggregate value overflow unreachable', () {
+    // SQLite rowids are signed 64-bit integers, so an activities history can
+    // contain at most this many Records. The largest valid total is still many
+    // orders of magnitude below double.maxFinite; the former runtime overflow
+    // guard therefore could never protect persisted data.
+    const maxSqliteRows = 9223372036854775807;
+    expect(maxRecordValue * maxSqliteRows, lessThan(double.maxFinite));
+
     expect(
       () => ActivityRecordHistory.evaluate(
         activityId: 1,

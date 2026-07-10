@@ -105,8 +105,8 @@ privacy and account decision; the error boundary is ready for it.
   production-readiness evidence. It does not expand this scope.
 - `docs/plans/*.md`, `docs/architecture/module-flow.md`, and the 2026-07-08
   architecture review explain the path taken to the current architecture.
-- `.superpowers/sdd/progress.md` records CI green for `69b45dd` and deferred
-  review findings.
+- `.superpowers/sdd/progress.md` is historical review evidence; its later
+  completed-task entries resolve its intermediate findings.
 
 ## Documentation Classification
 
@@ -115,9 +115,10 @@ privacy and account decision; the error boundary is ready for it.
 | `CONTEXT.md`, ADRs, `AGENTS.md` | Authoritative constraints | Keep current whenever domain or persistence language changes. |
 | Production-readiness plan | Historical backlog | Retain completed-task evidence; do not use it to schedule work. |
 | Quality and architecture plans | Historical roadmap plus operational runbook | Retain context and commands; this plan owns all remaining scheduling. |
+| SDD progress ledger | Historical review evidence | Retain chronology; do not use intermediate findings as active work. |
 | Module flow | Current architectural map | Update after record-type and schema terminology changes. |
 | 2026-07-08 architecture review | Historical assessment | Mark as superseded: its recommended persistence, state, schema, Firebase, and verification work is complete. |
-| `README.md` | User-facing product truth | Rewrite before feature work: it still documents removed manual long-press entry and obsolete Event terminology. |
+| `README.md` | User-facing product truth | Verified current: it documents the Activity/Record model, excludes manual historical entry, and gives the supported Windows commands. |
 
 ## Non-Negotiable Invariants
 
@@ -172,8 +173,8 @@ English Windows visual inspection of all three primary routes.
 
 ### 3. Raise the Engineering Ratchet Before the Database Rename
 
-**Status: implementation complete; the Windows source-generation CI repair is
-pushed and its GitHub checks are pending.**
+**Status: implementation complete; final GitHub CI is pending the closure
+commit.**
 
 **Why before v7:** the next migration is deliberately high-risk and needs
 enforced platform and static checks.
@@ -192,8 +193,8 @@ and a green Windows CI build on the commit.
 
 ### 4. Resolve Persistent Terminology and Validation Debt in v7
 
-**Status: implementation and local release gate complete; GitHub checks are
-pending the migration commit.**
+**Status: implementation and local release gate complete; final GitHub CI is
+pending the closure commit.**
 
 **Why now:** v6 has schema dumps and migration tooling, the domain will already
 use `activityId`, and CI will protect the migration.
@@ -213,8 +214,8 @@ data and foreign keys, full migration suite, codegen diff check, Windows build.
 
 ### 5. Remove Naming, Lint, and Presentation State Debt
 
-**Status: implementation and local release gate complete; GitHub checks are
-pending the presentation commit.**
+**Status: implementation and local release gate complete; final GitHub CI is
+pending the closure commit.**
 
 - The activity UI now lives in `lib/activities/`; page, tile, route, and
   provider identifiers use Activity terminology without compatibility facades.
@@ -227,18 +228,23 @@ pending the presentation commit.**
   that owns title, heatmap, and time-slot styles. The lookup and the source
   guard have focused regression tests.
 - Strengthen imprecise tests called out by the SDD ledger, including specific
-  SQLite constraint expectations and deterministic database teardown. The
-  file-backed WAL test now closes its shared in-memory harness before opening
-  a second AppDatabase, removing Drift's multiple-database warning.
+  sqflite constraint expectations and deterministic database teardown. Tests
+  now register shared-database cleanup during setup; the file-backed WAL test
+  closes that harness before opening a second AppDatabase. The aggregate-value
+  overflow guard was removed after a test proved the SQLite rowid and per-record
+  upper bounds make it unreachable.
 
 **Evidence:** empty lint-suppression list, no source guard violations, full
 tests, Windows build, and English Windows visual inspection.
 
 ### 6. Completion Audit and Documentation Closure
 
-- Update `CONTEXT.md`, module flow, README, ADR index, and active plan at each
-  terminology or behavior change. Historical plans remain labeled history, not
-  duplicate roadmaps.
+**Status: local audit and release gate complete; final GitHub CI is pending the
+closure commit.**
+
+- Update `CONTEXT.md`, module flow, README, ADRs, and active plan at each
+  terminology or behavior change. Historical plans remain classified as
+  history, not duplicate roadmaps.
 - Re-run format, codegen, l10n generation, analysis, tests, Windows build, and
   computer-use flows. Inspect GitHub CI on both operating systems.
 - Resolve or explicitly classify every deferred SDD finding; leave no stale
