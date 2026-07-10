@@ -86,7 +86,6 @@ class _ActivityDetailChartsState extends State<ActivityDetailCharts> {
                 end: model.heatmapSeries.range.lastDay,
               ),
               input: model.heatmapSeries.data,
-              unit: _unitLabel(localizations, model.heatmapSeries.unit),
               onMonthTouched: (selectedMonth) {
                 setState(() {
                   _selectedMonth = selectedMonth;
@@ -287,19 +286,6 @@ class _ActivityDetailChartsState extends State<ActivityDetailCharts> {
       ActivityDetailMetric.duration => localizations.metricDuration,
       ActivityDetailMetric.count => localizations.metricCount,
       ActivityDetailMetric.value => widget.activity.requiredUnit,
-    };
-  }
-
-  String _unitLabel(
-    AppLocalizations localizations,
-    ActivityMeasurementUnit unit,
-  ) {
-    return switch (unit) {
-      ActivityMeasurementUnit.count => localizations.metricCount,
-      ActivityMeasurementUnit.second => localizations.unitSeconds,
-      ActivityMeasurementUnit.minute => localizations.unitMinutes,
-      ActivityMeasurementUnit.hour => localizations.unitHours,
-      ActivityMeasurementUnit.activityUnit => widget.activity.requiredUnit,
     };
   }
 

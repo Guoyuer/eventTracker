@@ -6,25 +6,17 @@ import '../domain/date_range.dart';
 
 enum ActivityDetailMetric { duration, count, value }
 
-enum ActivityMeasurementUnit { count, second, minute, hour, activityUnit }
-
 class ActivityHeatmapSeries {
-  ActivityHeatmapSeries({
-    required this.range,
-    required this.data,
-    required this.unit,
-  });
+  ActivityHeatmapSeries({required this.range, required this.data});
 
   final CalendarDateRange range;
   final Map<DateTime, double> data;
-  final ActivityMeasurementUnit unit;
 }
 
 class ActivityTimeSlotSeries {
-  ActivityTimeSlotSeries({required this.hourlyValues, required this.unit});
+  ActivityTimeSlotSeries({required this.hourlyValues});
 
   final List<double> hourlyValues;
-  final ActivityMeasurementUnit unit;
 }
 
 ActivityDetailMetric metricForActivitySelection(
@@ -62,11 +54,7 @@ ActivityHeatmapSeries buildActivityHeatmapSeries({
     data[date] = (data[date] ?? 0) + _dailyRecordValue(record, metric);
   }
 
-  return ActivityHeatmapSeries(
-    range: range,
-    data: data,
-    unit: _heatmapUnit(metric),
-  );
+  return ActivityHeatmapSeries(range: range, data: data);
 }
 
 ActivityTimeSlotSeries buildActivityTimeSlotSeries({
@@ -84,10 +72,7 @@ ActivityTimeSlotSeries buildActivityTimeSlotSeries({
     values[end.hour] += _timeSlotRecordValue(record, metric);
   }
 
-  return ActivityTimeSlotSeries(
-    hourlyValues: values,
-    unit: _timeSlotUnit(metric),
-  );
+  return ActivityTimeSlotSeries(hourlyValues: values);
 }
 
 List<ActivityRecord> recordsInMonth(
@@ -175,20 +160,15 @@ ActivityTimeSlotSeries _buildDurationTimeSlotSeries(
 
   final maxValue = seconds.reduce(max);
   if (maxValue <= 500) {
-    return ActivityTimeSlotSeries(
-      hourlyValues: seconds,
-      unit: ActivityMeasurementUnit.second,
-    );
+    return ActivityTimeSlotSeries(hourlyValues: seconds);
   }
   if (maxValue <= 500 * 60) {
     return ActivityTimeSlotSeries(
       hourlyValues: seconds.map((value) => value / 60).toList(),
-      unit: ActivityMeasurementUnit.minute,
     );
   }
   return ActivityTimeSlotSeries(
     hourlyValues: seconds.map((value) => value / 3600).toList(),
-    unit: ActivityMeasurementUnit.hour,
   );
 }
 
@@ -223,27 +203,5 @@ void _addDurationByHour(List<double> seconds, DateInterval range) {
   while (cursor.compareTo(right) < 0) {
     seconds[cursor.hour] += const Duration(hours: 1).inSeconds;
     cursor = cursor.add(const Duration(hours: 1));
-  }
-}
-
-ActivityMeasurementUnit _heatmapUnit(ActivityDetailMetric metric) {
-  switch (metric) {
-    case ActivityDetailMetric.duration:
-      return ActivityMeasurementUnit.minute;
-    case ActivityDetailMetric.count:
-      return ActivityMeasurementUnit.count;
-    case ActivityDetailMetric.value:
-      return ActivityMeasurementUnit.activityUnit;
-  }
-}
-
-ActivityMeasurementUnit _timeSlotUnit(ActivityDetailMetric metric) {
-  switch (metric) {
-    case ActivityDetailMetric.duration:
-      return ActivityMeasurementUnit.second;
-    case ActivityDetailMetric.count:
-      return ActivityMeasurementUnit.count;
-    case ActivityDetailMetric.value:
-      return ActivityMeasurementUnit.activityUnit;
   }
 }

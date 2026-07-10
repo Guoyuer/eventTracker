@@ -228,15 +228,6 @@ class AppLocalizationsZh extends AppLocalizations {
   String get noRecordsOnDay => '当日无记录';
 
   @override
-  String get unitSeconds => '秒';
-
-  @override
-  String get unitMinutes => '分钟';
-
-  @override
-  String get unitHours => '小时';
-
-  @override
   String statisticsRange(String start, String end) {
     return '$start 至 $end';
   }

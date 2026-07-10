@@ -476,24 +476,6 @@ abstract class AppLocalizations {
   /// **'No records on this day'**
   String get noRecordsOnDay;
 
-  /// No description provided for @unitSeconds.
-  ///
-  /// In en, this message translates to:
-  /// **'seconds'**
-  String get unitSeconds;
-
-  /// No description provided for @unitMinutes.
-  ///
-  /// In en, this message translates to:
-  /// **'minutes'**
-  String get unitMinutes;
-
-  /// No description provided for @unitHours.
-  ///
-  /// In en, this message translates to:
-  /// **'hours'**
-  String get unitHours;
-
   /// No description provided for @statisticsRange.
   ///
   /// In en, this message translates to:

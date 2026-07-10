@@ -8,14 +8,12 @@ class HeatMapSetting {
   final Map<int, Color> colorMap; //int indicates level
   final double dayTileSize;
   final double dayTileMargin;
-  final double weekTileMargin;
   final double monthTileMargin;
 
   const HeatMapSetting({
     this.colorMap = heatmapColorMap,
     this.dayTileSize = 15,
     this.dayTileMargin = 5,
-    this.weekTileMargin = 6,
     this.monthTileMargin = 2,
   });
 }
@@ -25,12 +23,10 @@ class HeatMapDataHolder extends InheritedWidget {
   final HeatMapCalendarModel model;
   final ValueChanged<DateTime>? onMonthTouched;
   final ValueChanged<DateTime>? onDayTouched;
-  final String? unit;
 
   HeatMapDataHolder({
     required this.setting,
     required this.model,
-    this.unit,
     this.onMonthTouched,
     this.onDayTouched,
     required Widget child,
@@ -49,17 +45,14 @@ class HeatMapDataHolder extends InheritedWidget {
 class HeatMapCalendar extends StatelessWidget {
   final HeatMapSetting setting;
   final HeatMapCalendarModel model;
-  final DateTimeRange dateRange;
   final ValueChanged<DateTime>? onMonthTouched;
   final ValueChanged<DateTime>? onDayTouched;
-  final String unit; //Tooltip显示的单位
 
   HeatMapCalendar({
     Key? key,
     this.setting = const HeatMapSetting(),
     required Map<DateTime, double> input,
-    required this.dateRange,
-    required this.unit,
+    required DateTimeRange dateRange,
     this.onMonthTouched,
     this.onDayTouched,
   }) : model = buildHeatMapCalendarModel(
@@ -75,7 +68,6 @@ class HeatMapCalendar extends StatelessWidget {
     return HeatMapDataHolder(
       setting: setting,
       model: model,
-      unit: unit,
       onMonthTouched: onMonthTouched,
       onDayTouched: onDayTouched,
       child: HeatMapDisplay(),

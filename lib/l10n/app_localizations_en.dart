@@ -229,15 +229,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get noRecordsOnDay => 'No records on this day';
 
   @override
-  String get unitSeconds => 'seconds';
-
-  @override
-  String get unitMinutes => 'minutes';
-
-  @override
-  String get unitHours => 'hours';
-
-  @override
   String statisticsRange(String start, String end) {
     return '$start to $end';
   }

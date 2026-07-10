@@ -136,6 +136,9 @@ data and foreign keys, full migration suite, codegen diff check, Windows build.
   directories to current snake_case/Activity terminology in reviewable commits.
   Update architecture tests in the same commit; do not preserve compatibility
   import facades.
+- Delete verified dead UI and analytics data paths as separate, behavior-neutral
+  commits. The first cleanup removes the unused selection helper and the
+  unrendered heatmap unit/configuration pipeline.
 - Replace mutable chart globals with a `ThemeExtension`, add a narrow guard for
   mutable top-level declarations, and test the chart theme lookup.
 - Strengthen imprecise tests called out by the SDD ledger, including specific

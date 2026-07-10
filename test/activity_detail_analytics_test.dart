@@ -61,7 +61,6 @@ void main() {
 
       expect(series.range.firstDay, DateTime(2026, 1, 1));
       expect(series.range.lastDay, DateTime(2026, 1, 5));
-      expect(series.unit, ActivityMeasurementUnit.minute);
       expect(series.data, {DateTime(2026, 1, 1): 30, DateTime(2026, 1, 2): 5});
     },
   );
@@ -93,12 +92,10 @@ void main() {
       now: DateTime(2026, 1, 5),
     );
 
-    expect(countSeries.unit, ActivityMeasurementUnit.count);
     expect(countSeries.data, {
       DateTime(2026, 1, 1): 2,
       DateTime(2026, 1, 2): 1,
     });
-    expect(valueSeries.unit, ActivityMeasurementUnit.activityUnit);
     expect(valueSeries.data, {
       DateTime(2026, 1, 1): 25,
       DateTime(2026, 1, 2): 7,
@@ -126,7 +123,6 @@ void main() {
       metric: ActivityDetailMetric.duration,
     );
 
-    expect(series.unit, ActivityMeasurementUnit.minute);
     expect(series.hourlyValues[8], 30);
     expect(series.hourlyValues[9], 60);
     expect(series.hourlyValues[10], 15);
