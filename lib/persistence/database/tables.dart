@@ -56,9 +56,14 @@ class Records extends Table {
     // overflows Dart's 64-bit ints and silently wraps to 0, turning this
     // bound into `0.0`. A plain decimal literal has no exponent, so it
     // survives the round trip intact. 1e15 is still far beyond any value
-    // this app will ever record; the real goal of this CHECK is only to
-    // reject non-finite (infinite) doubles as a defense-in-depth backstop
-    // behind validateRecordValue's `isFinite` check.
+    // this app will ever record.
+    //
+    // Do NOT replace the literal with `$maxRecordValue` interpolation:
+    // drift_dev 2.34.0 silently drops the whole CHECK from dumped schema
+    // when the constraint string is not a compile-time literal. The literal
+    // must equal maxRecordValue (lib/domain/input_validation.dart), which
+    // validateRecordValue enforces on the Dart side; the consistency test in
+    // test/app_database_test.dart pins the two together from both directions.
     'CHECK (value IS NULL OR abs(value) <= 1000000000000000.0)',
   ];
 }
