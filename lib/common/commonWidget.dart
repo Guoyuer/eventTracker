@@ -1,22 +1,25 @@
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 
-ElevatedButton myRaisedButton(Widget child, void Function() onPressCallBack) {
+ElevatedButton primaryActionButton({
+  required Widget child,
+  required VoidCallback onPressed,
+}) {
   return ElevatedButton(
     style: ElevatedButton.styleFrom(
       backgroundColor: Colors.blue,
       padding: EdgeInsets.symmetric(horizontal: 50),
     ),
     child: child,
-    onPressed: onPressCallBack,
+    onPressed: onPressed,
   );
 }
 
-Widget eventListButton(
-  Icon icon,
-  Widget label,
-  void Function() onPressCallBack,
-) {
+Widget activityActionButton({
+  required Icon icon,
+  required Widget label,
+  required VoidCallback onPressed,
+}) {
   return Container(
     margin: EdgeInsets.only(right: 7),
     child: ElevatedButton.icon(
@@ -29,7 +32,7 @@ Widget eventListButton(
         padding: EdgeInsets.symmetric(horizontal: 50),
       ),
       label: label,
-      onPressed: onPressCallBack,
+      onPressed: onPressed,
     ),
   );
 }

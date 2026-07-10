@@ -101,9 +101,11 @@ class EventTileButton extends ConsumerWidget {
       ),
       ActiveTimedActivity() => (Icons.stop_circle_outlined, localizations.stop),
     };
-    return eventListButton(Icon(icon), Text(label), () {
-      _submitRecording(context, ref, activity, DateTime.now());
-    });
+    return activityActionButton(
+      icon: Icon(icon),
+      label: Text(label),
+      onPressed: () => _submitRecording(context, ref, activity, DateTime.now()),
+    );
   }
 
   Future<void> _submitRecording(

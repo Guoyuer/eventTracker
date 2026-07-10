@@ -36,9 +36,9 @@ class StatisticPage extends ConsumerWidget {
               ),
               Container(
                 margin: EdgeInsets.only(right: 10),
-                child: myRaisedButton(
-                  Text(localizations.changeRange),
-                  () async {
+                child: primaryActionButton(
+                  child: Text(localizations.changeRange),
+                  onPressed: () async {
                     final now = DateTime.now();
                     final lastSelectableDay = DateTime(
                       now.year,

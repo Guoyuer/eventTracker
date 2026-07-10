@@ -112,9 +112,10 @@ class EventEditor extends ConsumerWidget {
                   retryLabel: localizations.retry,
                 ),
               ),
-              myRaisedButton(Text(localizations.save), () {
-                saveActivity();
-              }),
+              primaryActionButton(
+                child: Text(localizations.save),
+                onPressed: saveActivity,
+              ),
             ],
           ),
         ),

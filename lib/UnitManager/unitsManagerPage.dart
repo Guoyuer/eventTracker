@@ -75,9 +75,9 @@ class UnitsManager extends ConsumerWidget {
         ),
         Container(
           padding: EdgeInsets.symmetric(horizontal: 100),
-          child: myRaisedButton(
-            Text(AppLocalizations.of(context)!.addUnit),
-            () {
+          child: primaryActionButton(
+            child: Text(AppLocalizations.of(context)!.addUnit),
+            onPressed: () {
               final localizations = AppLocalizations.of(context)!;
               displayTextInputDialog(
                 context,
