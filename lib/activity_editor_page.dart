@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:event_tracker/common/async_state.dart';
-import 'package:event_tracker/common/commonWidget.dart';
+import 'package:event_tracker/common/common_widgets.dart';
 import 'package:event_tracker/common/localized_activity_messages.dart';
 import 'package:event_tracker/l10n/app_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';

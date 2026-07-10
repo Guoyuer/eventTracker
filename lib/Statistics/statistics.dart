@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:event_tracker/common/async_state.dart';
-import 'package:event_tracker/common/commonWidget.dart';
+import 'package:event_tracker/common/common_widgets.dart';
 import 'package:intl/intl.dart';
 
 import 'statistics_charts.dart';

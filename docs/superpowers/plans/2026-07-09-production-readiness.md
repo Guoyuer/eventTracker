@@ -1211,6 +1211,11 @@ git commit -m "Localize user-facing strings and enforce it with a test"
 
 ### Task 7: 收紧 lint
 
+**Status: completed for lint suppressions and source-file snake_case names.**
+The remaining directory terminology work is tracked with the v7 migration in
+`docs/plans/2026-07-10-unified-quality-execution.md`; the step-by-step text
+below is retained as historical implementation detail.
+
 **Files:**
 - Modify: `analysis_options.yaml`
 - Modify: 被规则命中的各文件

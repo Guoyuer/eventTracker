@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
-import 'heatMap.dart';
+import 'heat_map.dart';
 import 'heatmap_calendar_model.dart';
 
 //最上层组件，只需给日期区间即可

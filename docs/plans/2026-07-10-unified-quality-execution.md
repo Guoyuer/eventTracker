@@ -133,10 +133,16 @@ data and foreign keys, full migration suite, codegen diff check, Windows build.
 
 ### 5. Remove Naming, Lint, and Presentation State Debt
 
+**Status: lint suppression removal and source-file snake_case migration
+complete; directory terminology and chart theme state remain.**
+
 - Complete the remaining correctness lint batch, then rename files and finally
   directories to current snake_case/Activity terminology in reviewable commits.
   Update architecture tests in the same commit; do not preserve compatibility
   import facades.
+- All previous lint suppressions are gone. Source files now use snake_case
+  names without compatibility imports; legacy UI directories are intentionally
+  deferred to the v7 `Events -> Activities` terminology migration.
 - Delete verified dead UI and analytics data paths as separate, behavior-neutral
   commits. The first cleanup removes the unused selection helper and the
   unrendered heatmap unit/configuration pipeline.

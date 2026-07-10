@@ -32,8 +32,8 @@ void main() {
         ..._dartFilesUnder('lib/heatmap_calendar'),
         ...[
           'lib/main.dart',
-          'lib/eventEditor.dart',
-          'lib/settingPage.dart',
+          'lib/activity_editor_page.dart',
+          'lib/settings_page.dart',
         ].map(File.new),
       ];
 
@@ -90,8 +90,8 @@ bool _outerLayerImports(String uri) {
       _referencesLibModule(uri, 'EventsDetails') ||
       _referencesLibModule(uri, 'Statistics') ||
       _referencesLibModule(uri, 'UnitManager') ||
-      _referencesLibFile(uri, 'eventEditor.dart') ||
-      _referencesLibFile(uri, 'settingPage.dart');
+      _referencesLibFile(uri, 'activity_editor_page.dart') ||
+      _referencesLibFile(uri, 'settings_page.dart');
 }
 
 class _HardCodedCjkVisitor extends RecursiveAstVisitor<void> {

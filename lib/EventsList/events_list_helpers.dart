@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../common/commonWidget.dart';
+import '../common/common_widgets.dart';
 import '../domain/input_validation.dart';
 import '../l10n/app_localizations.dart';
 

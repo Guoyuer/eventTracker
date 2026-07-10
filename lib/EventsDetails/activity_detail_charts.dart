@@ -1,7 +1,7 @@
 import 'package:event_tracker/analytics/activity_detail_chart_models.dart';
 import 'package:event_tracker/common/const.dart';
 import 'package:event_tracker/domain/activity_models.dart';
-import 'package:event_tracker/heatmap_calendar/heatMap.dart';
+import 'package:event_tracker/heatmap_calendar/heat_map.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
@@ -122,9 +122,6 @@ class _ActivityDetailChartsState extends State<ActivityDetailCharts> {
               height: 35,
               margin: EdgeInsets.all(10),
               child: ToggleButtons(
-                children: model.availableMetrics
-                    .map((metric) => Text(_metricLabel(localizations, metric)))
-                    .toList(),
                 borderRadius: BorderRadius.all(Radius.circular(10)),
                 borderWidth: 2,
                 selectedBorderColor: Colors.blueAccent,
@@ -144,6 +141,9 @@ class _ActivityDetailChartsState extends State<ActivityDetailCharts> {
                     _selectedMetricIndex = index;
                   });
                 },
+                children: model.availableMetrics
+                    .map((metric) => Text(_metricLabel(localizations, metric)))
+                    .toList(),
               ),
             ),
           ],

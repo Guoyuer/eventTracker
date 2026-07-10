@@ -10,8 +10,8 @@ ElevatedButton primaryActionButton({
       backgroundColor: Colors.blue,
       padding: EdgeInsets.symmetric(horizontal: 50),
     ),
-    child: child,
     onPressed: onPressed,
+    child: child,
   );
 }
 
@@ -63,7 +63,6 @@ Future<void> displayTextInputDialog(
               valueListenable: controller,
               builder: (context, value, _) {
                 return TextButton(
-                  child: Text(submitLabel),
                   onPressed: value.text.isEmpty
                       ? null
                       : () async {
@@ -72,6 +71,7 @@ Future<void> displayTextInputDialog(
                             Navigator.pop(context);
                           }
                         },
+                  child: Text(submitLabel),
                 );
               },
             ),

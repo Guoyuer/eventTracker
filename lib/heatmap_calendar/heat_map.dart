@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import 'heatMapBuildingBlocks.dart';
+import 'heat_map_building_blocks.dart';
 import 'heatmap_calendar_model.dart';
 import '../common/const.dart';
 
