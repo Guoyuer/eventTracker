@@ -1,5 +1,3 @@
-import 'dart:collection';
-
 import '../domain/activity_models.dart';
 import 'statistics_analytics.dart';
 
@@ -110,30 +108,27 @@ StatisticsChartModel buildStatisticsChartModel({
   );
 }
 
-LinkedHashMap<String, int> _colorIndexByActivityName(
+Map<String, int> _colorIndexByActivityName(
   Map<int, StatisticsActivity> activitiesById,
   int colorCount,
 ) {
-  return LinkedHashMap.fromEntries([
+  return {
     for (final entry in activitiesById.entries)
-      MapEntry(entry.value.name, entry.key.abs() % colorCount),
-  ]);
+      entry.value.name: entry.key.abs() % colorCount,
+  };
 }
 
 StatisticsTimeSlotModel _buildTimeSlotModel(
-  LinkedHashMap<String, List<double>> hourlyCountsByActivityName,
-  LinkedHashMap<String, int> colorIndexByActivityName, {
+  Map<String, List<double>> hourlyCountsByActivityName,
+  Map<String, int> colorIndexByActivityName, {
   required bool combineAdjacentHours,
 }) {
-  final slotCounts = LinkedHashMap<String, List<double>>.fromEntries([
+  final slotCounts = {
     for (final entry in hourlyCountsByActivityName.entries)
-      MapEntry(
-        entry.key,
-        combineAdjacentHours
-            ? combineStatisticsAdjacentHourSlots(entry.value)
-            : entry.value,
-      ),
-  ]);
+      entry.key: combineAdjacentHours
+          ? combineStatisticsAdjacentHourSlots(entry.value)
+          : entry.value,
+  };
   final slotCount = slotCounts.isEmpty ? 0 : slotCounts.values.first.length;
   final stackHeights = List.filled(slotCount, 0.0);
   final segmentsBySlot = List.generate(

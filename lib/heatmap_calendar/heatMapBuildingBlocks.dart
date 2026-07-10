@@ -6,7 +6,7 @@ import 'heatmap_calendar_model.dart';
 
 //最上层组件，只需给日期区间即可
 class HeatMapDisplay extends StatelessWidget {
-  HeatMapDisplay();
+  const HeatMapDisplay();
 
   @override
   Widget build(BuildContext context) {
@@ -29,10 +29,7 @@ class YearTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     List<Widget> months = year.months.map((month) => MonthTile(month)).toList();
-    return Container(
-      // width: 500,
-      child: Row(children: months),
-    );
+    return Row(children: months);
   }
 }
 
@@ -60,7 +57,7 @@ class MonthTile extends StatelessWidget {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Container(
+          SizedBox(
             //同个Month的Tile
             width:
                 monthBlock.widthInWeeks *
@@ -83,13 +80,13 @@ class MonthTile extends StatelessWidget {
 class WeekTile extends StatelessWidget {
   final HeatMapWeekColumn week;
 
-  WeekTile(this.week);
+  const WeekTile(this.week);
 
   @override
   Widget build(BuildContext context) {
     var setting = HeatMapDataHolder.of(context).setting;
     List<Widget> days = week.days.map((day) => DayTile(cell: day)).toList();
-    return Container(
+    return SizedBox(
       height: setting.dayTileSize * 7 + setting.dayTileMargin * 7,
       child: Column(children: days),
     );
@@ -100,7 +97,7 @@ class WeekTile extends StatelessWidget {
 class DayTile extends StatelessWidget {
   final HeatMapDayCell cell;
 
-  DayTile({Key? key, required this.cell}) : super(key: key);
+  const DayTile({Key? key, required this.cell}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {

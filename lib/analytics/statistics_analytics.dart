@@ -1,5 +1,3 @@
-import 'dart:collection';
-
 import '../domain/activity_models.dart';
 
 class ActivityCount {
@@ -16,7 +14,7 @@ class StatisticsSummary {
   });
 
   final List<ActivityCount> activityCounts;
-  final LinkedHashMap<String, List<double>> hourlyCountsByActivityName;
+  final Map<String, List<double>> hourlyCountsByActivityName;
 
   int get totalCount =>
       activityCounts.fold(0, (total, activity) => total + activity.count);
@@ -26,8 +24,8 @@ StatisticsSummary buildStatisticsSummary({
   required List<ActivityRecord> records,
   required Map<int, StatisticsActivity> eventsById,
 }) {
-  final activityCountsById = LinkedHashMap<int, int>();
-  final hourlyCountsByActivityName = LinkedHashMap<String, List<double>>();
+  final activityCountsById = <int, int>{};
+  final hourlyCountsByActivityName = <String, List<double>>{};
 
   for (final record in records) {
     if (record is! CompletedActivityRecord) {

@@ -50,7 +50,7 @@ class EventTracker extends StatelessWidget {
 
 class FAB extends ConsumerWidget {
   final BuildContext parentContext;
-  FAB(this.parentContext);
+  const FAB(this.parentContext);
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {

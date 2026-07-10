@@ -24,7 +24,7 @@ class HeatMapDataHolder extends InheritedWidget {
   final ValueChanged<DateTime>? onMonthTouched;
   final ValueChanged<DateTime>? onDayTouched;
 
-  HeatMapDataHolder({
+  const HeatMapDataHolder({
     required this.setting,
     required this.model,
     this.onMonthTouched,

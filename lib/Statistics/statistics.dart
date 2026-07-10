@@ -81,7 +81,7 @@ class StatisticPage extends ConsumerWidget {
 }
 
 class Charts extends ConsumerWidget {
-  Charts(this.range);
+  const Charts(this.range);
 
   final CalendarDateRange range;
 

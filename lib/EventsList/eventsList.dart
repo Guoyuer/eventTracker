@@ -13,7 +13,7 @@ import '../state/activity_list_providers.dart';
 import 'events_list_helpers.dart';
 
 class EventList extends ConsumerWidget {
-  EventList({Key? key}) : super(key: key);
+  const EventList({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -235,7 +235,7 @@ class _ActiveTimingHighlightState extends State<ActiveTimingHighlight>
 class EventTileInfo extends StatelessWidget {
   final Activity event;
 
-  EventTileInfo(this.event);
+  const EventTileInfo(this.event);
 
   @override
   Widget build(BuildContext context) {
@@ -297,7 +297,7 @@ class EventTileInfo extends StatelessWidget {
 class LapsedTimeStr extends ConsumerWidget {
   final DateTime startTime;
 
-  LapsedTimeStr({Key? key, required this.startTime}) : super(key: key);
+  const LapsedTimeStr({Key? key, required this.startTime}) : super(key: key);
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
