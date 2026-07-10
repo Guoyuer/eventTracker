@@ -199,7 +199,7 @@ Remaining:
 - Android SDK is not installed on this workstation, so Android runtime verification remains unavailable locally.
 - Revisit any remaining outdated transitive versions only when a direct dependency or Flutter SDK release makes them resolvable.
 
-## First Execution Slice
+## Historical First Execution Slice
 
 The first slice should make the quality gates meaningful without changing product behavior:
 

@@ -1,5 +1,10 @@
 # Architecture Improvement Plan
 
+> Historical implementation record. The planned persistence, analytics, state,
+> and dependency-deepening slices below are complete unless explicitly marked
+> otherwise. Use `2026-07-10-unified-quality-execution.md` for active work;
+> keep this document as the rationale for the current architecture.
+
 ## Purpose
 
 This plan describes how to move `event_tracker` from a working prototype toward a maintainable Flutter app. The main strategy is to deepen the important modules: persistence first, analytics second, UI composition third, and dependency modernization last.

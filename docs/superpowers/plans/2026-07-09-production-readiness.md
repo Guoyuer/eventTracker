@@ -23,10 +23,10 @@
 ## Global Constraints
 
 - Dart SDK 约束 `^3.12.0`，Flutter stable 3.44.5。不要升级这两个。
-- 每个 Task 结束时 `flutter analyze` 必须 **`No issues found!`**，`flutter test` 必须全绿。当前基线：analyze 干净，**108 个测试全部通过**（21 个测试文件）。
+- 每个 Task 结束时 `flutter analyze` 必须 **`No issues found!`**，`flutter test` 必须全绿。当前基线：analyze 干净，**112 个测试全部通过**（21 个测试文件）。
 - 不得放宽 `test/architecture_dependencies_test.dart` 的规则。`lib/domain/`、`lib/application/`、`lib/analytics/` 不允许 import Flutter、Riverpod 或 `lib/persistence/`。
 - 不得引入新的 denormalized 汇总字段。`Activity` 的一切数值必须继续由 `ActivityRecordHistory.evaluate` 从 `Records` 推导（`lib/persistence/activity_snapshot_store.dart:58`）。
-- 修改 `lib/persistence/database/tables.dart` 或 `sql.drift` 之后，必须跑 `dart run build_runner build --delete-conflicting-outputs` 重新生成 `app_database.g.dart`，并把生成物一起提交。
+- 修改 `lib/persistence/database/tables.dart` 或 `sql.drift` 之后，必须跑 `dart run build_runner build` 重新生成 `app_database.g.dart`，并把生成物一起提交。
 - 每个 Task 独立提交。提交信息用英文祈使句（跟现有 git history 一致，如 `Enforce activity unit integrity`）。
 
 ## 已经做对的，不要动
