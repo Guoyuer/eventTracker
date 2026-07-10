@@ -1,53 +1,15 @@
 import '../domain/activity_repository.dart';
 
-typedef ActivityDeleteConfirmation = Future<bool> Function();
-typedef ActivityDetailExit = void Function(bool deleted);
-typedef ActivityDescriptionRefresh = void Function();
-typedef ActivityDescriptionEditingExit = void Function();
-
 class ActivityDetailController {
-  ActivityDetailController({required ActivityWriter repository})
-    : this._(repository);
-
-  ActivityDetailController._(this._repository);
+  ActivityDetailController(this._repository);
 
   final ActivityWriter _repository;
 
-  Future<bool> deleteActivity(
-    int activityId, {
-    required ActivityDeleteConfirmation confirmDelete,
-  }) async {
-    final confirmed = await confirmDelete();
-    if (!confirmed) {
-      return false;
-    }
-
-    await _repository.deleteActivity(activityId);
-    return true;
+  Future<void> deleteActivity(int activityId) {
+    return _repository.deleteActivity(activityId);
   }
 
-  Future<void> deleteActivityAndExit(
-    int activityId, {
-    required ActivityDeleteConfirmation confirmDelete,
-    required ActivityDetailExit exitDetail,
-  }) async {
-    final deleted = await deleteActivity(
-      activityId,
-      confirmDelete: confirmDelete,
-    );
-    if (deleted) {
-      exitDetail(true);
-    }
-  }
-
-  Future<void> saveDescription(
-    int activityId,
-    String description, {
-    required ActivityDescriptionRefresh refresh,
-    required ActivityDescriptionEditingExit exitEditing,
-  }) async {
-    await _repository.updateActivityDescription(activityId, description);
-    refresh();
-    exitEditing();
+  Future<void> saveDescription(int activityId, String description) {
+    return _repository.updateActivityDescription(activityId, description);
   }
 }

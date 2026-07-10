@@ -101,12 +101,6 @@ List<ActivityRecord> recordsOnDay(List<ActivityRecord> records, DateTime day) {
       .toList();
 }
 
-List<double> combineAdjacentHourSlots(List<double> hourlyValues) {
-  return [
-    for (var i = 0; i < 12; i++) hourlyValues[i * 2] + hourlyValues[i * 2 + 1],
-  ];
-}
-
 double _dailyRecordValue(
   CompletedActivityRecord record,
   ActivityDetailMetric metric,

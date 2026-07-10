@@ -104,18 +104,16 @@ class ActivityDetailPage extends ConsumerWidget {
     BuildContext context,
     WidgetRef ref,
     int activityId,
-  ) {
-    return ActivityDetailController(
-      repository: ref.read(activityWriterProvider),
-    ).deleteActivityAndExit(
-      activityId,
-      confirmDelete: () => _confirmDelete(context),
-      exitDetail: (deleted) {
-        if (context.mounted) {
-          Navigator.of(context).pop(deleted);
-        }
-      },
-    );
+  ) async {
+    if (!await _confirmDelete(context)) {
+      return;
+    }
+    await ActivityDetailController(
+      ref.read(activityWriterProvider),
+    ).deleteActivity(activityId);
+    if (context.mounted) {
+      Navigator.of(context).pop(true);
+    }
   }
 
   Future<bool> _confirmDelete(BuildContext context) async {

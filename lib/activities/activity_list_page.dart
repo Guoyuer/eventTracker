@@ -119,7 +119,7 @@ class ActivityTileAction extends ConsumerWidget {
       recordLifecycle: ref.read(recordLifecycleProvider),
       messages: localizedActivityMessages(AppLocalizations.of(context)!),
       refresh: () => ref.invalidate(activityListProvider),
-      notify: showToast,
+      notify: (message) => showMessage(context, message),
     );
 
     return controller.recordActivity(
@@ -148,23 +148,12 @@ class ActivityTile extends ConsumerWidget {
           if (isActive) Positioned.fill(child: ActiveTimingHighlight()),
           InkWell(
             onTap: () async {
-              final controller = ActivityListController(
-                recordLifecycle: ref.read(recordLifecycleProvider),
-                messages: localizedActivityMessages(
-                  AppLocalizations.of(context)!,
-                ),
-                refresh: () => ref.invalidate(activityListProvider),
-                notify: showToast,
-              );
-              await controller.showActivityDetail(
-                activity.id,
-                showDetail: (activityId) async {
-                  return await Navigator.of(
-                        context,
-                      ).pushNamed(ActivityRoutes.detail, arguments: activityId)
-                      as bool?;
-                },
-              );
+              final deleted = await Navigator.of(
+                context,
+              ).pushNamed(ActivityRoutes.detail, arguments: activity.id);
+              if (deleted == true) {
+                ref.invalidate(activityListProvider);
+              }
             },
             child: Container(
               margin: EdgeInsets.only(left: 10, top: 10),

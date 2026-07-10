@@ -30,21 +30,20 @@ class ActivityEditorPage extends ConsumerWidget {
       }
 
       _formKey.currentState!.save();
-      await ActivityEditorController(
-        repository: ref.read(activityWriterProvider),
-        messages: localizedActivityMessages(localizations),
-        notify: showToast,
-      ).createActivityAndExit(
-        name: name!,
-        unit: selectedUnit,
-        description: description,
-        careTime: careTime,
-        exitEditor: (created) {
-          if (context.mounted) {
-            Navigator.pop(context, created);
-          }
-        },
-      );
+      final created =
+          await ActivityEditorController(
+            repository: ref.read(activityWriterProvider),
+            messages: localizedActivityMessages(localizations),
+            notify: (message) => showMessage(context, message),
+          ).createActivity(
+            name: name!,
+            unit: selectedUnit,
+            description: description,
+            careTime: careTime,
+          );
+      if (created && context.mounted) {
+        Navigator.pop(context, true);
+      }
     }
 
     return Scaffold(

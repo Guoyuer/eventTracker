@@ -43,7 +43,7 @@ Future<double?> inputValDialog(BuildContext ctx, String unit) async {
                   );
                   Navigator.of(context).pop(value);
                 } catch (err) {
-                  showToast(localizations.recordValueInvalid);
+                  showMessage(ctx, localizations.recordValueInvalid);
                 }
               },
               child: Text(localizations.confirm),

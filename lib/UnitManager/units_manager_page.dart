@@ -98,7 +98,7 @@ class UnitsManager extends ConsumerWidget {
       repository: ref.read(unitRepositoryProvider),
       messages: localizedActivityMessages(AppLocalizations.of(context)!),
       refresh: () => ref.invalidate(unitListProvider),
-      notify: showToast,
+      notify: (message) => showMessage(context, message),
     );
   }
 

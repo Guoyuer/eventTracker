@@ -1,5 +1,6 @@
 import '../domain/activity_models.dart';
 import 'activity_detail_analytics.dart';
+import 'hour_slots.dart';
 
 class ActivityDetailChartModel {
   ActivityDetailChartModel({

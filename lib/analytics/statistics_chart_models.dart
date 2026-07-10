@@ -1,4 +1,5 @@
 import '../domain/activity_models.dart';
+import 'hour_slots.dart';
 import 'statistics_analytics.dart';
 
 class StatisticsChartModel {
@@ -126,7 +127,7 @@ StatisticsTimeSlotModel _buildTimeSlotModel(
   final slotCounts = {
     for (final entry in hourlyCountsByActivityName.entries)
       entry.key: combineAdjacentHours
-          ? combineStatisticsAdjacentHourSlots(entry.value)
+          ? combineAdjacentHourSlots(entry.value)
           : entry.value,
   };
   final slotCount = slotCounts.isEmpty ? 0 : slotCounts.values.first.length;

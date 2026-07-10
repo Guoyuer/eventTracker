@@ -74,9 +74,7 @@ class _FakeActivityAccess implements ActivityReader, ActivityWriter {
     required bool careTime,
     String? unit,
     String? description,
-  }) {
-    throw UnimplementedError();
-  }
+  }) async => 0;
 
   @override
   Future<String?> getActivityDescription(int activityId) async {
@@ -93,7 +91,5 @@ class _FakeActivityAccess implements ActivityReader, ActivityWriter {
   }
 
   @override
-  Future<void> deleteActivity(int activityId) {
-    throw UnimplementedError();
-  }
+  Future<void> deleteActivity(int activityId) async {}
 }

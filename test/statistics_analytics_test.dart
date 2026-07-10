@@ -1,3 +1,4 @@
+import 'package:event_tracker/analytics/hour_slots.dart';
 import 'package:event_tracker/analytics/statistics_analytics.dart';
 import 'package:event_tracker/domain/activity_models.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -63,9 +64,7 @@ void main() {
 
   test('adjacent hour grouping returns twelve two-hour slots', () {
     expect(
-      combineStatisticsAdjacentHourSlots([
-        for (var i = 0; i < 24; i++) i.toDouble(),
-      ]),
+      combineAdjacentHourSlots([for (var i = 0; i < 24; i++) i.toDouble()]),
       [for (var i = 0; i < 12; i++) (i * 2 + i * 2 + 1).toDouble()],
     );
   });

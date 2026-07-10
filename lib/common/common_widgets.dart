@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:fluttertoast/fluttertoast.dart';
 
 ElevatedButton primaryActionButton({
   required Widget child,
@@ -84,14 +83,6 @@ Future<void> displayTextInputDialog(
   }
 }
 
-void showToast(String text) {
-  Fluttertoast.showToast(
-    msg: text,
-    toastLength: Toast.LENGTH_SHORT,
-    gravity: ToastGravity.BOTTOM,
-    timeInSecForIosWeb: 1,
-    backgroundColor: Colors.blueAccent,
-    textColor: Colors.white,
-    fontSize: 16.0,
-  );
+void showMessage(BuildContext context, String text) {
+  ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(text)));
 }

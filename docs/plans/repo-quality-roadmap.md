@@ -173,12 +173,12 @@ Status: in progress
 - Migrated unit selection to Flutter's current `RadioGroup` Interface.
 - Standardized async loading, empty, error, and retry states behind `AsyncStateView`.
 - Moved add-activity, activity-detail deletion/description-save, and unit-management mutation/refresh/notification policy behind tested application controllers.
-- Deepened `ActivityListController` so activity-list recording and detail-route refresh policy sit behind one application Module, leaving `EventList` to supply UI adapters for prompts, navigation, notifications, and provider invalidation.
+- Kept activity-list recording policy in `ActivityListController`; `EventList` now owns direct detail-route navigation and invalidates `activityListProvider` only after a deletion result.
 - Removed the pass-through `EventDataHolder` inherited widget and passed activity models directly to list tiles.
 - Removed unused long-press callback surface from shared button helpers after the incomplete manual-time-entry controls were retired.
-- Moved activity-detail delete-and-exit policy behind `ActivityDetailController`, leaving the route to provide only the confirmation dialog and navigation adapter.
+- Kept activity-detail deletion behind `ActivityDetailController`; the route owns confirmation and exits only after deletion succeeds.
 - Moved unit delete confirmation and dismiss permission behind `UnitManagementController`, so failed deletes no longer dismiss the unit tile before refresh repairs the list.
-- Moved add-activity create-and-exit policy behind `ActivityEditorController`, leaving `EventEditor` to provide form validation, draft values, notifications, and the navigation adapter.
+- Kept add-activity creation and duplicate-name handling behind `ActivityEditorController`; `EventEditor` owns success navigation and remains open after duplicate-name failures.
 - Replaced the heatmap calendar's global empty-date sentinel with typed placeholder cells produced by the calendar model.
 - Removed the old settings-page DB viewer, delete-all-data button, fake-data generator, and inactive step-count route.
 - Replaced broad Activity Repository test fakes with narrow `ActivityReader`, `ActivityWriter`, and `RecordLifecycle` Adapters; recording behavior tests now cover the exact five-second cancellation threshold.

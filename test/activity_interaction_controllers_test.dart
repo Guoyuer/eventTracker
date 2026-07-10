@@ -1,4 +1,3 @@
-import 'package:event_tracker/application/activity_list_controller.dart';
 import 'package:event_tracker/application/activity_detail_controller.dart';
 import 'package:event_tracker/application/activity_editor_controller.dart';
 import 'package:event_tracker/application/activity_messages.dart';
@@ -69,55 +68,6 @@ void main() {
     expect(notifications, ['已存在名为「Read」的项目']);
   });
 
-  test('activity editor exits only after create succeeds', () async {
-    final repository = _FakeActivityWriter();
-    final exits = <bool>[];
-    final controller = ActivityEditorController(
-      repository: repository,
-      messages: _messages,
-      notify: (_) {},
-    );
-
-    await controller.createActivityAndExit(
-      name: 'Read',
-      unit: 'pages',
-      description: 'Books',
-      careTime: false,
-      exitEditor: exits.add,
-    );
-
-    expect(repository.createdActivities, [
-      _CreatedActivity(
-        name: 'Read',
-        unit: 'pages',
-        description: 'Books',
-        careTime: false,
-      ),
-    ]);
-    expect(exits, [true]);
-  });
-
-  test('activity editor stays open when create fails', () async {
-    final repository = _FakeActivityWriter()
-      ..createActivityError = const DuplicateActivityName('Read');
-    final notifications = <String>[];
-    final exits = <bool>[];
-    final controller = ActivityEditorController(
-      repository: repository,
-      messages: _messages,
-      notify: notifications.add,
-    );
-
-    await controller.createActivityAndExit(
-      name: 'Read',
-      careTime: true,
-      exitEditor: exits.add,
-    );
-
-    expect(exits, isEmpty);
-    expect(notifications, ['已存在名为「Read」的项目']);
-  });
-
   test('activity editor lets unexpected failures reach the error boundary', () {
     final repository = _FakeActivityWriter()
       ..createActivityError = StateError('storage unavailable');
@@ -133,146 +83,26 @@ void main() {
     );
   });
 
-  test(
-    'activity detail deletion returns success after repository delete',
-    () async {
-      final repository = _FakeActivityWriter();
-      final controller = ActivityDetailController(repository: repository);
-
-      final deleted = await controller.deleteActivity(
-        12,
-        confirmDelete: () async => true,
-      );
-
-      expect(deleted, isTrue);
-      expect(repository.deletedActivityIds, [12]);
-    },
-  );
-
-  test('activity detail deletion skips repository when unconfirmed', () async {
+  test('activity detail delegates deletion to the repository', () async {
     final repository = _FakeActivityWriter();
-    final controller = ActivityDetailController(repository: repository);
+    final controller = ActivityDetailController(repository);
 
-    final deleted = await controller.deleteActivity(
-      12,
-      confirmDelete: () async => false,
-    );
+    await controller.deleteActivity(12);
 
-    expect(deleted, isFalse);
-    expect(repository.deletedActivityIds, isEmpty);
+    expect(repository.deletedActivityIds, [12]);
   });
 
   test(
-    'activity detail exits only after a confirmed delete succeeds',
+    'activity detail delegates description updates to the repository',
     () async {
       final repository = _FakeActivityWriter();
-      final exits = <bool>[];
-      final controller = ActivityDetailController(repository: repository);
+      final controller = ActivityDetailController(repository);
 
-      await controller.deleteActivityAndExit(
-        12,
-        confirmDelete: () async => true,
-        exitDetail: exits.add,
-      );
-
-      expect(repository.deletedActivityIds, [12]);
-      expect(exits, [true]);
-    },
-  );
-
-  test('activity detail stays open when delete is unconfirmed', () async {
-    final repository = _FakeActivityWriter();
-    final exits = <bool>[];
-    final controller = ActivityDetailController(repository: repository);
-
-    await controller.deleteActivityAndExit(
-      12,
-      confirmDelete: () async => false,
-      exitDetail: exits.add,
-    );
-
-    expect(repository.deletedActivityIds, isEmpty);
-    expect(exits, isEmpty);
-  });
-
-  test(
-    'activity detail saves descriptions before refreshing edit state',
-    () async {
-      final repository = _FakeActivityWriter();
-      final controller = ActivityDetailController(repository: repository);
-      var refreshCount = 0;
-      var exitEditingCount = 0;
-
-      await controller.saveDescription(
-        12,
-        'Updated',
-        refresh: () => refreshCount++,
-        exitEditing: () => exitEditingCount++,
-      );
+      await controller.saveDescription(12, 'Updated');
 
       expect(repository.updatedDescriptions, {12: 'Updated'});
-      expect(refreshCount, 1);
-      expect(exitEditingCount, 1);
     },
   );
-
-  test(
-    'activity list refreshes after a detail route deletes activity',
-    () async {
-      final activity = PlainActivity(
-        id: 7,
-        name: 'Read',
-        occurrenceCount: 0,
-        totalValue: 0,
-      );
-      var refreshCount = 0;
-      final shownActivityIds = <int>[];
-      final controller = ActivityListController(
-        recordLifecycle: _UnusedRecordLifecycle(),
-        messages: _messages,
-        refresh: () => refreshCount++,
-        notify: (_) {},
-      );
-
-      await controller.showActivityDetail(
-        activity.id,
-        showDetail: (activityId) async {
-          shownActivityIds.add(activityId);
-          return true;
-        },
-      );
-
-      expect(shownActivityIds, [activity.id]);
-      expect(refreshCount, 1);
-    },
-  );
-
-  test('activity list ignores non-delete detail route results', () async {
-    final activity = PlainActivity(
-      id: 7,
-      name: 'Read',
-      occurrenceCount: 0,
-      totalValue: 0,
-    );
-    var refreshCount = 0;
-    final controller = ActivityListController(
-      recordLifecycle: _UnusedRecordLifecycle(),
-      messages: _messages,
-      refresh: () => refreshCount++,
-      notify: (_) {},
-    );
-
-    await controller.showActivityDetail(
-      activity.id,
-      showDetail: (_) async => null,
-    );
-    await controller.showActivityDetail(
-      activity.id,
-      showDetail: (_) async => false,
-    );
-
-    expect(refreshCount, 0);
-  });
 
   test('unit add refreshes the unit list after success', () async {
     final repository = _FakeUnitRepository();
@@ -412,31 +242,6 @@ class _FakeActivityWriter implements ActivityWriter {
   }
 }
 
-class _UnusedRecordLifecycle implements RecordLifecycle {
-  Never _unexpected() => throw StateError('record lifecycle should not run');
-
-  @override
-  Future<void> addPlainRecord(
-    int activityId,
-    DateTime endTime, {
-    double? value,
-  }) => _unexpected();
-
-  @override
-  Future<void> cancelActiveTimedRecord(int activityId) => _unexpected();
-
-  @override
-  Future<int> startTimedRecord(int activityId, DateTime startTime) =>
-      _unexpected();
-
-  @override
-  Future<void> stopActiveTimedRecord(
-    int activityId,
-    DateTime stoppedAt, {
-    double? value,
-  }) => _unexpected();
-}
-
 class _FakeUnitRepository implements UnitRepository {
   final addedUnitNames = <String>[];
   final deletedUnitNames = <String>[];
@@ -444,9 +249,7 @@ class _FakeUnitRepository implements UnitRepository {
   Object? deleteUnitError;
 
   @override
-  Future<List<ActivityUnit>> getUnits() {
-    throw UnimplementedError();
-  }
+  Future<List<ActivityUnit>> getUnits() async => [];
 
   @override
   Future<int> addUnit(String name) async {

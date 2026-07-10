@@ -1,4 +1,5 @@
 import 'package:event_tracker/analytics/activity_detail_analytics.dart';
+import 'package:event_tracker/analytics/hour_slots.dart';
 import 'package:event_tracker/domain/activity_models.dart';
 import 'package:flutter_test/flutter_test.dart';
 

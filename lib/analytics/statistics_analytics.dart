@@ -54,12 +54,6 @@ StatisticsSummary buildStatisticsSummary({
   );
 }
 
-List<double> combineStatisticsAdjacentHourSlots(List<double> hourlyValues) {
-  return [
-    for (var i = 0; i < 12; i++) hourlyValues[i * 2] + hourlyValues[i * 2 + 1],
-  ];
-}
-
 StatisticsActivity _activityForRecord(
   CompletedActivityRecord record,
   Map<int, StatisticsActivity> activitiesById,

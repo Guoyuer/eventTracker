@@ -5,7 +5,6 @@ import 'activity_messages.dart';
 
 typedef ActivityListRefresh = void Function();
 typedef ActivityNotification = void Function(String message);
-typedef ActivityDetailRoute = Future<bool?> Function(int activityId);
 typedef ActivityValuePrompt = Future<double?> Function(String unit);
 
 class ActivityListController {
@@ -56,16 +55,6 @@ class ActivityListController {
       }
     } on ActivityBusy {
       _notify(_messages.activityBusy);
-      _refresh();
-    }
-  }
-
-  Future<void> showActivityDetail(
-    int activityId, {
-    required ActivityDetailRoute showDetail,
-  }) async {
-    final deleted = await showDetail(activityId);
-    if (deleted == true) {
       _refresh();
     }
   }

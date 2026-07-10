@@ -174,11 +174,11 @@ Current status:
 - Small mutable UI state now uses Riverpod 3 `NotifierProvider` through `MutableState` instead of legacy `StateProvider`.
 - Async loading, empty, error, and retry rendering now goes through `AsyncStateView` instead of page-local `.when` branches.
 - Add-activity, activity-detail deletion/description-save, and unit-management mutation policy now lives behind small application controllers, leaving route Widgets as UI Adapters for forms, dialogs, and navigation.
-- Activity-list recording and detail-route refresh policy now live behind `ActivityListController`; `EventList` supplies UI adapters for value prompts, route navigation, notifications, and provider invalidation.
+- Activity-list recording policy lives behind `ActivityListController`; `EventList` owns direct detail-route navigation and invalidates `activityListProvider` only when that route returns a deletion result.
 - `EventList` no longer uses the pass-through `EventDataHolder` inherited widget, and shared button helpers no longer expose unused long-press callbacks from retired manual-time-entry controls.
-- Activity-detail deletion now exits the route through `ActivityDetailController`, with the Widget only providing confirmation and navigation adapters.
+- `ActivityDetailController` performs the deletion command; the route owns its confirmation dialog and exits only after the command succeeds.
 - Unit deletion now runs confirmation, repository mutation, refresh, notification, and Dismissible permission through `UnitManagementController`, preventing failed deletes from visually dismissing rows before refresh.
-- Add-activity creation now exits through `ActivityEditorController`, with `EventEditor` limited to form validation, draft values, notification, and navigation adapters.
+- `ActivityEditorController` reports creation success or duplicate-name failure; `EventEditor` owns success navigation and remains open after a duplicate-name failure.
 
 Target shape:
 
