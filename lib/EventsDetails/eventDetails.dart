@@ -7,6 +7,7 @@ import '../application/activity_detail_controller.dart';
 import '../domain/activity_models.dart';
 import '../persistence/persistence_providers.dart';
 import '../state/activity_detail_providers.dart';
+import '../l10n/app_localizations.dart';
 import 'activity_description_editor.dart';
 import 'activity_detail_charts.dart';
 
@@ -34,8 +35,9 @@ class EventDetails extends ConsumerWidget {
     return AsyncStateView<Activity>(
       value: snapshot,
       data: (activity) => _buildPage(context, ref, activity),
-      errorMessage: '加载项目失败',
+      errorMessage: AppLocalizations.of(context)!.loadActivitiesFailed,
       onRetry: () => ref.invalidate(activitySnapshotProvider(activityId)),
+      retryLabel: AppLocalizations.of(context)!.retry,
     );
   }
 
@@ -48,18 +50,20 @@ class EventDetails extends ConsumerWidget {
             icon: const Icon(Icons.delete),
           ),
         ],
-        title: Text('${activity.name} - 项目详细'),
+        title: Text(
+          AppLocalizations.of(context)!.activityDetailTitle(activity.name),
+        ),
       ),
       body: ListView(
         children: [
-          _buildDescriptionCard(activity.id),
-          _buildCharts(ref, activity),
+          _buildDescriptionCard(context, activity.id),
+          _buildCharts(context, ref, activity),
         ],
       ),
     );
   }
 
-  Widget _buildDescriptionCard(int activityId) {
+  Widget _buildDescriptionCard(BuildContext context, int activityId) {
     return Card(
       elevation: 10,
       child: Column(
@@ -67,7 +71,10 @@ class EventDetails extends ConsumerWidget {
         children: [
           Align(
             alignment: Alignment.center,
-            child: Text('项目描述', style: chartTitleStyle),
+            child: Text(
+              AppLocalizations.of(context)!.activityDescription,
+              style: chartTitleStyle,
+            ),
           ),
           Align(
             alignment: Alignment.center,
@@ -78,17 +85,18 @@ class EventDetails extends ConsumerWidget {
     );
   }
 
-  Widget _buildCharts(WidgetRef ref, Activity activity) {
+  Widget _buildCharts(BuildContext context, WidgetRef ref, Activity activity) {
     final records = ref.watch(activityRecordsProvider(activity.id));
     return AsyncStateView<List<ActivityRecord>>(
       value: records,
       data: (records) =>
           ActivityDetailCharts(activity: activity, records: records),
-      errorMessage: '加载记录失败',
-      emptyMessage: '暂无记录',
+      errorMessage: AppLocalizations.of(context)!.loadRecordsFailed,
+      emptyMessage: AppLocalizations.of(context)!.noRecords,
       isEmpty: (records) => records.isEmpty,
       layout: AsyncStateLayout.card,
       onRetry: () => ref.invalidate(activityRecordsProvider(activity.id)),
+      retryLabel: AppLocalizations.of(context)!.retry,
     );
   }
 
@@ -115,15 +123,15 @@ class EventDetails extends ConsumerWidget {
           context: context,
           builder: (context) {
             return AlertDialog(
-              title: const Text('是否删除该项目及所有记录？'),
+              title: Text(AppLocalizations.of(context)!.deleteActivityPrompt),
               actions: [
                 TextButton(
                   onPressed: () => Navigator.of(context).pop(false),
-                  child: const Text('否'),
+                  child: Text(AppLocalizations.of(context)!.no),
                 ),
                 TextButton(
                   onPressed: () => Navigator.of(context).pop(true),
-                  child: const Text('是'),
+                  child: Text(AppLocalizations.of(context)!.yes),
                 ),
               ],
             );

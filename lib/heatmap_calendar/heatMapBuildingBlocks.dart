@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 
 import 'heatMap.dart';
 import 'heatmap_calendar_model.dart';
@@ -67,7 +68,11 @@ class MonthTile extends StatelessWidget {
                 (monthBlock.widthInWeeks - 1) * setting.monthTileMargin,
             child: Row(children: weeks),
           ),
-          Text("$month 月"),
+          Text(
+            DateFormat.MMM(
+              Localizations.localeOf(context).languageCode,
+            ).format(DateTime(2026, month)),
+          ),
         ],
       ),
     );

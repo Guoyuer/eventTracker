@@ -45,6 +45,7 @@ void main() {
           value: AsyncError('boom', StackTrace.current),
           data: (value) => Text(value),
           errorMessage: 'Failed',
+          retryLabel: 'Retry',
           onRetry: () {
             retries += 1;
           },
@@ -53,7 +54,7 @@ void main() {
     );
 
     expect(find.text('Failed'), findsOneWidget);
-    await tester.tap(find.text('重试'));
+    await tester.tap(find.text('Retry'));
     expect(retries, 1);
   });
 

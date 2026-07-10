@@ -8,6 +8,7 @@ import 'statistics_charts.dart';
 import '../domain/date_range.dart';
 import '../domain/statistics_repository.dart' show StatisticsData;
 import '../state/statistics_providers.dart';
+import '../l10n/app_localizations.dart';
 
 class StatisticPage extends ConsumerWidget {
   @override
@@ -15,6 +16,7 @@ class StatisticPage extends ConsumerWidget {
     final range = ref.watch(selectedStatisticsRangeProvider);
     final timeLStr = DateFormat('yyyy.MM.dd').format(range.firstDay);
     final timeRStr = DateFormat('yyyy.MM.dd').format(range.lastDay);
+    final localizations = AppLocalizations.of(context)!;
     return ListView(
       children: [
         Card(
@@ -27,44 +29,47 @@ class StatisticPage extends ConsumerWidget {
                 height: 40,
                 child: Center(
                   child: Text(
-                    timeLStr + ' 至 ' + timeRStr,
+                    localizations.statisticsRange(timeLStr, timeRStr),
                     style: TextStyle(fontSize: 20),
                   ),
                 ),
               ),
               Container(
                 margin: EdgeInsets.only(right: 10),
-                child: myRaisedButton(Text("更改区间"), () async {
-                  final now = DateTime.now();
-                  final lastSelectableDay = DateTime(
-                    now.year,
-                    now.month,
-                    now.day,
-                  );
-                  final selectedRange = await showDateRangePicker(
-                    context: context,
-                    firstDate: DateTime(
-                      lastSelectableDay.year,
-                      lastSelectableDay.month,
-                      lastSelectableDay.day - 100,
-                    ),
-                    lastDate: lastSelectableDay,
-                    initialDateRange: DateTimeRange(
-                      start: range.firstDay,
-                      end: range.lastDay,
-                    ),
-                  );
-                  if (selectedRange != null) {
-                    ref
-                        .read(selectedStatisticsRangeProvider.notifier)
-                        .set(
-                          CalendarDateRange(
-                            firstDay: selectedRange.start,
-                            lastDay: selectedRange.end,
-                          ),
-                        );
-                  }
-                }),
+                child: myRaisedButton(
+                  Text(localizations.changeRange),
+                  () async {
+                    final now = DateTime.now();
+                    final lastSelectableDay = DateTime(
+                      now.year,
+                      now.month,
+                      now.day,
+                    );
+                    final selectedRange = await showDateRangePicker(
+                      context: context,
+                      firstDate: DateTime(
+                        lastSelectableDay.year,
+                        lastSelectableDay.month,
+                        lastSelectableDay.day - 100,
+                      ),
+                      lastDate: lastSelectableDay,
+                      initialDateRange: DateTimeRange(
+                        start: range.firstDay,
+                        end: range.lastDay,
+                      ),
+                    );
+                    if (selectedRange != null) {
+                      ref
+                          .read(selectedStatisticsRangeProvider.notifier)
+                          .set(
+                            CalendarDateRange(
+                              firstDay: selectedRange.start,
+                              lastDay: selectedRange.end,
+                            ),
+                          );
+                    }
+                  },
+                ),
               ),
             ],
           ),
@@ -86,9 +91,10 @@ class Charts extends ConsumerWidget {
     return AsyncStateView<StatisticsData>(
       value: statistics,
       data: _buildCharts,
-      errorMessage: '加载统计失败',
+      errorMessage: AppLocalizations.of(context)!.loadStatisticsFailed,
       layout: AsyncStateLayout.card,
       onRetry: () => ref.invalidate(statisticsProvider(range)),
+      retryLabel: AppLocalizations.of(context)!.retry,
     );
   }
 

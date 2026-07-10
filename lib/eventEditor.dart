@@ -48,7 +48,7 @@ class EventEditor extends ConsumerWidget {
     }
 
     return Scaffold(
-      appBar: AppBar(title: Text("添加新项目")),
+      appBar: AppBar(title: Text(localizations.activityEditorTitle)),
       body: Padding(
         padding: EdgeInsets.symmetric(vertical: 16.0, horizontal: 24.0),
         child: Form(
@@ -62,7 +62,7 @@ class EventEditor extends ConsumerWidget {
                     TextFormField(
                       validator: (value) {
                         if (value == null || value.isEmpty) {
-                          return "项目名称不得为空";
+                          return localizations.activityNameRequired;
                         }
                         return null;
                       },
@@ -71,7 +71,7 @@ class EventEditor extends ConsumerWidget {
                       },
                       autofocus: true,
                       decoration: InputDecoration(
-                        hintText: "项目名称",
+                        hintText: localizations.activityNameHint,
                         prefixIcon: Icon(Icons.sticky_note_2_rounded),
                       ),
                     ),
@@ -80,12 +80,12 @@ class EventEditor extends ConsumerWidget {
                         description = value;
                       },
                       decoration: InputDecoration(
-                        hintText: "项目说明",
+                        hintText: localizations.activityDescriptionHint,
                         prefixIcon: Icon(Icons.subject_rounded),
                       ),
                     ),
                     SwitchListTile(
-                      title: Text("关注时长"),
+                      title: Text(localizations.trackDuration),
                       value: careTime,
                       onChanged: (bool val) {
                         ref
@@ -100,13 +100,19 @@ class EventEditor extends ConsumerWidget {
                 elevation: 8,
                 child: AsyncStateView<List<ActivityUnit>>(
                   value: units,
-                  data: (units) => _buildUnitSelector(ref, units, selectedUnit),
-                  errorMessage: '加载单位失败',
+                  data: (units) => _buildUnitSelector(
+                    localizations,
+                    ref,
+                    units,
+                    selectedUnit,
+                  ),
+                  errorMessage: localizations.loadUnitsFailed,
                   layout: AsyncStateLayout.inline,
                   onRetry: () => ref.invalidate(unitListProvider),
+                  retryLabel: localizations.retry,
                 ),
               ),
-              myRaisedButton(Text("保存"), () {
+              myRaisedButton(Text(localizations.save), () {
                 saveActivity();
               }),
             ],
@@ -117,15 +123,16 @@ class EventEditor extends ConsumerWidget {
   }
 
   Widget _buildUnitSelector(
+    AppLocalizations localizations,
     WidgetRef ref,
     List<ActivityUnit> units,
     String? selectedUnit,
   ) {
     List<Widget> children = [];
     if (units.isEmpty) {
-      children.add(ListTile(title: Text("暂无单位，可到单位管理页面添加")));
+      children.add(ListTile(title: Text(localizations.noUnitsAvailable)));
     } else {
-      children.add(ListTile(title: Text("可选择单位：")));
+      children.add(ListTile(title: Text(localizations.availableUnits)));
     }
     var unitsList = RadioGroup<String>(
       groupValue: selectedUnit,

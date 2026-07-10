@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import 'l10n/app_localizations.dart';
+
 class SettingPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
@@ -8,7 +10,7 @@ class SettingPage extends StatelessWidget {
         child: Column(
           children: [
             ElevatedButton.icon(
-              label: Text("单位管理"),
+              label: Text(AppLocalizations.of(context)!.unitManagement),
               onPressed: () {
                 Navigator.pushNamed(context, 'unitsManager');
               },

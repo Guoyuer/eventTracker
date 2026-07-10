@@ -4,6 +4,8 @@ import 'package:event_tracker/domain/statistics_repository.dart'
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 
+import '../l10n/app_localizations.dart';
+
 class StatisticsCharts extends StatelessWidget {
   final StatisticsData statisticsData;
 
@@ -18,7 +20,10 @@ class StatisticsCharts extends StatelessWidget {
     );
 
     if (model.isEmpty) {
-      return Card(elevation: 10, child: Text("暂无记录"));
+      return Card(
+        elevation: 10,
+        child: Text(AppLocalizations.of(context)!.noRecords),
+      );
     }
 
     return Column(
@@ -43,7 +48,10 @@ class _PieStatisticsChart extends StatelessWidget {
   Widget build(BuildContext context) {
     return Column(
       children: [
-        Text("次数统计", style: TextStyle(fontSize: 20)),
+        Text(
+          AppLocalizations.of(context)!.countStatistics,
+          style: TextStyle(fontSize: 20),
+        ),
         SizedBox(height: 10),
         SizedBox(
           height: 300,
@@ -66,7 +74,9 @@ class _PieStatisticsChart extends StatelessWidget {
                   ),
                   child: Center(
                     child: Text(
-                      "共 ${model.totalCount} 次",
+                      AppLocalizations.of(
+                        context,
+                      )!.totalCount(model.totalCount),
                       style: TextStyle(
                         fontSize: 20,
                         fontWeight: FontWeight.bold,
@@ -122,7 +132,10 @@ class _TimeSlotStatisticsChart extends StatelessWidget {
       margin: EdgeInsets.only(left: 5, top: 10, right: 10),
       child: Column(
         children: [
-          Text("时段活跃度", style: TextStyle(fontSize: 20)),
+          Text(
+            AppLocalizations.of(context)!.timeSlotActivity,
+            style: TextStyle(fontSize: 20),
+          ),
           SizedBox(height: 10),
           SizedBox(
             height: 300,

@@ -6,6 +6,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import 'support/localized_test_app.dart';
+
 void main() {
   testWidgets('detail route reloads its Activity Snapshot by id', (
     tester,
@@ -26,7 +28,7 @@ void main() {
           activityReaderProvider.overrideWithValue(reader),
           activityWriterProvider.overrideWithValue(_FakeActivityWriter()),
         ],
-        child: MaterialApp(
+        child: localizedTestApp(
           routes: {'EventDetails': (_) => const EventDetailsWrapper()},
           home: Builder(
             builder: (context) {
@@ -46,9 +48,9 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(reader.requestedActivityIds, [7]);
-    expect(find.text('Read - 项目详细'), findsOneWidget);
+    expect(find.text('Read - Activity details'), findsOneWidget);
     expect(find.text('Books'), findsOneWidget);
-    expect(find.text('暂无记录'), findsOneWidget);
+    expect(find.text('No records yet'), findsOneWidget);
   });
 }
 

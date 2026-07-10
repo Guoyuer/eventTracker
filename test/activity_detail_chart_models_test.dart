@@ -28,10 +28,12 @@ void main() {
     );
 
     expect(model.metric, ActivityDetailMetric.value);
-    expect(model.metricLabels, ['次数', 'pages']);
-    expect(model.selectedMetricLabel, 'pages');
+    expect(model.availableMetrics, [
+      ActivityDetailMetric.count,
+      ActivityDetailMetric.value,
+    ]);
     expect(model.visibleRecordCount, 2);
-    expect(model.recordCountHeading, '1月共进行');
+    expect(model.selectedMonth, DateTime(2026, 1, 15));
     expect(model.heatmapSeries.data[DateTime(2026, 1, 1)], 25);
     expect(model.timeSlotBars, hasLength(12));
     expect(model.timeSlotBars[4].x, 8);
@@ -39,7 +41,7 @@ void main() {
     expect(model.maxTimeSlotValue, 25);
   });
 
-  test('record labels match timed and plain activity display text', () {
+  test('record details preserve typed times, values, and units', () {
     final timed = InactiveTimedActivity(
       id: 1,
       name: 'Run',
@@ -69,12 +71,32 @@ void main() {
     );
 
     expect(
-      activityRecordLabel(activity: timed, record: timedRecord),
-      '01-01 08:00 ~ 01-01 08:30, 4km  ',
+      activityRecordDetail(activity: timed, record: timedRecord),
+      isA<ActivityRecordDetail>()
+          .having(
+            (detail) => detail.startedAt,
+            'startedAt',
+            DateTime(2026, 1, 1, 8),
+          )
+          .having(
+            (detail) => detail.endedAt,
+            'endedAt',
+            DateTime(2026, 1, 1, 8, 30),
+          )
+          .having((detail) => detail.value, 'value', 4)
+          .having((detail) => detail.unit, 'unit', 'km'),
     );
     expect(
-      activityRecordLabel(activity: plain, record: plainRecord),
-      '09:00, 12pages  ',
+      activityRecordDetail(activity: plain, record: plainRecord),
+      isA<ActivityRecordDetail>()
+          .having((detail) => detail.startedAt, 'startedAt', isNull)
+          .having(
+            (detail) => detail.endedAt,
+            'endedAt',
+            DateTime(2026, 1, 1, 9),
+          )
+          .having((detail) => detail.value, 'value', 12)
+          .having((detail) => detail.unit, 'unit', 'pages'),
     );
   });
 }

@@ -18,6 +18,7 @@ class EventList extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final events = ref.watch(activityListProvider);
+    final localizations = AppLocalizations.of(context)!;
     return AsyncStateView<List<Activity>>(
       value: events,
       data: (events) => ActivityListView(
@@ -26,10 +27,11 @@ class EventList extends ConsumerWidget {
           ref.read(eventListScrollDirProvider.notifier).set(direction);
         },
       ),
-      errorMessage: '加载项目失败',
-      emptyMessage: '暂无项目',
+      errorMessage: localizations.loadActivitiesFailed,
+      emptyMessage: localizations.noActivities,
       isEmpty: (events) => events.isEmpty,
       onRetry: () => ref.invalidate(activityListProvider),
+      retryLabel: localizations.retry,
     );
   }
 }
@@ -90,10 +92,14 @@ class EventTileButton extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final localizations = AppLocalizations.of(context)!;
     final (icon, label) = switch (activity) {
-      PlainActivity() => (Icons.add_rounded, '新记录'),
-      InactiveTimedActivity() => (Icons.play_arrow_outlined, '开始'),
-      ActiveTimedActivity() => (Icons.stop_circle_outlined, '停止'),
+      PlainActivity() => (Icons.add_rounded, localizations.newRecord),
+      InactiveTimedActivity() => (
+        Icons.play_arrow_outlined,
+        localizations.start,
+      ),
+      ActiveTimedActivity() => (Icons.stop_circle_outlined, localizations.stop),
     };
     return eventListButton(Icon(icon), Text(label), () {
       _submitRecording(context, ref, activity, DateTime.now());
@@ -231,30 +237,38 @@ class EventTileInfo extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final localizations = AppLocalizations.of(context)!;
     return switch (event) {
       ActiveTimedActivity active => LapsedTimeStr(startTime: active.startedAt),
-      TimedActivity timed => _timingInfo(timed),
-      PlainActivity plain => _plainInfo(plain),
+      TimedActivity timed => _timingInfo(localizations, timed),
+      PlainActivity plain => _plainInfo(localizations, plain),
     };
   }
 
-  Widget _timingInfo(TimedActivity event) {
-    var summary = "尚未开始";
+  Widget _timingInfo(AppLocalizations localizations, TimedActivity event) {
+    var summary = localizations.notStarted;
     if (event.totalDuration.inMicroseconds != 0) {
-      summary = "共进行${formatDuration(event.totalDuration)}";
+      summary = localizations.completedDuration(
+        formatDuration(localizations, event.totalDuration),
+      );
     }
 
-    return _summaryInfo(summary, event.unit, event.totalValue);
+    return _summaryInfo(localizations, summary, event.unit, event.totalValue);
   }
 
-  Widget _plainInfo(PlainActivity event) {
+  Widget _plainInfo(AppLocalizations localizations, PlainActivity event) {
     final summary = event.occurrenceCount == 0
-        ? "尚未开始"
-        : "已进行 ${event.occurrenceCount} 次";
-    return _summaryInfo(summary, event.unit, event.totalValue);
+        ? localizations.notStarted
+        : localizations.completedCount(event.occurrenceCount);
+    return _summaryInfo(localizations, summary, event.unit, event.totalValue);
   }
 
-  Widget _summaryInfo(String summary, String? unit, double? value) {
+  Widget _summaryInfo(
+    AppLocalizations localizations,
+    String summary,
+    String? unit,
+    double? value,
+  ) {
     final summaryText = _mutedText(summary);
     if (unit == null || value == null || value == 0) {
       return Align(alignment: Alignment.centerLeft, child: summaryText);
@@ -265,7 +279,9 @@ class EventTileInfo extends StatelessWidget {
         Align(alignment: Alignment.centerLeft, child: summaryText),
         Align(
           alignment: Alignment.centerLeft,
-          child: _mutedText("累计：${value.toInt()} $unit"),
+          child: _mutedText(
+            localizations.totalValue(value.toInt().toString(), unit),
+          ),
         ),
       ],
     );
@@ -283,10 +299,13 @@ class LapsedTimeStr extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final localizations = AppLocalizations.of(context)!;
     final duration = ref.watch(elapsedDurationProvider(startTime));
     final text = duration.maybeWhen(
-      data: (timePassed) => "已进行${formatDuration(timePassed)}",
-      orElse: () => "已进行",
+      data: (timePassed) => localizations.elapsedDuration(
+        formatDuration(localizations, timePassed),
+      ),
+      orElse: () => localizations.elapsed,
     );
     return Align(
       alignment: Alignment.centerLeft,

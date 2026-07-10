@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:analyzer/dart/analysis/features.dart';
 import 'package:analyzer/dart/analysis/utilities.dart';
 import 'package:analyzer/dart/ast/ast.dart';
+import 'package:analyzer/dart/ast/visitor.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:path/path.dart' as path;
 
@@ -48,6 +49,33 @@ void main() {
             uri.startsWith('package:path_provider/'),
       );
     });
+
+    test('runtime source contains no hard-coded CJK strings outside l10n', () {
+      final violations = <String>[];
+      final cjk = RegExp(r'[\u4e00-\u9fff]');
+
+      for (final file in _dartFilesUnder('lib')) {
+        if (path.isWithin('lib/l10n', file.path)) {
+          continue;
+        }
+        final unit = parseFile(
+          path: path.normalize(file.absolute.path),
+          featureSet: FeatureSet.latestLanguageVersion(),
+        ).unit;
+        final visitor = _HardCodedCjkVisitor(cjk);
+        unit.accept(visitor);
+        for (final literal in visitor.violations) {
+          violations.add('${path.normalize(file.path)}: $literal');
+        }
+      }
+
+      expect(
+        violations,
+        isEmpty,
+        reason:
+            'Move user-visible strings into lib/l10n:\n${violations.join('\n')}',
+      );
+    });
   });
 }
 
@@ -57,12 +85,28 @@ bool _outerLayerImports(String uri) {
       _referencesLibModule(uri, 'persistence') ||
       _referencesLibModule(uri, 'state') ||
       _referencesLibModule(uri, 'application') ||
+      _referencesLibModule(uri, 'l10n') ||
       _referencesLibModule(uri, 'EventsList') ||
       _referencesLibModule(uri, 'EventsDetails') ||
       _referencesLibModule(uri, 'Statistics') ||
       _referencesLibModule(uri, 'UnitManager') ||
       _referencesLibFile(uri, 'eventEditor.dart') ||
       _referencesLibFile(uri, 'settingPage.dart');
+}
+
+class _HardCodedCjkVisitor extends RecursiveAstVisitor<void> {
+  _HardCodedCjkVisitor(this._cjk);
+
+  final RegExp _cjk;
+  final violations = <String>[];
+
+  @override
+  void visitSimpleStringLiteral(SimpleStringLiteral node) {
+    if (_cjk.hasMatch(node.value)) {
+      violations.add(node.value);
+    }
+    super.visitSimpleStringLiteral(node);
+  }
 }
 
 bool _databaseImplementationImports(String uri) {

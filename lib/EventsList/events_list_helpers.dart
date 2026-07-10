@@ -2,18 +2,20 @@ import 'package:flutter/material.dart';
 
 import '../common/commonWidget.dart';
 import '../domain/input_validation.dart';
+import '../l10n/app_localizations.dart';
 
 Future<double?> inputValDialog(BuildContext ctx, String unit) async {
+  final localizations = AppLocalizations.of(ctx)!;
   final controller = TextEditingController();
   try {
     return await showDialog<double>(
       context: ctx,
       builder: (context) {
         return AlertDialog(
-          title: Text("请输入数据"),
+          title: Text(localizations.recordValueTitle),
           content: Row(
             children: [
-              Text("共完成了"),
+              Text(localizations.recordValuePrefix),
               Flexible(
                 child: TextField(
                   controller: controller,
@@ -30,7 +32,7 @@ Future<double?> inputValDialog(BuildContext ctx, String unit) async {
               onPressed: () {
                 Navigator.of(context).pop(null);
               },
-              child: Text("取消"),
+              child: Text(localizations.cancel),
             ),
             TextButton(
               onPressed: () {
@@ -41,10 +43,10 @@ Future<double?> inputValDialog(BuildContext ctx, String unit) async {
                   );
                   Navigator.of(context).pop(value);
                 } catch (err) {
-                  showToast("请输入大于 0 的有限数值");
+                  showToast(localizations.recordValueInvalid);
                 }
               },
-              child: Text("确认"),
+              child: Text(localizations.confirm),
             ),
           ],
         );
@@ -55,23 +57,23 @@ Future<double?> inputValDialog(BuildContext ctx, String unit) async {
   }
 }
 
-String formatDuration(Duration duration) {
+String formatDuration(AppLocalizations localizations, Duration duration) {
   String str = "";
   int hours = 0;
   if (duration.inHours > 0) {
     hours = duration.inHours;
     duration -= Duration(hours: hours);
-    str += " $hours小时";
+    str += localizations.durationHours(hours);
   }
   if (duration.inMinutes > 0) {
     int minutes = duration.inMinutes;
     duration -= Duration(minutes: minutes);
-    str += " $minutes分钟";
+    str += localizations.durationMinutes(minutes);
   }
   if (duration.inSeconds > 0) {
     int seconds = duration.inSeconds;
     duration -= Duration(seconds: seconds);
-    str += " $seconds秒";
+    str += localizations.durationSeconds(seconds);
   }
   return str;
 }

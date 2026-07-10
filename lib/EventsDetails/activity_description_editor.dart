@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../application/activity_detail_controller.dart';
 import '../common/async_state.dart';
+import '../l10n/app_localizations.dart';
 import '../persistence/persistence_providers.dart';
 import '../state/activity_detail_providers.dart';
 
@@ -18,14 +19,19 @@ class ActivityDescriptionEditor extends ConsumerWidget {
 
     return AsyncStateView<String?>(
       value: description,
-      data: (rawDescription) => _buildDescription(ref, rawDescription),
-      errorMessage: '加载描述失败',
+      data: (rawDescription) => _buildDescription(context, ref, rawDescription),
+      errorMessage: AppLocalizations.of(context)!.loadDescriptionFailed,
       layout: AsyncStateLayout.inline,
       onRetry: () => ref.invalidate(activityDescriptionProvider(activityId)),
+      retryLabel: AppLocalizations.of(context)!.retry,
     );
   }
 
-  Widget _buildDescription(WidgetRef ref, String? rawDescription) {
+  Widget _buildDescription(
+    BuildContext context,
+    WidgetRef ref,
+    String? rawDescription,
+  ) {
     final isEditing = ref.watch(activityDescriptionEditingProvider(activityId));
     if (isEditing) {
       return Center(
@@ -38,7 +44,10 @@ class ActivityDescriptionEditor extends ConsumerWidget {
       );
     }
 
-    final displayDescription = _displayDescription(rawDescription);
+    final displayDescription = _displayDescription(
+      AppLocalizations.of(context)!,
+      rawDescription,
+    );
     final hasDescription = rawDescription != null && rawDescription.isNotEmpty;
 
     return InkWell(
@@ -70,9 +79,12 @@ class ActivityDescriptionEditor extends ConsumerWidget {
     );
   }
 
-  String _displayDescription(String? rawDescription) {
+  String _displayDescription(
+    AppLocalizations localizations,
+    String? rawDescription,
+  ) {
     if (rawDescription == null || rawDescription.isEmpty) {
-      return "无描述";
+      return localizations.noDescription;
     }
     return rawDescription;
   }

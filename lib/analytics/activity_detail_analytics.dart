@@ -6,6 +6,8 @@ import '../domain/date_range.dart';
 
 enum ActivityDetailMetric { duration, count, value }
 
+enum ActivityMeasurementUnit { count, second, minute, hour, activityUnit }
+
 class ActivityHeatmapSeries {
   ActivityHeatmapSeries({
     required this.range,
@@ -15,14 +17,14 @@ class ActivityHeatmapSeries {
 
   final CalendarDateRange range;
   final Map<DateTime, double> data;
-  final String unit;
+  final ActivityMeasurementUnit unit;
 }
 
 class ActivityTimeSlotSeries {
   ActivityTimeSlotSeries({required this.hourlyValues, required this.unit});
 
   final List<double> hourlyValues;
-  final String unit;
+  final ActivityMeasurementUnit unit;
 }
 
 ActivityDetailMetric metricForActivitySelection(
@@ -63,7 +65,7 @@ ActivityHeatmapSeries buildActivityHeatmapSeries({
   return ActivityHeatmapSeries(
     range: range,
     data: data,
-    unit: _heatmapUnit(activity, metric),
+    unit: _heatmapUnit(metric),
   );
 }
 
@@ -84,7 +86,7 @@ ActivityTimeSlotSeries buildActivityTimeSlotSeries({
 
   return ActivityTimeSlotSeries(
     hourlyValues: values,
-    unit: _timeSlotUnit(activity, metric),
+    unit: _timeSlotUnit(metric),
   );
 }
 
@@ -173,17 +175,20 @@ ActivityTimeSlotSeries _buildDurationTimeSlotSeries(
 
   final maxValue = seconds.reduce(max);
   if (maxValue <= 500) {
-    return ActivityTimeSlotSeries(hourlyValues: seconds, unit: '秒');
+    return ActivityTimeSlotSeries(
+      hourlyValues: seconds,
+      unit: ActivityMeasurementUnit.second,
+    );
   }
   if (maxValue <= 500 * 60) {
     return ActivityTimeSlotSeries(
       hourlyValues: seconds.map((value) => value / 60).toList(),
-      unit: '分钟',
+      unit: ActivityMeasurementUnit.minute,
     );
   }
   return ActivityTimeSlotSeries(
     hourlyValues: seconds.map((value) => value / 3600).toList(),
-    unit: '小时',
+    unit: ActivityMeasurementUnit.hour,
   );
 }
 
@@ -221,24 +226,24 @@ void _addDurationByHour(List<double> seconds, DateInterval range) {
   }
 }
 
-String _heatmapUnit(Activity activity, ActivityDetailMetric metric) {
+ActivityMeasurementUnit _heatmapUnit(ActivityDetailMetric metric) {
   switch (metric) {
     case ActivityDetailMetric.duration:
-      return '分钟';
+      return ActivityMeasurementUnit.minute;
     case ActivityDetailMetric.count:
-      return '次数';
+      return ActivityMeasurementUnit.count;
     case ActivityDetailMetric.value:
-      return activity.requiredUnit;
+      return ActivityMeasurementUnit.activityUnit;
   }
 }
 
-String _timeSlotUnit(Activity activity, ActivityDetailMetric metric) {
+ActivityMeasurementUnit _timeSlotUnit(ActivityDetailMetric metric) {
   switch (metric) {
     case ActivityDetailMetric.duration:
-      return '秒';
+      return ActivityMeasurementUnit.second;
     case ActivityDetailMetric.count:
-      return '次数';
+      return ActivityMeasurementUnit.count;
     case ActivityDetailMetric.value:
-      return activity.requiredUnit;
+      return ActivityMeasurementUnit.activityUnit;
   }
 }

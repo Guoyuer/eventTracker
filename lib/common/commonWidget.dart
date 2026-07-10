@@ -35,10 +35,12 @@ Widget eventListButton(
 }
 
 Future<void> displayTextInputDialog(
-  BuildContext context,
-  String title,
-  Future<bool> Function(String value) onSubmit,
-) async {
+  BuildContext context, {
+  required String title,
+  required String cancelLabel,
+  required String submitLabel,
+  required Future<bool> Function(String value) onSubmit,
+}) async {
   final controller = TextEditingController();
   try {
     return await showDialog(
@@ -49,7 +51,7 @@ Future<void> displayTextInputDialog(
           content: TextField(controller: controller),
           actions: <Widget>[
             TextButton(
-              child: Text('取消'),
+              child: Text(cancelLabel),
               onPressed: () {
                 Navigator.pop(context);
               },
@@ -58,7 +60,7 @@ Future<void> displayTextInputDialog(
               valueListenable: controller,
               builder: (context, value, _) {
                 return TextButton(
-                  child: Text('添加'),
+                  child: Text(submitLabel),
                   onPressed: value.text.isEmpty
                       ? null
                       : () async {

@@ -373,14 +373,18 @@ void main() {
         }
       });
 
-      final db = AppDatabase(
+      // This test needs a file-backed database, unlike the shared in-memory
+      // harness. Close that harness before opening a second AppDatabase so
+      // Drift never has two live databases in the same test isolate.
+      await db.close();
+      final durableDb = AppDatabase(
         SqfliteQueryExecutor(path: p.join(tempDir.path, 'wal.sqlite')),
       );
 
-      final journalMode = await db
+      final journalMode = await durableDb
           .customSelect('PRAGMA journal_mode')
           .getSingle();
-      final synchronous = await db
+      final synchronous = await durableDb
           .customSelect('PRAGMA synchronous')
           .getSingle();
 
@@ -388,7 +392,7 @@ void main() {
       // 0 = OFF, 1 = NORMAL, 2 = FULL
       expect(synchronous.data.values.first, 1);
 
-      await db.close();
+      await durableDb.close();
     },
   );
 }

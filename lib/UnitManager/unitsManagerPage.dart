@@ -16,13 +16,15 @@ class UnitsManager extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final units = ref.watch(unitListProvider);
+    final localizations = AppLocalizations.of(context)!;
     return Scaffold(
-      appBar: AppBar(title: Text("单位管理")),
+      appBar: AppBar(title: Text(localizations.unitManagement)),
       body: AsyncStateView<List<ActivityUnit>>(
         value: units,
         data: (units) => _buildListView(context, ref, units),
-        errorMessage: '加载单位失败',
+        errorMessage: localizations.loadUnitsFailed,
         onRetry: () => ref.invalidate(unitListProvider),
+        retryLabel: localizations.retry,
       ),
     );
   }
@@ -73,11 +75,19 @@ class UnitsManager extends ConsumerWidget {
         ),
         Container(
           padding: EdgeInsets.symmetric(horizontal: 100),
-          child: myRaisedButton(Text("添加新单位"), () {
-            displayTextInputDialog(context, "请输入单位", (unitName) {
-              return controller.addUnit(unitName);
-            });
-          }),
+          child: myRaisedButton(
+            Text(AppLocalizations.of(context)!.addUnit),
+            () {
+              final localizations = AppLocalizations.of(context)!;
+              displayTextInputDialog(
+                context,
+                title: localizations.enterUnit,
+                cancelLabel: localizations.cancel,
+                submitLabel: localizations.add,
+                onSubmit: controller.addUnit,
+              );
+            },
+          ),
         ),
       ],
     );
@@ -97,15 +107,15 @@ class UnitsManager extends ConsumerWidget {
           context: context,
           builder: (BuildContext context) {
             return AlertDialog(
-              title: Text("是否删除该单位？"),
+              title: Text(AppLocalizations.of(context)!.deleteUnitPrompt),
               actions: [
                 TextButton(
                   onPressed: () => Navigator.of(context).pop(false),
-                  child: Text("取消"),
+                  child: Text(AppLocalizations.of(context)!.cancel),
                 ),
                 TextButton(
                   onPressed: () => Navigator.of(context).pop(true),
-                  child: Text("删除"),
+                  child: Text(AppLocalizations.of(context)!.delete),
                 ),
               ],
             );

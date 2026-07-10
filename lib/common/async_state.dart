@@ -9,15 +9,19 @@ class AsyncStateView<T> extends StatelessWidget {
     required this.value,
     required this.data,
     required this.errorMessage,
+    this.retryLabel,
     this.layout = AsyncStateLayout.page,
     this.emptyMessage,
     this.isEmpty,
     this.onRetry,
-  }) : super(key: key);
+  }) : assert(isEmpty == null || emptyMessage != null),
+       assert(onRetry == null || retryLabel != null),
+       super(key: key);
 
   final AsyncValue<T> value;
   final Widget Function(T value) data;
   final String errorMessage;
+  final String? retryLabel;
   final AsyncStateLayout layout;
   final String? emptyMessage;
   final bool Function(T value)? isEmpty;
@@ -28,7 +32,7 @@ class AsyncStateView<T> extends StatelessWidget {
     return value.when(
       data: (loadedValue) {
         if (isEmpty?.call(loadedValue) ?? false) {
-          return _wrap(_MessageState(message: emptyMessage ?? '暂无数据'));
+          return _wrap(_MessageState(message: emptyMessage!));
         }
 
         return data(loadedValue);
@@ -42,7 +46,7 @@ class AsyncStateView<T> extends StatelessWidget {
               : TextButton.icon(
                   onPressed: onRetry,
                   icon: Icon(Icons.refresh),
-                  label: Text('重试'),
+                  label: Text(retryLabel!),
                 ),
         ),
       ),

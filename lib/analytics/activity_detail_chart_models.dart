@@ -1,26 +1,22 @@
-import 'package:intl/intl.dart';
-
 import '../domain/activity_models.dart';
 import 'activity_detail_analytics.dart';
 
 class ActivityDetailChartModel {
   ActivityDetailChartModel({
     required this.metric,
-    required this.metricLabels,
-    required this.selectedMetricLabel,
+    required this.availableMetrics,
     required this.heatmapSeries,
     required this.visibleRecordCount,
-    required this.recordCountHeading,
+    required this.selectedMonth,
     required this.timeSlotBars,
     required this.maxTimeSlotValue,
   });
 
   final ActivityDetailMetric metric;
-  final List<String> metricLabels;
-  final String selectedMetricLabel;
+  final List<ActivityDetailMetric> availableMetrics;
   final ActivityHeatmapSeries heatmapSeries;
   final int visibleRecordCount;
-  final String recordCountHeading;
+  final DateTime? selectedMonth;
   final List<ActivityTimeSlotBar> timeSlotBars;
   final double maxTimeSlotValue;
 }
@@ -32,6 +28,20 @@ class ActivityTimeSlotBar {
   final double value;
 }
 
+class ActivityRecordDetail {
+  const ActivityRecordDetail({
+    required this.endedAt,
+    required this.startedAt,
+    required this.value,
+    required this.unit,
+  });
+
+  final DateTime endedAt;
+  final DateTime? startedAt;
+  final double? value;
+  final String? unit;
+}
+
 ActivityDetailChartModel buildActivityDetailChartModel({
   required Activity activity,
   required List<ActivityRecord> records,
@@ -40,7 +50,7 @@ ActivityDetailChartModel buildActivityDetailChartModel({
   required DateTime now,
   required bool combineHourSlots,
 }) {
-  final metricLabels = activityDetailMetricLabels(activity);
+  final availableMetrics = activityDetailMetrics(activity);
   final metric = metricForActivitySelection(activity, selectedMetricIndex);
   final heatmapSeries = buildActivityHeatmapSeries(
     records: records,
@@ -63,11 +73,10 @@ ActivityDetailChartModel buildActivityDetailChartModel({
 
   return ActivityDetailChartModel(
     metric: metric,
-    metricLabels: metricLabels,
-    selectedMetricLabel: metricLabels[selectedMetricIndex],
+    availableMetrics: availableMetrics,
     heatmapSeries: heatmapSeries,
     visibleRecordCount: visibleRecords.length,
-    recordCountHeading: activityRecordCountHeading(selectedMonth),
+    selectedMonth: selectedMonth,
     timeSlotBars: [
       for (var index = 0; index < timeSlotValues.length; index++)
         ActivityTimeSlotBar(
@@ -81,43 +90,39 @@ ActivityDetailChartModel buildActivityDetailChartModel({
   );
 }
 
-List<String> activityDetailMetricLabels(Activity activity) {
+List<ActivityDetailMetric> activityDetailMetrics(Activity activity) {
   return [
-    if (activity is TimedActivity) '时长' else '次数',
-    if (activity.unit != null) activity.requiredUnit,
+    if (activity is TimedActivity)
+      ActivityDetailMetric.duration
+    else
+      ActivityDetailMetric.count,
+    if (activity.unit != null) ActivityDetailMetric.value,
   ];
 }
 
-String activityRecordCountHeading(DateTime? selectedMonth) {
-  if (selectedMonth == null) {
-    return '共进行';
-  }
-  return '${selectedMonth.month}月共进行';
-}
-
-List<String> activityRecordLabelsForDay({
+List<ActivityRecordDetail> activityRecordDetailsForDay({
   required Activity activity,
   required List<ActivityRecord> records,
   required DateTime day,
 }) {
   return [
     for (final record in recordsOnDay(records, day))
-      activityRecordLabel(activity: activity, record: record),
+      activityRecordDetail(activity: activity, record: record),
   ];
 }
 
-String activityRecordLabel({
+ActivityRecordDetail activityRecordDetail({
   required Activity activity,
   required ActivityRecord record,
 }) {
   return switch ((activity, record)) {
     (TimedActivity(), final CompletedTimedRecord timedRecord) =>
-      _timedRecordLabel(
+      _timedRecordDetail(
         timedRecord,
         activity.unit ?? '',
         hasUnit: activity.unit != null,
       ),
-    (PlainActivity(), final PlainRecord plainRecord) => _plainRecordLabel(
+    (PlainActivity(), final PlainRecord plainRecord) => _plainRecordDetail(
       plainRecord,
       activity.unit ?? '',
       hasUnit: activity.unit != null,
@@ -129,35 +134,34 @@ String activityRecordLabel({
   };
 }
 
-String _timedRecordLabel(
+ActivityRecordDetail _timedRecordDetail(
   CompletedTimedRecord record,
   String unit, {
   required bool hasUnit,
 }) {
-  final startTimeStr = DateFormat('MM-dd kk:mm').format(record.startedAt);
-  final endTimeStr = DateFormat('MM-dd kk:mm').format(record.endedAt);
-  if (!hasUnit) {
-    return '$startTimeStr ~ $endTimeStr  ';
-  }
-  final value = record.value;
-  if (value == null) {
+  if (hasUnit && record.value == null) {
     throw StateError('Unit-backed Record ${record.id} has no value');
   }
-  return '$startTimeStr ~ $endTimeStr, ${value.toInt()}$unit  ';
+  return ActivityRecordDetail(
+    startedAt: record.startedAt,
+    endedAt: record.endedAt,
+    value: record.value,
+    unit: hasUnit ? unit : null,
+  );
 }
 
-String _plainRecordLabel(
+ActivityRecordDetail _plainRecordDetail(
   PlainRecord record,
   String unit, {
   required bool hasUnit,
 }) {
-  final endTimeStr = DateFormat('kk:mm').format(record.endedAt);
-  if (!hasUnit) {
-    return '$endTimeStr  ';
-  }
-  final value = record.value;
-  if (value == null) {
+  if (hasUnit && record.value == null) {
     throw StateError('Unit-backed Record ${record.id} has no value');
   }
-  return '$endTimeStr, ${value.toInt()}$unit  ';
+  return ActivityRecordDetail(
+    startedAt: null,
+    endedAt: record.endedAt,
+    value: record.value,
+    unit: hasUnit ? unit : null,
+  );
 }

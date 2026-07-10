@@ -6,6 +6,9 @@ import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
+import '../analytics/activity_detail_analytics.dart';
+import '../l10n/app_localizations.dart';
+
 class ActivityDetailCharts extends StatefulWidget {
   final Activity activity;
   final List<ActivityRecord> records;
@@ -49,8 +52,8 @@ class _ActivityDetailChartsState extends State<ActivityDetailCharts> {
 
     return Column(
       children: [
-        _chartCard(_buildHeatmap(model)),
-        _chartCard(_buildTimeSlotChart(model)),
+        _chartCard(_buildHeatmap(context, model)),
+        _chartCard(_buildTimeSlotChart(context, model)),
       ],
     );
   }
@@ -59,12 +62,15 @@ class _ActivityDetailChartsState extends State<ActivityDetailCharts> {
     return Card(elevation: 10, child: child);
   }
 
-  Widget _buildHeatmap(ActivityDetailChartModel model) {
+  Widget _buildHeatmap(BuildContext context, ActivityDetailChartModel model) {
+    final localizations = AppLocalizations.of(context)!;
     return Column(
       children: [
         Center(
           child: Text(
-            "统计数据 - ${model.selectedMetricLabel}",
+            localizations.statisticsForMetric(
+              _metricLabel(localizations, model.metric),
+            ),
             style: chartTitleStyle,
           ),
         ),
@@ -80,7 +86,7 @@ class _ActivityDetailChartsState extends State<ActivityDetailCharts> {
                 end: model.heatmapSeries.range.lastDay,
               ),
               input: model.heatmapSeries.data,
-              unit: model.heatmapSeries.unit,
+              unit: _unitLabel(localizations, model.heatmapSeries.unit),
               onMonthTouched: (selectedMonth) {
                 setState(() {
                   _selectedMonth = selectedMonth;
@@ -99,12 +105,16 @@ class _ActivityDetailChartsState extends State<ActivityDetailCharts> {
                 text: TextSpan(
                   style: TextStyle(fontSize: 16, color: Colors.black),
                   children: [
-                    TextSpan(text: model.recordCountHeading),
+                    TextSpan(
+                      text: localizations.recordCountHeading(
+                        _monthLabel(localizations, model.selectedMonth),
+                      ),
+                    ),
                     TextSpan(
                       text: '${model.visibleRecordCount}',
                       style: TextStyle(fontWeight: FontWeight.bold),
                     ),
-                    TextSpan(text: " 次"),
+                    TextSpan(text: localizations.recordCountSuffix),
                   ],
                 ),
               ),
@@ -113,8 +123,8 @@ class _ActivityDetailChartsState extends State<ActivityDetailCharts> {
               height: 35,
               margin: EdgeInsets.all(10),
               child: ToggleButtons(
-                children: model.metricLabels
-                    .map((label) => Text(label))
+                children: model.availableMetrics
+                    .map((metric) => Text(_metricLabel(localizations, metric)))
                     .toList(),
                 borderRadius: BorderRadius.all(Radius.circular(10)),
                 borderWidth: 2,
@@ -122,7 +132,7 @@ class _ActivityDetailChartsState extends State<ActivityDetailCharts> {
                 isSelected: [
                   for (
                     var index = 0;
-                    index < model.metricLabels.length;
+                    index < model.availableMetrics.length;
                     index++
                   )
                     index == _selectedMetricIndex,
@@ -143,10 +153,16 @@ class _ActivityDetailChartsState extends State<ActivityDetailCharts> {
     );
   }
 
-  Widget _buildTimeSlotChart(ActivityDetailChartModel model) {
+  Widget _buildTimeSlotChart(
+    BuildContext context,
+    ActivityDetailChartModel model,
+  ) {
     return Column(
       children: [
-        Text("时段活跃度", style: chartTitleStyle),
+        Text(
+          AppLocalizations.of(context)!.timeSlotActivity,
+          style: chartTitleStyle,
+        ),
         SizedBox(height: 10),
         Container(
           margin: EdgeInsets.symmetric(horizontal: 10),
@@ -220,7 +236,7 @@ class _ActivityDetailChartsState extends State<ActivityDetailCharts> {
     showGeneralDialog(
       context: context,
       barrierDismissible: true,
-      barrierLabel: "dismiss",
+      barrierLabel: AppLocalizations.of(context)!.dismissDialog,
       transitionDuration: Duration(milliseconds: 500),
       transitionBuilder: (ctx, animation, animation2, child) {
         final fadeTween = CurveTween(curve: Curves.easeInOut);
@@ -230,32 +246,85 @@ class _ActivityDetailChartsState extends State<ActivityDetailCharts> {
       pageBuilder: (context, animation, secondaryAnimation) {
         final timeStr = DateFormat('yyyy.MM.dd').format(day);
         return AlertDialog(
-          title: Text("$timeStr的记录"),
-          content: _buildDayRecords(widget.records, day),
+          title: Text(AppLocalizations.of(context)!.recordsOnDay(timeStr)),
+          content: _buildDayRecords(context, widget.records, day),
         );
       },
     );
   }
 
-  Widget _buildDayRecords(List<ActivityRecord> records, DateTime day) {
-    final labels = activityRecordLabelsForDay(
+  Widget _buildDayRecords(
+    BuildContext context,
+    List<ActivityRecord> records,
+    DateTime day,
+  ) {
+    final details = activityRecordDetailsForDay(
       activity: widget.activity,
       records: records,
       day: day,
     );
-    if (labels.isEmpty) {
-      return Text("当日无记录");
+    if (details.isEmpty) {
+      return Text(AppLocalizations.of(context)!.noRecordsOnDay);
     }
 
     return SizedBox(
       width: 300,
       child: ListView.builder(
         shrinkWrap: true,
-        itemCount: labels.length,
+        itemCount: details.length,
         itemBuilder: (ctx, index) {
-          return Text(labels[index]);
+          return Text(_formatRecordDetail(context, details[index]));
         },
       ),
     );
+  }
+
+  String _metricLabel(
+    AppLocalizations localizations,
+    ActivityDetailMetric metric,
+  ) {
+    return switch (metric) {
+      ActivityDetailMetric.duration => localizations.metricDuration,
+      ActivityDetailMetric.count => localizations.metricCount,
+      ActivityDetailMetric.value => widget.activity.requiredUnit,
+    };
+  }
+
+  String _unitLabel(
+    AppLocalizations localizations,
+    ActivityMeasurementUnit unit,
+  ) {
+    return switch (unit) {
+      ActivityMeasurementUnit.count => localizations.metricCount,
+      ActivityMeasurementUnit.second => localizations.unitSeconds,
+      ActivityMeasurementUnit.minute => localizations.unitMinutes,
+      ActivityMeasurementUnit.hour => localizations.unitHours,
+      ActivityMeasurementUnit.activityUnit => widget.activity.requiredUnit,
+    };
+  }
+
+  String _monthLabel(AppLocalizations localizations, DateTime? month) {
+    if (month == null) {
+      return '';
+    }
+    return DateFormat.MMM(localizations.localeName).format(month);
+  }
+
+  String _formatRecordDetail(
+    BuildContext context,
+    ActivityRecordDetail detail,
+  ) {
+    final locale = AppLocalizations.of(context)!.localeName;
+    final endFormat = DateFormat.Md(locale).add_Hm();
+    final end = endFormat.format(detail.endedAt);
+    final timeRange = switch (detail.startedAt) {
+      final start? => '${endFormat.format(start)} ~ $end',
+      null => end,
+    };
+    final value = detail.value;
+    if (value == null) {
+      return timeRange;
+    }
+    return '$timeRange, ${NumberFormat.decimalPattern(locale).format(value)}${detail.unit}';
   }
 }

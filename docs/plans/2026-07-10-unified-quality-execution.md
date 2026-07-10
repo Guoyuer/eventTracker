@@ -13,7 +13,7 @@ Riverpod, the legacy Step schema and Firebase have been removed, and local CI
 gates exist. `c745245` additionally completed typed user-facing failures, a
 single in-process error boundary, the l10n generator, and localized shell and
 failure messages. The verified baseline is Flutter 3.44.5, clean
-`flutter analyze --fatal-infos`, 122 tests, a Windows release build, and a
+`flutter analyze --fatal-infos`, 123 tests, a Windows release build, and a
 computer-use startup inspection.
 
 The rest of the work is intentional debt elimination, not exploratory module
@@ -75,23 +75,27 @@ strict analysis; full test suite; Windows release build.
 
 ### 2. Finish Localization and Give UI Its Regression Owner
 
+**Status: implementation complete; English Windows visual inspection pending.**
+
 **Why next:** l10n foundation exists, but user-facing strings remain scattered;
 widget tests must assert localized text rather than hardcoded Chinese.
 
-- Move every user-visible literal from UI/common/chart adapters into English and
-  Chinese ARB keys. Do not localize domain or analytics; inject presentation
-  values through UI adapters as the failure-message contract already does.
-- Make `AsyncStateView` receive localized empty and retry text rather than own
-  Chinese defaults.
-- Add a no-hardcoded-user-string guard that ignores comments and l10n sources.
-- Add widget coverage for the activity list, recording value dialog, editor
-  validation, Unit-in-use delete rejection, Statistics date range, and detail
-  record presentation in both supported locales where the behavior differs.
+- All runtime UI literals now live in English and Chinese ARB keys. Analytics
+  returns metrics, measurement units, and typed record-detail values; UI owns
+  localized labels, dates, and number formatting.
+- `AsyncStateView` requires callers to supply empty and retry labels, and the
+  AST source guard rejects CJK string literals outside `lib/l10n` while
+  ignoring comments.
+- English-locale route and settings widget tests protect the translated UI;
+  the existing architecture test also prevents domain, application, and
+  analytics from importing l10n.
 
 **Evidence required:** l10n generation, widget tests, source guard, full suite,
 and an English Windows visual inspection.
 
 ### 3. Raise the Engineering Ratchet Before the Database Rename
+
+**Status: next.**
 
 **Why before v7:** the next migration is deliberately high-risk and needs
 enforced platform and static checks.
@@ -135,7 +139,9 @@ data and foreign keys, full migration suite, codegen diff check, Windows build.
 - Replace mutable chart globals with a `ThemeExtension`, add a narrow guard for
   mutable top-level declarations, and test the chart theme lookup.
 - Strengthen imprecise tests called out by the SDD ledger, including specific
-  SQLite constraint expectations and deterministic database teardown.
+  SQLite constraint expectations and deterministic database teardown. The
+  file-backed WAL test now closes its shared in-memory harness before opening
+  a second AppDatabase, removing Drift's multiple-database warning.
 
 **Evidence required:** empty lint-suppression list, no source guard violations,
 full tests, Windows build, and visual chart inspection.

@@ -6,6 +6,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import 'support/localized_test_app.dart';
+
 void main() {
   testWidgets(
     'description editor loads and updates through repository provider',
@@ -18,7 +20,7 @@ void main() {
             activityReaderProvider.overrideWithValue(repository),
             activityWriterProvider.overrideWithValue(repository),
           ],
-          child: MaterialApp(
+          child: localizedTestApp(
             home: Scaffold(body: ActivityDescriptionEditor(activityId: 7)),
           ),
         ),
