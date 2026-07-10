@@ -105,36 +105,33 @@ void main() {
     );
   });
 
-  test(
-    'history rejects a Record value above the SQL/Dart bound '
-    '(previously: a finite-value sum that overflows)',
-    () {
-      // validateRecordValue now caps individual values at maxRecordValue
-      // (1e15), mirroring the records table's SQL CHECK. double.maxFinite
-      // used to pass that per-record check (it's finite), so two of them
-      // could only be caught once summed, via _validateTotalValue's
-      // overflow guard below. Now the first record is rejected up front by
-      // validateRecordValue itself, before totalValue is ever summed.
-      expect(
-        () => ActivityRecordHistory.evaluate(
-          activityId: 1,
-          careTime: false,
-          hasUnit: true,
-          records: [
-            ActivityHistoryRecord(
-              id: 1,
-              endTime: DateTime(2026, 1, 1),
-              value: double.maxFinite,
-            ),
-            ActivityHistoryRecord(
-              id: 2,
-              endTime: DateTime(2026, 1, 2),
-              value: double.maxFinite,
-            ),
-          ],
-        ),
-        throwsArgumentError,
-      );
-    },
-  );
+  test('history rejects a Record value above the SQL/Dart bound '
+      '(previously: a finite-value sum that overflows)', () {
+    // validateRecordValue now caps individual values at maxRecordValue
+    // (1e15), mirroring the records table's SQL CHECK. double.maxFinite
+    // used to pass that per-record check (it's finite), so two of them
+    // could only be caught once summed, via _validateTotalValue's
+    // overflow guard below. Now the first record is rejected up front by
+    // validateRecordValue itself, before totalValue is ever summed.
+    expect(
+      () => ActivityRecordHistory.evaluate(
+        activityId: 1,
+        careTime: false,
+        hasUnit: true,
+        records: [
+          ActivityHistoryRecord(
+            id: 1,
+            endTime: DateTime(2026, 1, 1),
+            value: double.maxFinite,
+          ),
+          ActivityHistoryRecord(
+            id: 2,
+            endTime: DateTime(2026, 1, 2),
+            value: double.maxFinite,
+          ),
+        ],
+      ),
+      throwsArgumentError,
+    );
+  });
 }

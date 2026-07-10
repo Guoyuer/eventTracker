@@ -37,18 +37,12 @@ void main() {
     );
   });
 
-  test(
-    'record values are rejected above the SQL CHECK bound and '
-    'accepted at it',
-    () {
-      expect(
-        validateRecordValue(maxRecordValue, hasUnit: true),
-        maxRecordValue,
-      );
-      expect(
-        () => validateRecordValue(maxRecordValue + 1, hasUnit: true),
-        throwsArgumentError,
-      );
-    },
-  );
+  test('record values are rejected above the SQL CHECK bound and '
+      'accepted at it', () {
+    expect(validateRecordValue(maxRecordValue, hasUnit: true), maxRecordValue);
+    expect(
+      () => validateRecordValue(maxRecordValue + 1, hasUnit: true),
+      throwsArgumentError,
+    );
+  });
 }
