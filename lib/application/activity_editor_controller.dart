@@ -1,4 +1,6 @@
+import '../domain/activity_failure.dart';
 import '../domain/activity_repository.dart';
+import 'activity_messages.dart';
 
 typedef ActivityEditorNotification = void Function(String message);
 typedef ActivityEditorExit = void Function(bool created);
@@ -6,12 +8,14 @@ typedef ActivityEditorExit = void Function(bool created);
 class ActivityEditorController {
   ActivityEditorController({
     required ActivityWriter repository,
+    required ActivityMessages messages,
     required ActivityEditorNotification notify,
-  }) : this._(repository, notify);
+  }) : this._(repository, messages, notify);
 
-  ActivityEditorController._(this._repository, this._notify);
+  ActivityEditorController._(this._repository, this._messages, this._notify);
 
   final ActivityWriter _repository;
+  final ActivityMessages _messages;
   final ActivityEditorNotification _notify;
 
   Future<bool> createActivity({
@@ -28,8 +32,8 @@ class ActivityEditorController {
         careTime: careTime,
       );
       return true;
-    } catch (_) {
-      _notify('添加失败，可能是因为项目名重复！');
+    } on DuplicateActivityName catch (failure) {
+      _notify(_messages.duplicateActivityName(failure.name));
       return false;
     }
   }

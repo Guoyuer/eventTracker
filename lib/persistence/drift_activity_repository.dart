@@ -1,5 +1,6 @@
 import 'package:drift/drift.dart';
 
+import '../domain/activity_failure.dart';
 import '../domain/activity_models.dart';
 import '../domain/activity_repository.dart';
 import '../domain/input_validation.dart';
@@ -56,25 +57,40 @@ class DriftActivityRepository implements ActivityRepository {
   }) async {
     final normalizedName = normalizeRequiredName(name, field: 'activityName');
     final normalizedUnit = normalizeOptionalName(unit, field: 'unitName');
-    Unit? selectedUnit;
-    if (normalizedUnit != null) {
-      selectedUnit = await (_db.select(
-        _db.units,
-      )..where((row) => row.name.equals(normalizedUnit))).getSingleOrNull();
-      if (selectedUnit == null) {
-        throw StateError('Unit $normalizedUnit does not exist');
+    final normalizedDescription = normalizeOptionalName(
+      description,
+      field: 'description',
+    );
+
+    return _db.transaction(() async {
+      final existing = await (_db.select(
+        _db.events,
+      )..where((row) => row.name.equals(normalizedName))).getSingleOrNull();
+      if (existing != null) {
+        throw DuplicateActivityName(normalizedName);
       }
-    }
-    return _db
-        .into(_db.events)
-        .insert(
-          EventsCompanion(
-            name: Value(normalizedName),
-            careTime: Value(careTime),
-            unitId: Value(selectedUnit?.id),
-            description: Value(description),
-          ),
-        );
+
+      Unit? selectedUnit;
+      if (normalizedUnit != null) {
+        selectedUnit = await (_db.select(
+          _db.units,
+        )..where((row) => row.name.equals(normalizedUnit))).getSingleOrNull();
+        if (selectedUnit == null) {
+          throw StateError('Unit $normalizedUnit does not exist');
+        }
+      }
+
+      return _db
+          .into(_db.events)
+          .insert(
+            EventsCompanion(
+              name: Value(normalizedName),
+              careTime: Value(careTime),
+              unitId: Value(selectedUnit?.id),
+              description: Value(normalizedDescription),
+            ),
+          );
+    });
   }
 
   @override

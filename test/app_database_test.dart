@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:drift/drift.dart' hide isNull;
 import 'package:drift_sqflite/drift_sqflite.dart';
+import 'package:event_tracker/domain/activity_failure.dart';
 import 'package:event_tracker/domain/input_validation.dart';
 import 'package:event_tracker/persistence/database/app_database.dart';
 import 'package:event_tracker/persistence/database/database_bootstrap.dart';
@@ -131,7 +132,7 @@ void main() {
 
       await expectLater(
         lifecycle.startTimedRecord(activityId, DateTime(2026, 1, 1, 9)),
-        throwsStateError,
+        throwsA(isA<ActivityBusy>()),
       );
 
       final records = await db.select(db.records).get();

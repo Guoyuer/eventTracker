@@ -1,0 +1,33 @@
+{
+  "@@locale": "zh",
+  "appTitle": "活动记录本",
+  "appTitleWithSection": "活动记录本 - {section}",
+  "@appTitleWithSection": {
+    "placeholders": {
+      "section": {"type": "String"}
+    }
+  },
+  "tabActivities": "项目",
+  "tabStatistics": "统计",
+  "tabSettings": "选项",
+  "timingCancelled": "已取消本次计时",
+  "activityBusy": "该项目正在计时中",
+  "duplicateActivityName": "已存在名为「{name}」的项目",
+  "@duplicateActivityName": {
+    "placeholders": {
+      "name": {"type": "String"}
+    }
+  },
+  "duplicateUnitName": "已存在名为「{name}」的单位",
+  "@duplicateUnitName": {
+    "placeholders": {
+      "name": {"type": "String"}
+    }
+  },
+  "unitInUse": "「{name}」正被某个项目使用，无法删除",
+  "@unitInUse": {
+    "placeholders": {
+      "name": {"type": "String"}
+    }
+  }
+}

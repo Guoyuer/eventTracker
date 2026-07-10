@@ -1,5 +1,7 @@
+import '../domain/activity_failure.dart';
 import '../domain/activity_models.dart';
 import '../domain/activity_repository.dart';
+import 'activity_messages.dart';
 
 typedef ActivityListRefresh = void Function();
 typedef ActivityNotification = void Function(String message);
@@ -9,12 +11,14 @@ typedef ActivityValuePrompt = Future<double?> Function(String unit);
 class ActivityListController {
   factory ActivityListController({
     required RecordLifecycle recordLifecycle,
+    required ActivityMessages messages,
     required ActivityListRefresh refresh,
     required ActivityNotification notify,
     Duration accidentalTimedRecordThreshold = const Duration(seconds: 5),
   }) {
     return ActivityListController._(
       recordLifecycle,
+      messages,
       refresh,
       notify,
       accidentalTimedRecordThreshold,
@@ -23,12 +27,14 @@ class ActivityListController {
 
   ActivityListController._(
     this._recordLifecycle,
+    this._messages,
     this._refresh,
     this._notify,
     this.accidentalTimedRecordThreshold,
   );
 
   final RecordLifecycle _recordLifecycle;
+  final ActivityMessages _messages;
   final ActivityListRefresh _refresh;
   final ActivityNotification _notify;
   final Duration accidentalTimedRecordThreshold;
@@ -38,14 +44,19 @@ class ActivityListController {
     DateTime recordedAt, {
     required ActivityValuePrompt requestValue,
   }) async {
-    switch (activity) {
-      case PlainActivity():
-        await _addPlainRecord(activity, recordedAt, requestValue);
-      case ActiveTimedActivity():
-        await _stopTimedRecord(activity, recordedAt, requestValue);
-      case InactiveTimedActivity():
-        await _recordLifecycle.startTimedRecord(activity.id, recordedAt);
-        _refresh();
+    try {
+      switch (activity) {
+        case PlainActivity():
+          await _addPlainRecord(activity, recordedAt, requestValue);
+        case ActiveTimedActivity():
+          await _stopTimedRecord(activity, recordedAt, requestValue);
+        case InactiveTimedActivity():
+          await _recordLifecycle.startTimedRecord(activity.id, recordedAt);
+          _refresh();
+      }
+    } on ActivityBusy {
+      _notify(_messages.activityBusy);
+      _refresh();
     }
   }
 
@@ -86,7 +97,7 @@ class ActivityListController {
     if (duration < accidentalTimedRecordThreshold) {
       await _recordLifecycle.cancelActiveTimedRecord(activity.id);
       _refresh();
-      _notify('已取消本次计时');
+      _notify(_messages.timingCancelled);
       return;
     }
 

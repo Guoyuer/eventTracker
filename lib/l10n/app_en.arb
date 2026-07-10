@@ -1,0 +1,33 @@
+{
+  "@@locale": "en",
+  "appTitle": "Activity Tracker",
+  "appTitleWithSection": "Activity Tracker - {section}",
+  "@appTitleWithSection": {
+    "placeholders": {
+      "section": {"type": "String"}
+    }
+  },
+  "tabActivities": "Activities",
+  "tabStatistics": "Statistics",
+  "tabSettings": "Settings",
+  "timingCancelled": "Timing cancelled",
+  "activityBusy": "This activity is already being timed",
+  "duplicateActivityName": "An activity named \"{name}\" already exists",
+  "@duplicateActivityName": {
+    "placeholders": {
+      "name": {"type": "String"}
+    }
+  },
+  "duplicateUnitName": "A unit named \"{name}\" already exists",
+  "@duplicateUnitName": {
+    "placeholders": {
+      "name": {"type": "String"}
+    }
+  },
+  "unitInUse": "\"{name}\" is used by an activity and cannot be deleted",
+  "@unitInUse": {
+    "placeholders": {
+      "name": {"type": "String"}
+    }
+  }
+}

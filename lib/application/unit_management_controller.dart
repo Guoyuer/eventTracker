@@ -1,4 +1,6 @@
+import '../domain/activity_failure.dart';
 import '../domain/unit_repository.dart';
+import 'activity_messages.dart';
 
 typedef UnitListRefresh = void Function();
 typedef UnitNotification = void Function(String message);
@@ -7,13 +9,20 @@ typedef UnitDeleteConfirmation = Future<bool> Function();
 class UnitManagementController {
   UnitManagementController({
     required UnitRepository repository,
+    required ActivityMessages messages,
     required UnitListRefresh refresh,
     required UnitNotification notify,
-  }) : this._(repository, refresh, notify);
+  }) : this._(repository, messages, refresh, notify);
 
-  UnitManagementController._(this._repository, this._refresh, this._notify);
+  UnitManagementController._(
+    this._repository,
+    this._messages,
+    this._refresh,
+    this._notify,
+  );
 
   final UnitRepository _repository;
+  final ActivityMessages _messages;
   final UnitListRefresh _refresh;
   final UnitNotification _notify;
 
@@ -22,8 +31,8 @@ class UnitManagementController {
       await _repository.addUnit(name);
       _refresh();
       return true;
-    } catch (_) {
-      _notify('添加失败，可能是因为重复');
+    } on DuplicateUnitName catch (failure) {
+      _notify(_messages.duplicateUnitName(failure.name));
       return false;
     }
   }
@@ -41,8 +50,8 @@ class UnitManagementController {
       await _repository.deleteUnit(name);
       _refresh();
       return true;
-    } catch (_) {
-      _notify('删除失败');
+    } on UnitInUse catch (failure) {
+      _notify(_messages.unitInUse(failure.name));
       _refresh();
       return false;
     }

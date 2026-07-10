@@ -1,4 +1,5 @@
 import 'package:drift/drift.dart';
+import 'package:event_tracker/domain/activity_failure.dart';
 import 'package:event_tracker/domain/unit_repository.dart';
 import 'package:event_tracker/persistence/database/app_database.dart';
 import 'package:event_tracker/persistence/drift_unit_repository.dart';
@@ -45,10 +46,19 @@ void main() {
     expect(units.map((unit) => unit.name), ['minutes']);
   });
 
-  test('repository keeps database uniqueness for unit names', () async {
+  test('repository reports a typed failure for duplicate unit names', () async {
     await repository.addUnit('pages');
 
-    expect(repository.addUnit('PAGES'), throwsA(anything));
+    expect(
+      repository.addUnit(' PAGES '),
+      throwsA(
+        isA<DuplicateUnitName>().having(
+          (failure) => failure.name,
+          'name',
+          'PAGES',
+        ),
+      ),
+    );
   });
 
   test('repository normalizes names and rejects blank units', () async {
@@ -71,7 +81,12 @@ void main() {
           ),
         );
 
-    expect(repository.deleteUnit('pages'), throwsStateError);
+    expect(
+      repository.deleteUnit('pages'),
+      throwsA(
+        isA<UnitInUse>().having((failure) => failure.name, 'name', 'pages'),
+      ),
+    );
     expect((await repository.getUnits()).single.name, 'pages');
   });
 }

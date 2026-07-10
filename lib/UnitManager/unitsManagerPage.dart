@@ -4,7 +4,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../application/unit_management_controller.dart';
 import '../common/async_state.dart';
 import '../common/commonWidget.dart';
+import '../common/localized_activity_messages.dart';
 import '../domain/activity_models.dart';
+import '../l10n/app_localizations.dart';
 import '../persistence/persistence_providers.dart';
 import '../state/unit_providers.dart';
 
@@ -45,7 +47,7 @@ class UnitsManager extends ConsumerWidget {
     WidgetRef ref,
     List<ActivityUnit> units,
   ) {
-    final controller = _controller(ref);
+    final controller = _controller(context, ref);
     return Column(
       children: [
         ListView.builder(
@@ -81,9 +83,10 @@ class UnitsManager extends ConsumerWidget {
     );
   }
 
-  UnitManagementController _controller(WidgetRef ref) {
+  UnitManagementController _controller(BuildContext context, WidgetRef ref) {
     return UnitManagementController(
       repository: ref.read(unitRepositoryProvider),
+      messages: localizedActivityMessages(AppLocalizations.of(context)!),
       refresh: () => ref.invalidate(unitListProvider),
       notify: showToast,
     );

@@ -6,7 +6,7 @@
 
 **Task 1–3 已完成**（提交 `b80f539`、`7d9069a`、`49d0e24`+`36a5f3d`+`ca9c69f`），**从 Task 4 继续**。每个已完成 Task 都经过独立 spec+quality 审查。执行中的发现，后续 Task 必须遵守：
 
-- **当前基线已变**：`flutter test` 是 **112 个测试**（下文 Global Constraints 写的 108 是计划时点的旧值）。analyze 依旧必须 `No issues found!`（CI 用 `--fatal-infos`）。
+- **当前基线已变**：`flutter test` 是 **118 个测试**。analyze 依旧必须 `No issues found!`（CI 用 `--fatal-infos`）。
 - **`drift` 被钉在 2.34.0**（Task 3 Step 0 走了预案 B；原因见 pubspec.yaml 内注释）。不要解开，除非 drift_dev 修复了 schema 工具与 drift 2.34.1+ 的不兼容。
 - **SQL 字符串里禁止使用指数字面量**（如 `1e308`、`1.79e308`）：drift_dev 2.34.0 的 sqlparser 用整数幂解析指数，e308 溢出归零，会把约束静默损坏（Task 3 审查实锤）。用普通十进制写法。
 - **不要把 Dart 常量内插进 `customConstraints`**：drift_dev 会静默丢弃整个 CHECK（Task 3 修复时实锤）。`tables.dart` 的 CHECK 保持字符串字面量，与 domain 常量 `maxRecordValue` 的一致性由测试锁住。
@@ -23,7 +23,7 @@
 ## Global Constraints
 
 - Dart SDK 约束 `^3.12.0`，Flutter stable 3.44.5。不要升级这两个。
-- 每个 Task 结束时 `flutter analyze` 必须 **`No issues found!`**，`flutter test` 必须全绿。当前基线：analyze 干净，**112 个测试全部通过**（21 个测试文件）。
+- 每个 Task 结束时 `flutter analyze` 必须 **`No issues found!`**，`flutter test` 必须全绿。当前基线：analyze 干净，**118 个测试全部通过**（21 个测试文件）。
 - 不得放宽 `test/architecture_dependencies_test.dart` 的规则。`lib/domain/`、`lib/application/`、`lib/analytics/` 不允许 import Flutter、Riverpod 或 `lib/persistence/`。
 - 不得引入新的 denormalized 汇总字段。`Activity` 的一切数值必须继续由 `ActivityRecordHistory.evaluate` 从 `Records` 推导（`lib/persistence/activity_snapshot_store.dart:58`）。
 - 修改 `lib/persistence/database/tables.dart` 或 `sql.drift` 之后，必须跑 `dart run build_runner build` 重新生成 `app_database.g.dart`，并把生成物一起提交。

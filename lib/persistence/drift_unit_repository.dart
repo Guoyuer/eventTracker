@@ -1,5 +1,6 @@
 import 'package:drift/drift.dart';
 
+import '../domain/activity_failure.dart';
 import '../domain/activity_models.dart';
 import '../domain/input_validation.dart';
 import '../domain/unit_repository.dart';
@@ -21,9 +22,18 @@ class DriftUnitRepository implements UnitRepository {
   @override
   Future<int> addUnit(String name) async {
     final normalizedName = normalizeRequiredName(name, field: 'unitName');
-    return _db
-        .into(_db.units)
-        .insert(UnitsCompanion(name: Value(normalizedName)));
+    return _db.transaction(() async {
+      final existing = await (_db.select(
+        _db.units,
+      )..where((row) => row.name.equals(normalizedName))).getSingleOrNull();
+      if (existing != null) {
+        throw DuplicateUnitName(normalizedName);
+      }
+
+      return _db
+          .into(_db.units)
+          .insert(UnitsCompanion(name: Value(normalizedName)));
+    });
   }
 
   @override
@@ -41,7 +51,7 @@ class DriftUnitRepository implements UnitRepository {
                 ..where((activity) => activity.unitId.equals(unit.id)))
               .getSingleOrNull();
       if (usage != null) {
-        throw StateError('Unit $normalizedName is still in use');
+        throw UnitInUse(normalizedName);
       }
       await (_db.delete(
         _db.units,

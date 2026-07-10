@@ -1,4 +1,5 @@
 import 'package:drift/drift.dart' hide isNull;
+import 'package:event_tracker/domain/activity_failure.dart';
 import 'package:event_tracker/domain/activity_models.dart';
 import 'package:event_tracker/domain/activity_repository.dart';
 import 'package:event_tracker/persistence/database/app_database.dart';
@@ -72,14 +73,23 @@ void main() {
     },
   );
 
-  test('repository keeps database uniqueness for activity names', () async {
-    await repository.createActivity(name: 'Read', careTime: false);
+  test(
+    'repository reports a typed failure for duplicate activity names',
+    () async {
+      await repository.createActivity(name: 'Read', careTime: false);
 
-    expect(
-      repository.createActivity(name: 'READ', careTime: true),
-      throwsA(anything),
-    );
-  });
+      expect(
+        repository.createActivity(name: ' READ ', careTime: true),
+        throwsA(
+          isA<DuplicateActivityName>().having(
+            (failure) => failure.name,
+            'name',
+            'READ',
+          ),
+        ),
+      );
+    },
+  );
 
   test('repository normalizes activity names and optional units', () async {
     final activityId = await repository.createActivity(
@@ -91,6 +101,7 @@ void main() {
     final activity = await repository.getActivity(activityId);
     expect(activity.name, 'Read');
     expect(activity.unit, isNull);
+    expect((await db.select(db.events).getSingle()).description, isNull);
     expect(
       repository.createActivity(name: '   ', careTime: false),
       throwsArgumentError,

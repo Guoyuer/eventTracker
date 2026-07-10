@@ -1,11 +1,25 @@
 import 'package:event_tracker/application/activity_list_controller.dart';
 import 'package:event_tracker/application/activity_detail_controller.dart';
 import 'package:event_tracker/application/activity_editor_controller.dart';
+import 'package:event_tracker/application/activity_messages.dart';
 import 'package:event_tracker/application/unit_management_controller.dart';
+import 'package:event_tracker/domain/activity_failure.dart';
 import 'package:event_tracker/domain/activity_models.dart';
 import 'package:event_tracker/domain/activity_repository.dart';
 import 'package:event_tracker/domain/unit_repository.dart';
 import 'package:flutter_test/flutter_test.dart';
+
+const _messages = ActivityMessages(
+  timingCancelled: '已取消本次计时',
+  activityBusy: '该项目正在计时中',
+  duplicateActivityName: _duplicateActivityName,
+  duplicateUnitName: _duplicateUnitName,
+  unitInUse: _unitInUse,
+);
+
+String _duplicateActivityName(String name) => '已存在名为「$name」的项目';
+String _duplicateUnitName(String name) => '已存在名为「$name」的单位';
+String _unitInUse(String name) => '「$name」正被某个项目使用，无法删除';
 
 void main() {
   test('activity editor creates an activity and reports success', () async {
@@ -13,6 +27,7 @@ void main() {
     final notifications = <String>[];
     final controller = ActivityEditorController(
       repository: repository,
+      messages: _messages,
       notify: notifications.add,
     );
 
@@ -37,10 +52,11 @@ void main() {
 
   test('activity editor reports duplicate-name failures', () async {
     final repository = _FakeActivityWriter()
-      ..createActivityError = StateError('duplicate');
+      ..createActivityError = const DuplicateActivityName('Read');
     final notifications = <String>[];
     final controller = ActivityEditorController(
       repository: repository,
+      messages: _messages,
       notify: notifications.add,
     );
 
@@ -50,7 +66,7 @@ void main() {
     );
 
     expect(created, isFalse);
-    expect(notifications, ['添加失败，可能是因为项目名重复！']);
+    expect(notifications, ['已存在名为「Read」的项目']);
   });
 
   test('activity editor exits only after create succeeds', () async {
@@ -58,6 +74,7 @@ void main() {
     final exits = <bool>[];
     final controller = ActivityEditorController(
       repository: repository,
+      messages: _messages,
       notify: (_) {},
     );
 
@@ -82,11 +99,12 @@ void main() {
 
   test('activity editor stays open when create fails', () async {
     final repository = _FakeActivityWriter()
-      ..createActivityError = StateError('duplicate');
+      ..createActivityError = const DuplicateActivityName('Read');
     final notifications = <String>[];
     final exits = <bool>[];
     final controller = ActivityEditorController(
       repository: repository,
+      messages: _messages,
       notify: notifications.add,
     );
 
@@ -97,7 +115,22 @@ void main() {
     );
 
     expect(exits, isEmpty);
-    expect(notifications, ['添加失败，可能是因为项目名重复！']);
+    expect(notifications, ['已存在名为「Read」的项目']);
+  });
+
+  test('activity editor lets unexpected failures reach the error boundary', () {
+    final repository = _FakeActivityWriter()
+      ..createActivityError = StateError('storage unavailable');
+    final controller = ActivityEditorController(
+      repository: repository,
+      messages: _messages,
+      notify: (_) {},
+    );
+
+    expect(
+      controller.createActivity(name: 'Read', careTime: true),
+      throwsStateError,
+    );
   });
 
   test(
@@ -196,6 +229,7 @@ void main() {
       final shownActivityIds = <int>[];
       final controller = ActivityListController(
         recordLifecycle: _UnusedRecordLifecycle(),
+        messages: _messages,
         refresh: () => refreshCount++,
         notify: (_) {},
       );
@@ -223,6 +257,7 @@ void main() {
     var refreshCount = 0;
     final controller = ActivityListController(
       recordLifecycle: _UnusedRecordLifecycle(),
+      messages: _messages,
       refresh: () => refreshCount++,
       notify: (_) {},
     );
@@ -253,14 +288,22 @@ void main() {
 
   test('unit add reports duplicates without refreshing stale data', () async {
     final repository = _FakeUnitRepository()
-      ..addUnitError = StateError('duplicate');
+      ..addUnitError = const DuplicateUnitName('km');
     final harness = _UnitControllerHarness(repository);
 
     final added = await harness.controller.addUnit('km');
 
     expect(added, isFalse);
     expect(harness.refreshCount, 0);
-    expect(harness.notifications, ['添加失败，可能是因为重复']);
+    expect(harness.notifications, ['已存在名为「km」的单位']);
+  });
+
+  test('unit add lets unexpected failures reach the error boundary', () {
+    final repository = _FakeUnitRepository()
+      ..addUnitError = StateError('storage unavailable');
+    final harness = _UnitControllerHarness(repository);
+
+    expect(harness.controller.addUnit('km'), throwsStateError);
   });
 
   test('unit delete skips repository when unconfirmed', () async {
@@ -297,7 +340,7 @@ void main() {
     'unit delete reports failure and keeps the dismissed item visible',
     () async {
       final repository = _FakeUnitRepository()
-        ..deleteUnitError = StateError('still used');
+        ..deleteUnitError = const UnitInUse('km');
       final harness = _UnitControllerHarness(repository);
 
       final deleted = await harness.controller.deleteUnit(
@@ -307,7 +350,7 @@ void main() {
 
       expect(deleted, isFalse);
       expect(harness.refreshCount, 1);
-      expect(harness.notifications, ['删除失败']);
+      expect(harness.notifications, ['「km」正被某个项目使用，无法删除']);
     },
   );
 }
@@ -316,6 +359,7 @@ class _UnitControllerHarness {
   _UnitControllerHarness(_FakeUnitRepository repository) {
     controller = UnitManagementController(
       repository: repository,
+      messages: _messages,
       refresh: () => refreshCount++,
       notify: notifications.add,
     );

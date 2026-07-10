@@ -1,7 +1,19 @@
 import 'package:event_tracker/application/activity_list_controller.dart';
+import 'package:event_tracker/application/activity_messages.dart';
+import 'package:event_tracker/domain/activity_failure.dart';
 import 'package:event_tracker/domain/activity_models.dart';
 import 'package:event_tracker/domain/activity_repository.dart';
 import 'package:flutter_test/flutter_test.dart';
+
+const _messages = ActivityMessages(
+  timingCancelled: '已取消本次计时',
+  activityBusy: '该项目正在计时中',
+  duplicateActivityName: _unusedNameMessage,
+  duplicateUnitName: _unusedNameMessage,
+  unitInUse: _unusedNameMessage,
+);
+
+String _unusedNameMessage(String name) => name;
 
 void main() {
   test('plain activity records and refreshes without a value prompt', () async {
@@ -70,6 +82,24 @@ void main() {
     expect(harness.refreshCount, 1);
   });
 
+  test(
+    'busy inactive activity refreshes its stale snapshot and notifies',
+    () async {
+      final harness = _ActivityListHarness()
+        ..records.startTimedRecordFailure = const ActivityBusy(2);
+
+      await harness.controller.recordActivity(
+        _inactiveTimedActivity(),
+        DateTime(2026, 1, 1, 8),
+        requestValue: (_) => throw StateError('value prompt should not open'),
+      );
+
+      expect(harness.records.startedRecords, isEmpty);
+      expect(harness.refreshCount, 1);
+      expect(harness.notifications, ['该项目正在计时中']);
+    },
+  );
+
   test('short active timer cancels and reports the accidental start', () async {
     final harness = _ActivityListHarness();
     final startTime = DateTime(2026, 1, 1, 8);
@@ -130,6 +160,7 @@ class _ActivityListHarness {
   _ActivityListHarness() {
     controller = ActivityListController(
       recordLifecycle: records,
+      messages: _messages,
       refresh: () => refreshCount++,
       notify: notifications.add,
     );
@@ -180,6 +211,7 @@ class _FakeRecordLifecycle implements RecordLifecycle {
   final stoppedRecords =
       <({int activityId, DateTime stoppedAt, double? value})>[];
   final canceledActivityIds = <int>[];
+  Object? startTimedRecordFailure;
 
   @override
   Future<void> addPlainRecord(
@@ -192,6 +224,10 @@ class _FakeRecordLifecycle implements RecordLifecycle {
 
   @override
   Future<int> startTimedRecord(int activityId, DateTime startTime) async {
+    final failure = startTimedRecordFailure;
+    if (failure != null) {
+      throw failure;
+    }
     startedRecords.add((activityId: activityId, startTime: startTime));
     return startedRecords.length;
   }

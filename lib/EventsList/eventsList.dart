@@ -4,7 +4,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../application/activity_list_controller.dart';
 import '../common/async_state.dart';
 import '../common/commonWidget.dart';
+import '../common/localized_activity_messages.dart';
 import '../domain/activity_models.dart';
+import '../l10n/app_localizations.dart';
 import '../persistence/persistence_providers.dart';
 import '../state/activity_list_providers.dart';
 
@@ -106,6 +108,7 @@ class EventTileButton extends ConsumerWidget {
   ) {
     final controller = ActivityListController(
       recordLifecycle: ref.read(recordLifecycleProvider),
+      messages: localizedActivityMessages(AppLocalizations.of(context)!),
       refresh: () => ref.invalidate(activityListProvider),
       notify: showToast,
     );
@@ -138,6 +141,9 @@ class EventTile extends ConsumerWidget {
             onTap: () async {
               final controller = ActivityListController(
                 recordLifecycle: ref.read(recordLifecycleProvider),
+                messages: localizedActivityMessages(
+                  AppLocalizations.of(context)!,
+                ),
                 refresh: () => ref.invalidate(activityListProvider),
                 notify: showToast,
               );

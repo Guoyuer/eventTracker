@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:event_tracker/settingPage.dart';
-import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'EventsDetails/eventDetails.dart';
 import 'EventsList/eventsList.dart';
@@ -9,26 +8,37 @@ import 'Statistics/statistics.dart';
 import 'UnitManager/unitsManagerPage.dart';
 import 'eventEditor.dart';
 import 'bootstrap/app_bootstrap.dart';
+import 'bootstrap/error_boundary.dart';
+import 'l10n/app_localizations.dart';
 import 'state/activity_list_providers.dart';
 import 'state/app_navigation_providers.dart';
 
-void main() async {
-  await bootstrapApp();
-  runApp(ProviderScope(child: EventTracker()));
+void main() {
+  runGuarded(
+    () async {
+      await bootstrapApp();
+      runApp(ProviderScope(child: EventTracker()));
+    },
+    onError: (error, stackTrace) {
+      FlutterError.presentError(
+        FlutterErrorDetails(exception: error, stack: stackTrace),
+      );
+    },
+  );
 }
 
 class EventTracker extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      localizationsDelegates: [GlobalMaterialLocalizations.delegate],
-      supportedLocales: [const Locale('en'), const Locale('zh')],
+      onGenerateTitle: (context) => AppLocalizations.of(context)!.appTitle,
+      localizationsDelegates: AppLocalizations.localizationsDelegates,
+      supportedLocales: AppLocalizations.supportedLocales,
       routes: {
         "eventEditor": (context) => EventEditor(),
         "unitsManager": (context) => UnitsManager(),
         "EventDetails": (context) => EventDetailsWrapper(),
       },
-      title: 'Event Tracker',
       theme: ThemeData(
         primarySwatch: Colors.blue,
         visualDensity: VisualDensity.adaptivePlatformDensity,
@@ -66,15 +76,23 @@ class FAB extends ConsumerWidget {
 }
 
 class MainPage extends ConsumerWidget {
-  final List<String> bottomLabels = ["项目", "统计", "选项"];
-
   final List<Widget> pages = [EventList(), StatisticPage(), SettingPage()];
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final localizations = AppLocalizations.of(context)!;
+    final bottomLabels = [
+      localizations.tabActivities,
+      localizations.tabStatistics,
+      localizations.tabSettings,
+    ];
     final selectedIdx = ref.watch(selectedIndexProvider);
     return Scaffold(
-      appBar: AppBar(title: Text("活动记录本 - " + bottomLabels[selectedIdx])),
+      appBar: AppBar(
+        title: Text(
+          localizations.appTitleWithSection(bottomLabels[selectedIdx]),
+        ),
+      ),
       body: pages[selectedIdx],
       floatingActionButton: FAB(context),
       bottomNavigationBar: BottomNavigationBar(

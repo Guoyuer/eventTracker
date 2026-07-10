@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:event_tracker/common/async_state.dart';
 import 'package:event_tracker/common/commonWidget.dart';
+import 'package:event_tracker/common/localized_activity_messages.dart';
+import 'package:event_tracker/l10n/app_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'application/activity_editor_controller.dart';
 import 'domain/activity_models.dart';
@@ -18,6 +20,7 @@ class EventEditor extends ConsumerWidget {
     final units = ref.watch(unitListProvider);
     final selectedUnit = ref.watch(activityEditorSelectedUnitProvider);
     final careTime = ref.watch(activityEditorCareTimeProvider);
+    final localizations = AppLocalizations.of(context)!;
     String? name;
     String? description;
 
@@ -29,6 +32,7 @@ class EventEditor extends ConsumerWidget {
       _formKey.currentState!.save();
       await ActivityEditorController(
         repository: ref.read(activityWriterProvider),
+        messages: localizedActivityMessages(localizations),
         notify: showToast,
       ).createActivityAndExit(
         name: name!,

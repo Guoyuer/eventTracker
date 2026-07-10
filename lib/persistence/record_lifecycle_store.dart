@@ -1,5 +1,6 @@
 import 'package:drift/drift.dart';
 
+import '../domain/activity_failure.dart';
 import '../domain/input_validation.dart';
 import 'database/app_database.dart';
 
@@ -42,7 +43,7 @@ class RecordLifecycleStore {
       }
       final activeRecords = await _activeRecords(activityId);
       if (activeRecords.isNotEmpty) {
-        throw StateError('Timed Activity $activityId is already active');
+        throw ActivityBusy(activityId);
       }
 
       final recordId = await _db
