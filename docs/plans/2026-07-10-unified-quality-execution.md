@@ -95,16 +95,17 @@ and an English Windows visual inspection.
 
 ### 3. Raise the Engineering Ratchet Before the Database Rename
 
-**Status: next.**
+**Status: implementation complete; await GitHub Linux and Windows checks.**
 
 **Why before v7:** the next migration is deliberately high-risk and needs
 enforced platform and static checks.
 
-- Replace the deprecated/no-op build-runner flag consistently in CI and local
-  guidance; make CI also verify l10n generation is current.
-- Add job timeout and concurrency cancellation, then a `windows-latest` build
-  job. Linux analysis and tests are retained; Windows build is an additional
-  runtime contract, not a replacement.
+- CI and local guidance use the supported build-runner command, verify l10n,
+  Drift, and migration artifacts have no diff, and treat analyzer infos as
+  failures.
+- Linux quality now has a timeout and per-branch concurrency cancellation;
+  `windows-latest` independently builds the release executable. Linux analysis
+  and tests remain the behavioral contract.
 - Tighten the first auto-fixable lint batch, fix the resulting code, and use no
   new ignore comments.
 

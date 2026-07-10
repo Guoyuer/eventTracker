@@ -33,6 +33,11 @@ Use the local verification script for repeatability:
 .\tool\check.ps1 -WindowsBuild
 ```
 
+`-Codegen` regenerates l10n, Drift, and migration artifacts, then fails when
+the resulting tracked files differ. This is the local equivalent of the Linux
+CI generated-code gate. GitHub Actions separately runs the full Linux quality
+gate and a Windows release build, with timeouts and per-branch cancellation.
+
 Use `.\tool\check.ps1 -Codegen` after changing Drift tables, `.drift` files,
 repository query shapes, or dependency versions that affect code generation.
 The current `build_runner` no longer accepts `--delete-conflicting-outputs`;
