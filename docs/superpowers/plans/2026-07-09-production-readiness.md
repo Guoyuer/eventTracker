@@ -58,7 +58,7 @@
 
 **为什么第一个做：** 这个仓库的质量提升要靠棘轮（ratchet）而不是靠自律。没有 CI，Task 7 把 lint 收紧之后，下一个 PR 就能重新引入违规。
 
-- [ ] **Step 1: 写 workflow**
+- [x] **Step 1: 写 workflow**
 
 创建 `.github/workflows/ci.yaml`：
 
@@ -106,7 +106,7 @@ jobs:
 - **`git diff --exit-code -- '*.g.dart'`**：这一步捕获「改了 `tables.dart` 却忘了跑 build_runner」。这是 drift 项目最常见的一类脏提交。
 - `--fatal-infos`：Task 7 会打开一批 lint，其中不少默认是 info 级别。没有这个 flag，CI 会对它们视而不见。
 
-- [ ] **Step 2: 本地验证每一条命令都能过**
+- [x] **Step 2: 本地验证每一条命令都能过**
 
 依次运行，四条都必须成功：
 
@@ -121,7 +121,7 @@ Expected: 前三条静默退出 0；`flutter test` 输出 `All tests passed!`。
 
 如果 `flutter analyze --fatal-infos` 报错（`--fatal-infos` 比裸 `flutter analyze` 严），**不要在这个 Task 里放宽 lint**。修掉它们，或者把对应规则加进 `analysis_options.yaml` 的关闭列表并在 Task 7 处理。记录你关掉了哪几条。
 
-- [ ] **Step 3: 提交**
+- [x] **Step 3: 提交**
 
 ```bash
 git add .github/workflows/ci.yaml
@@ -150,7 +150,7 @@ await customStatement('PRAGMA synchronous = OFF');
 
 `journal_mode = WAL` + `synchronous = NORMAL` 是移动端的标准组合：WAL 下 `NORMAL` 只在 checkpoint 时 fsync，不在每次 commit 时 fsync，所以性能接近 `OFF`，但**不会因为掉电而损坏数据库**（最坏情况是丢掉最后几个未 checkpoint 的事务，而不是整库损坏）。
 
-- [ ] **Step 1: 写失败的测试**
+- [x] **Step 1: 写失败的测试**
 
 在 `test/app_database_test.dart` 末尾追加（放进已有的顶层 `main()` 里的最外层 `group` 之外，或直接作为独立 `test(...)`——跟随文件现有结构）：
 
@@ -185,12 +185,12 @@ final db = AppDatabase(NativeDatabase(file));
 
 并在测试末尾 `await db.close(); file.parent.deleteSync(recursive: true);`。
 
-- [ ] **Step 2: 跑测试确认它失败**
+- [x] **Step 2: 跑测试确认它失败**
 
 Run: `flutter test test/app_database_test.dart -r compact`
 Expected: FAIL，`synchronous` 实际是 `0`（OFF），`journal_mode` 是 `delete`。
 
-- [ ] **Step 3: 改实现**
+- [x] **Step 3: 改实现**
 
 `lib/persistence/database/app_database.dart`，把 `beforeOpen` 改成：
 
@@ -204,7 +204,7 @@ Expected: FAIL，`synchronous` 实际是 `0`（OFF），`journal_mode` 是 `dele
 
 **顺序重要**：`journal_mode` 必须在 `synchronous` 之前设置，否则 `NORMAL` 的语义是 rollback-journal 下的语义（每次 commit 仍 fsync），性能会掉。
 
-- [ ] **Step 4: 跑测试确认通过**
+- [x] **Step 4: 跑测试确认通过**
 
 Run: `flutter test test/app_database_test.dart -r compact`
 Expected: PASS
@@ -212,7 +212,7 @@ Expected: PASS
 然后跑全量：`flutter test`
 Expected: `All tests passed!`
 
-- [ ] **Step 5: 提交**
+- [x] **Step 5: 提交**
 
 ```bash
 git add lib/persistence/database/app_database.dart test/app_database_test.dart
@@ -259,7 +259,7 @@ git commit -m "Use WAL journaling with durable synchronous mode"
 >
 > **Step 0 必须先解决这个，否则 Step 2 起全部无法执行。**
 
-- [ ] **Step 0: 解开 drift_dev 的版本锁（这是本 Task 的真正工作）**
+- [x] **Step 0: 解开 drift_dev 的版本锁（这是本 Task 的真正工作）**
 
 按顺序尝试，命中即停：
 
@@ -292,7 +292,7 @@ dart run drift_dev schema --help
 
 Expected（Step 0 完成）：`dart run drift_dev schema --help` 正常输出；`flutter analyze --fatal-infos && flutter test` 全绿。
 
-- [ ] **Step 1: 加 dev_dependency**
+- [x] **Step 1: 加 dev_dependency**
 
 `pubspec.yaml` 的 `dev_dependencies` 里加一行（`sqlite3` 是 `SchemaVerifier` 在测试里建库需要的）：
 
@@ -309,7 +309,7 @@ dev_dependencies:
 
 Run: `flutter pub get`
 
-- [ ] **Step 2: 导出 v6 schema 快照**
+- [x] **Step 2: 导出 v6 schema 快照**
 
 ```bash
 dart run drift_dev schema dump lib/persistence/database/app_database.dart drift_schemas/
@@ -319,7 +319,7 @@ Expected: 生成 `drift_schemas/drift_schema_v6.json`。
 
 打开它确认里面出现了 `records_one_active_per_event`。如果没有，说明 `include: {'sql.drift'}` 的索引没被 dump 到，**停下来报告**，不要继续。
 
-- [ ] **Step 3: 生成校验器代码**
+- [x] **Step 3: 生成校验器代码**
 
 ```bash
 dart run drift_dev schema generate drift_schemas/ test/generated_migrations/
@@ -327,7 +327,7 @@ dart run drift_dev schema generate drift_schemas/ test/generated_migrations/
 
 Expected: 生成 `test/generated_migrations/schema.dart` 和 `test/generated_migrations/schema_v6.dart`。
 
-- [ ] **Step 4: 写校验测试**
+- [x] **Step 4: 写校验测试**
 
 创建 `test/schema_verifier_test.dart`：
 
@@ -358,14 +358,14 @@ void main() {
 
 这个测试现在只锁住「v6 就是 v6」。真正的价值在下一次改 schema 时兑现：见 Step 6 的交接说明。
 
-- [ ] **Step 5: 跑测试**
+- [x] **Step 5: 跑测试**
 
 Run: `flutter test test/schema_verifier_test.dart -r compact`
 Expected: PASS
 
 然后全量 `flutter test`，Expected: `All tests passed!`
 
-- [ ] **Step 6: 把流程写进 CI 和文档**
+- [x] **Step 6: 把流程写进 CI 和文档**
 
 在 `.github/workflows/ci.yaml` 的 "Verify generated code is up to date" 步骤里，把 schema 生成也纳入：
 
@@ -388,7 +388,7 @@ Expected: PASS
   int get schemaVersion => 6;
 ```
 
-- [ ] **Step 7: 提交**
+- [x] **Step 7: 提交**
 
 ```bash
 git add pubspec.yaml pubspec.lock drift_schemas/ test/generated_migrations/ \
