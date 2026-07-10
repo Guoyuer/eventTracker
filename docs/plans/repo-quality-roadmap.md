@@ -201,7 +201,7 @@ Status: completed. The "Remaining" items below are standing constraints gated on
 
 Remaining:
 
-- Android SDK is not installed on this workstation, so Android runtime verification remains unavailable locally.
+- Android is now buildable and runnable: the `android/` platform is tracked and modernized to the current declarative Kotlin-DSL Gradle template (Gradle 9.1.0, AGP 9.0.1, Kotlin 2.3.20, compileSdk 36), and the app was verified on an Android 35 emulator after gating WAL journaling to desktop. Android is not yet in CI; Windows remains the CI-gated release target.
 - Revisit any remaining outdated transitive versions only when a direct dependency or Flutter SDK release makes them resolvable.
 
 ## Historical First Execution Slice

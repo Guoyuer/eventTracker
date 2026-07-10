@@ -2,7 +2,8 @@
 
 A Windows-first Flutter app for recording personal activities, optional timed
 sessions, optional numeric units, and summaries through lists, charts, and
-heatmaps.
+heatmaps. It also builds and runs on Android; Windows remains the CI-gated
+release target.
 
 ## Current Product Model
 
@@ -28,6 +29,21 @@ flutter run -d windows
 Keep the process running for hot reload. Use `r` in its terminal after Dart or
 UI edits. Avoid `flutter clean` during normal iteration because it discards the
 Windows incremental build cache.
+
+## Android Setup
+
+Android needs a JDK 17 and the Android SDK (command-line tools, platform 36,
+build-tools, plus an emulator or a USB device). Point Flutter at the SDK with
+`flutter config --android-sdk <path>` and confirm with `flutter doctor`. Then:
+
+```powershell
+flutter build apk --debug
+flutter run -d <emulator-or-device>
+```
+
+The database uses native sqflite journaling on Android; WAL is a
+desktop-only durability setting (see
+`lib/persistence/database/database_bootstrap.dart`).
 
 ## Verification
 
