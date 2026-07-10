@@ -50,8 +50,7 @@ Future<List<Record>> getCompletedTestRecordsForActivity(
         ..orderBy([(record) => OrderingTerm(expression: record.endTime)])
         ..where(
           (record) =>
-              record.activityId.equals(activityId) &
-                  record.endTime.isNotNull(),
+              record.activityId.equals(activityId) & record.endTime.isNotNull(),
         ))
       .get();
 }

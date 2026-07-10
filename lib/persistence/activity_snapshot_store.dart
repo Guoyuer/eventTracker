@@ -21,10 +21,7 @@ class ActivitySnapshotStore {
 
   Future<List<Activity>> _readSnapshots({int? activityId}) async {
     final query = _db.select(_db.activities).join([
-      leftOuterJoin(
-        _db.units,
-        _db.units.id.equalsExp(_db.activities.unitId),
-      ),
+      leftOuterJoin(_db.units, _db.units.id.equalsExp(_db.activities.unitId)),
       leftOuterJoin(
         _db.records,
         _db.records.activityId.equalsExp(_db.activities.id),

@@ -62,5 +62,8 @@ jobs:
       - name: Install dependencies
         run: flutter pub get
 
+      - name: Generate Dart sources
+        run: dart run build_runner build
+
       - name: Build Windows release
         run: flutter build windows

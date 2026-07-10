@@ -6,12 +6,7 @@ import 'package:flutter_test/flutter_test.dart';
 void main() {
   test('maps every valid persisted Record shape to its domain type', () {
     final plain = activityRecordFromRow(
-      Record(
-        id: 1,
-        activityId: 7,
-        endTime: DateTime(2026, 7, 10, 8),
-        value: 3,
-      ),
+      Record(id: 1, activityId: 7, endTime: DateTime(2026, 7, 10, 8), value: 3),
     );
     final completedTimed = activityRecordFromRow(
       Record(

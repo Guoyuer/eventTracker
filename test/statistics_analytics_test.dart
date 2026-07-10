@@ -53,9 +53,7 @@ void main() {
     () {
       expect(
         () => buildStatisticsSummary(
-          records: [
-            record(id: 1, activityId: 404, end: DateTime(2026, 1, 1)),
-          ],
+          records: [record(id: 1, activityId: 404, end: DateTime(2026, 1, 1))],
           activitiesById: {},
         ),
         throwsStateError,
