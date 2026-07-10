@@ -1,7 +1,4 @@
-import 'dart:io';
-
 import 'package:drift/drift.dart' hide isNull;
-import 'package:drift_sqflite/drift_sqflite.dart';
 import 'package:event_tracker/domain/activity_failure.dart';
 import 'package:event_tracker/domain/input_validation.dart';
 import 'package:event_tracker/persistence/database/app_database.dart';
@@ -9,7 +6,6 @@ import 'package:event_tracker/persistence/database/database_bootstrap.dart';
 import 'package:event_tracker/persistence/record_lifecycle_store.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:path/path.dart' as p;
 import 'package:sqflite/sqflite.dart';
 
 import 'support/database_test_helpers.dart';
@@ -416,23 +412,13 @@ void main() {
     () async {
       // In-memory SQLite databases don't support WAL (journal_mode silently
       // stays 'memory'), so this needs a real file-backed database to observe
-      // the durability settings applied in beforeOpen.
-      final tempDir = Directory.systemTemp.createTempSync(
-        'event_tracker_wal_test_',
-      );
-      addTearDown(() {
-        if (tempDir.existsSync()) {
-          tempDir.deleteSync(recursive: true);
-        }
-      });
-
-      // This test needs a file-backed database, unlike the shared in-memory
-      // harness. Close that harness before opening a second AppDatabase so
-      // Drift never has two live databases in the same test isolate.
+      // the durability settings applied in beforeOpen. Close the shared
+      // in-memory harness first so Drift never has two live databases in the
+      // same test isolate.
       await db.close();
-      final durableDb = AppDatabase(
-        SqfliteQueryExecutor(path: p.join(tempDir.path, 'wal.sqlite')),
-        true,
+      final durableDb = openFileBackedTestDatabase(
+        prefix: 'event_tracker_wal_test_',
+        useWriteAheadLog: true,
       );
 
       final journalMode = await durableDb
@@ -456,19 +442,10 @@ void main() {
       // Mobile (drift_sqflite) cannot switch to WAL inside beforeOpen's
       // transaction, so WAL journaling is left off there. Foreign keys and the
       // record-value triggers must still be applied on every platform.
-      final tempDir = Directory.systemTemp.createTempSync(
-        'event_tracker_no_wal_test_',
-      );
-      addTearDown(() {
-        if (tempDir.existsSync()) {
-          tempDir.deleteSync(recursive: true);
-        }
-      });
-
       await db.close();
-      final mobileDb = AppDatabase(
-        SqfliteQueryExecutor(path: p.join(tempDir.path, 'no_wal.sqlite')),
-        false,
+      final mobileDb = openFileBackedTestDatabase(
+        prefix: 'event_tracker_no_wal_test_',
+        useWriteAheadLog: false,
       );
 
       final journalMode = await mobileDb

@@ -32,7 +32,7 @@ void main() {
       final dbPath = p.join(tempDir.path, 'db.sqlite');
       await _createVersion2DatabaseWithLegacyStepData(dbPath);
 
-      final db = AppDatabase(SqfliteQueryExecutor(path: dbPath));
+      final db = AppDatabase(executor: SqfliteQueryExecutor(path: dbPath));
       addTearDown(db.close);
 
       final records =
@@ -88,7 +88,7 @@ void main() {
     final dbPath = p.join(tempDir.path, 'malformed.sqlite');
     await _createVersion3DatabaseWithMalformedHistory(dbPath);
 
-    final db = AppDatabase(SqfliteQueryExecutor(path: dbPath));
+    final db = AppDatabase(executor: SqfliteQueryExecutor(path: dbPath));
     addTearDown(db.close);
 
     await expectLater(db.select(db.activities).get(), throwsStateError);
@@ -98,7 +98,7 @@ void main() {
     final dbPath = p.join(tempDir.path, 'version4.sqlite');
     await _createVersion4DatabaseWithUnnormalizedNames(dbPath);
 
-    final db = AppDatabase(SqfliteQueryExecutor(path: dbPath));
+    final db = AppDatabase(executor: SqfliteQueryExecutor(path: dbPath));
     addTearDown(db.close);
 
     final activity = await db.select(db.activities).getSingle();
@@ -114,7 +114,7 @@ void main() {
       final dbPath = p.join(tempDir.path, 'version6.sqlite');
       await _createVersion6Database(dbPath);
 
-      final db = AppDatabase(SqfliteQueryExecutor(path: dbPath));
+      final db = AppDatabase(executor: SqfliteQueryExecutor(path: dbPath));
       addTearDown(db.close);
 
       final activity = await db.select(db.activities).getSingle();

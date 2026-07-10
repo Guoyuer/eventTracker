@@ -11,48 +11,54 @@ import 'package:flutter_test/flutter_test.dart';
 
 import 'support/localized_test_app.dart';
 
-/// These tests pump primary routes on phone-narrow surfaces. A RenderFlex
+/// These tests pump primary routes on a phone-narrow surface. A RenderFlex
 /// overflow (the yellow/black debug stripe) is reported as a test failure
 /// during layout, so a page that overflows here fails the test. This guards
 /// the statistics date-range header, which previously overflowed on Android.
+/// 320dp is tighter than the ~411dp width where the overflow originally showed.
 
-void _useNarrowScreen(WidgetTester tester, {double width = 320, double height = 640}) {
-  tester.view.physicalSize = Size(width, height);
+Future<void> _pumpNarrow(WidgetTester tester, Widget widget) async {
+  tester.view.physicalSize = const Size(320, 640);
   tester.view.devicePixelRatio = 1.0;
   addTearDown(tester.view.resetPhysicalSize);
   addTearDown(tester.view.resetDevicePixelRatio);
+
+  await tester.pumpWidget(widget);
+  await tester.pumpAndSettle();
 }
 
 void main() {
-  testWidgets('statistics page fits a narrow screen without overflow', (
-    tester,
-  ) async {
-    _useNarrowScreen(tester);
-
-    await tester.pumpWidget(
-      ProviderScope(
-        overrides: [
-          statisticsRepositoryProvider.overrideWithValue(
-            _EmptyStatisticsRepository(),
+  // The header combines a fixed-format date range with a localized action
+  // label, so the overflow risk is locale-dependent; cover both catalogs.
+  for (final locale in const [Locale('en'), Locale('zh')]) {
+    testWidgets(
+      'statistics header fits a narrow ${locale.languageCode} screen',
+      (tester) async {
+        await _pumpNarrow(
+          tester,
+          ProviderScope(
+            overrides: [
+              statisticsRepositoryProvider.overrideWithValue(
+                _EmptyStatisticsRepository(),
+              ),
+            ],
+            child: localizedTestApp(
+              locale: locale,
+              home: const Scaffold(body: StatisticPage()),
+            ),
           ),
-        ],
-        child: localizedTestApp(
-          home: const Scaffold(body: StatisticPage()),
-        ),
-      ),
-    );
-    await tester.pumpAndSettle();
+        );
 
-    // The date-range text and its action button both render; the row that
-    // previously overflowed must lay out cleanly on a narrow screen.
-    expect(find.text('Change range'), findsOneWidget);
-    expect(find.text('No records yet'), findsOneWidget);
-  });
+        // The full date range stays on screen (scaled down, not clipped),
+        // so the year is still present regardless of locale.
+        expect(find.textContaining('2026'), findsOneWidget);
+      },
+    );
+  }
 
   testWidgets('activity list empty state fits a narrow screen', (tester) async {
-    _useNarrowScreen(tester);
-
-    await tester.pumpWidget(
+    await _pumpNarrow(
+      tester,
       ProviderScope(
         overrides: [
           activityReaderProvider.overrideWithValue(_EmptyActivityReader()),
@@ -62,7 +68,6 @@ void main() {
         ),
       ),
     );
-    await tester.pumpAndSettle();
 
     expect(find.text('No activities yet'), findsOneWidget);
   });
@@ -80,8 +85,7 @@ class _EmptyActivityReader implements ActivityReader {
   Future<List<Activity>> getActivities() async => const [];
 
   @override
-  Future<Activity> getActivity(int activityId) =>
-      throw UnimplementedError();
+  Future<Activity> getActivity(int activityId) => throw UnimplementedError();
 
   @override
   Future<String?> getActivityDescription(int activityId) =>

@@ -25,7 +25,7 @@ void main() {
         : 'v$from schema upgrades structurally to v$latest';
     test(label, () async {
       final connection = await verifier.startAt(from);
-      final db = AppDatabase(connection);
+      final db = AppDatabase(executor: connection);
 
       await verifier.migrateAndValidate(db, latest);
 

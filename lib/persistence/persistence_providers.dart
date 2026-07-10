@@ -12,7 +12,7 @@ import 'drift_statistics_repository.dart';
 import 'drift_unit_repository.dart';
 
 final appDatabaseProvider = Provider<AppDatabase>((ref) {
-  final database = AppDatabase(null, defaultUsesWriteAheadLog());
+  final database = AppDatabase(useWriteAheadLog: defaultUsesWriteAheadLog());
   ref.onDispose(() {
     unawaited(database.close());
   });

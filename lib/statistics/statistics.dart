@@ -31,11 +31,17 @@ class StatisticPage extends ConsumerWidget {
                   margin: EdgeInsets.only(left: 10),
                   height: 40,
                   alignment: Alignment.centerLeft,
-                  child: Text(
-                    localizations.statisticsRange(timeLStr, timeRStr),
-                    style: TextStyle(fontSize: 20),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
+                  // Shrink the date range to fit narrow screens instead of
+                  // clipping it: the range is short, fixed-format, and the
+                  // whole point of this header, so scaling down keeps both
+                  // dates visible where an ellipsis would hide them.
+                  child: FittedBox(
+                    fit: BoxFit.scaleDown,
+                    alignment: Alignment.centerLeft,
+                    child: Text(
+                      localizations.statisticsRange(timeLStr, timeRStr),
+                      style: TextStyle(fontSize: 20),
+                    ),
                   ),
                 ),
               ),
