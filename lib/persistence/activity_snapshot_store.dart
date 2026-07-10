@@ -49,6 +49,7 @@ class ActivitySnapshotStore {
     final history = ActivityRecordHistory.evaluate(
       activityId: event.id,
       careTime: event.careTime,
+      hasUnit: event.unit != null,
       records: [
         for (final record in records)
           ActivityHistoryRecord(

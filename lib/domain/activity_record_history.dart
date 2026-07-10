@@ -25,6 +25,7 @@ class ActivityRecordHistory {
   factory ActivityRecordHistory.evaluate({
     required int activityId,
     required bool careTime,
+    required bool hasUnit,
     required Iterable<ActivityHistoryRecord> records,
   }) {
     var occurrenceCount = 0;
@@ -33,7 +34,6 @@ class ActivityRecordHistory {
     DateTime? activeStartedAt;
 
     for (final record in records) {
-      validateOptionalFiniteValue(record.value);
       final startedAt = record.startTime;
       final endedAt = record.endTime;
 
@@ -44,7 +44,8 @@ class ActivityRecordHistory {
           );
         }
         occurrenceCount++;
-        totalValue += record.value ?? 0;
+        totalValue += validateRecordValue(record.value, hasUnit: hasUnit) ?? 0;
+        _validateTotalValue(totalValue);
         continue;
       }
 
@@ -77,7 +78,8 @@ class ActivityRecordHistory {
         );
       }
       totalDuration += duration;
-      totalValue += record.value ?? 0;
+      totalValue += validateRecordValue(record.value, hasUnit: hasUnit) ?? 0;
+      _validateTotalValue(totalValue);
     }
 
     return ActivityRecordHistory._(
@@ -92,4 +94,10 @@ class ActivityRecordHistory {
   final Duration totalDuration;
   final double totalValue;
   final DateTime? activeStartedAt;
+
+  static void _validateTotalValue(double value) {
+    if (!value.isFinite) {
+      throw StateError('Activity Record value total overflowed');
+    }
+  }
 }

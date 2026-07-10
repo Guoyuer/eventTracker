@@ -15,7 +15,8 @@
 - **Plain Activity**: An activity where only occurrence time matters. It creates a completed record immediately.
 - **Unit**: A user-managed label for numeric values, such as kilometers, pages, or questions.
 - **Name Invariant**: Activity and Unit names are trimmed, non-blank, and unique without regard to ASCII letter case. Optional Activity units are trimmed and blank values become absent.
-- **Value Invariant**: Record numeric values are optional but must be finite when present.
+- **Value Invariant**: Activities without a Unit cannot store values. Activities with a Unit require a positive finite value for every completed Record, and accumulated totals must remain finite.
+- **Unit Reference Invariant**: An Activity may only use an existing Unit, and a Unit cannot be deleted while an Activity uses it.
 - **Record History**: The single source of truth for an Activity's occurrence count, total duration, total value, and active state. `ActivityRecordHistory` validates every Record before producing a summary.
 - **Record Lifecycle**: Transactional persistence workflow for creating, stopping, or canceling Records while enforcing Activity type and active-record invariants.
 - **Canceled Timed Record**: An active Timed Activity Record removed before completion, used for accidental short starts and excluded from history totals.

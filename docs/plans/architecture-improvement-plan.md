@@ -70,6 +70,7 @@ Current status: completed.
 - The Records table enforces Event foreign keys with cascade deletion, valid timestamp/value shapes, and one active Record per Activity.
 - Migration validates existing histories before rebuilding tables and fails instead of guessing how to repair corrupt data.
 - Schema v5 and domain input validation canonicalize Activity/Unit names and reject non-finite Record values at both application and database boundaries.
+- Repository and Record History rules now prevent dangling Unit writes/deletes and enforce the same Unit/value contract used by the UI.
 - `ActivityAggregateStore`, cached-total repair, and their duplicate incremental rules were deleted.
 
 Future rule:

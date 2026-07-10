@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../common/commonWidget.dart';
+import '../domain/input_validation.dart';
 
 Future<double?> inputValDialog(BuildContext ctx, String unit) async {
   final controller = TextEditingController();
@@ -34,9 +35,13 @@ Future<double?> inputValDialog(BuildContext ctx, String unit) async {
             TextButton(
               onPressed: () {
                 try {
-                  Navigator.of(context).pop(double.parse(controller.text));
+                  final value = validateRecordValue(
+                    double.parse(controller.text),
+                    hasUnit: true,
+                  );
+                  Navigator.of(context).pop(value);
                 } catch (err) {
-                  showToast("请输入数值");
+                  showToast("请输入大于 0 的有限数值");
                 }
               },
               child: Text("确认"),

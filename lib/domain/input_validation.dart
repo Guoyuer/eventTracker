@@ -17,9 +17,22 @@ String? normalizeOptionalName(String? value, {required String field}) {
   return normalizeRequiredName(normalized, field: field);
 }
 
-double? validateOptionalFiniteValue(double? value) {
-  if (value != null && !value.isFinite) {
-    throw ArgumentError.value(value, 'value', 'value must be finite');
+double? validateRecordValue(double? value, {required bool hasUnit}) {
+  if (!hasUnit) {
+    if (value != null) {
+      throw ArgumentError.value(value, 'value', 'value requires a Unit');
+    }
+    return null;
+  }
+  if (value == null) {
+    throw ArgumentError.notNull('value');
+  }
+  if (!value.isFinite || value <= 0) {
+    throw ArgumentError.value(
+      value,
+      'value',
+      'value must be finite and greater than zero',
+    );
   }
   return value;
 }

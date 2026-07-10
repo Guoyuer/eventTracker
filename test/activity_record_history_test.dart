@@ -6,6 +6,7 @@ void main() {
     final history = ActivityRecordHistory.evaluate(
       activityId: 1,
       careTime: false,
+      hasUnit: true,
       records: [
         ActivityHistoryRecord(id: 1, endTime: DateTime(2026, 1, 1), value: 3),
         ActivityHistoryRecord(id: 2, endTime: DateTime(2026, 1, 2), value: 4),
@@ -22,6 +23,7 @@ void main() {
     final history = ActivityRecordHistory.evaluate(
       activityId: 1,
       careTime: true,
+      hasUnit: true,
       records: [
         ActivityHistoryRecord(
           id: 1,
@@ -52,6 +54,7 @@ void main() {
         () => ActivityRecordHistory.evaluate(
           activityId: 1,
           careTime: false,
+          hasUnit: false,
           records: [record],
         ),
         throwsStateError,
@@ -79,6 +82,7 @@ void main() {
         () => ActivityRecordHistory.evaluate(
           activityId: 1,
           careTime: true,
+          hasUnit: false,
           records: [record],
         ),
         throwsStateError,
@@ -91,9 +95,33 @@ void main() {
       () => ActivityRecordHistory.evaluate(
         activityId: 1,
         careTime: true,
+        hasUnit: false,
         records: [
           ActivityHistoryRecord(id: 1, startTime: DateTime(2026, 1, 1, 8)),
           ActivityHistoryRecord(id: 2, startTime: DateTime(2026, 1, 1, 9)),
+        ],
+      ),
+      throwsStateError,
+    );
+  });
+
+  test('history rejects a finite-value sum that overflows', () {
+    expect(
+      () => ActivityRecordHistory.evaluate(
+        activityId: 1,
+        careTime: false,
+        hasUnit: true,
+        records: [
+          ActivityHistoryRecord(
+            id: 1,
+            endTime: DateTime(2026, 1, 1),
+            value: double.maxFinite,
+          ),
+          ActivityHistoryRecord(
+            id: 2,
+            endTime: DateTime(2026, 1, 2),
+            value: double.maxFinite,
+          ),
         ],
       ),
       throwsStateError,

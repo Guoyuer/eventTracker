@@ -16,9 +16,12 @@ void main() {
     initializeDatabaseTestEnvironment();
   });
 
-  setUp(() {
+  setUp(() async {
     db = openTestDatabase();
     repository = DriftActivityRepository(db);
+    for (final name in ['pages', 'km', 'questions']) {
+      await db.into(db.units).insert(UnitsCompanion(name: Value(name)));
+    }
   });
 
   tearDown(() async {
@@ -94,6 +97,13 @@ void main() {
     );
   });
 
+  test('repository rejects an Activity with an unknown Unit', () async {
+    expect(
+      repository.createActivity(name: 'Swim', careTime: true, unit: 'laps'),
+      throwsStateError,
+    );
+  });
+
   test(
     'repository reads one Activity Snapshot by id and fails when absent',
     () async {
@@ -115,6 +125,7 @@ void main() {
     final activityId = await repository.createActivity(
       name: 'Practice',
       careTime: true,
+      unit: 'km',
     );
     await repository.startTimedRecord(activityId, DateTime(2026, 1, 1, 8));
     await repository.stopActiveTimedRecord(

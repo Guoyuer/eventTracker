@@ -1,3 +1,4 @@
+import 'package:drift/drift.dart';
 import 'package:event_tracker/domain/unit_repository.dart';
 import 'package:event_tracker/persistence/database/app_database.dart';
 import 'package:event_tracker/persistence/drift_unit_repository.dart';
@@ -55,5 +56,21 @@ void main() {
 
     expect((await repository.getUnits()).single.name, 'pages');
     expect(repository.addUnit('   '), throwsArgumentError);
+  });
+
+  test('repository refuses to delete a Unit used by an Activity', () async {
+    await repository.addUnit('pages');
+    await db
+        .into(db.events)
+        .insert(
+          const EventsCompanion(
+            name: Value('Read'),
+            careTime: Value(false),
+            unit: Value('pages'),
+          ),
+        );
+
+    expect(repository.deleteUnit('pages'), throwsStateError);
+    expect((await repository.getUnits()).single.name, 'pages');
   });
 }

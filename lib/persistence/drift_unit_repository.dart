@@ -29,8 +29,17 @@ class DriftUnitRepository implements UnitRepository {
   @override
   Future<void> deleteUnit(String name) async {
     final normalizedName = normalizeRequiredName(name, field: 'unitName');
-    await (_db.delete(
-      _db.units,
-    )..where((unit) => unit.name.equals(normalizedName))).go();
+    await _db.transaction(() async {
+      final usage =
+          await (_db.select(_db.events)
+                ..where((activity) => activity.unit.equals(normalizedName)))
+              .getSingleOrNull();
+      if (usage != null) {
+        throw StateError('Unit $normalizedName is still in use');
+      }
+      await (_db.delete(
+        _db.units,
+      )..where((unit) => unit.name.equals(normalizedName))).go();
+    });
   }
 }

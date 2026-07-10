@@ -14,8 +14,11 @@ class RecordLifecycleStore {
     double? value,
   }) {
     return _db.transaction(() async {
-      final validatedValue = validateOptionalFiniteValue(value);
       final activity = await _activityById(activityId);
+      final validatedValue = validateRecordValue(
+        value,
+        hasUnit: activity.unit != null,
+      );
       if (activity.careTime) {
         throw StateError('Timed Activity $activityId cannot add Plain Records');
       }
@@ -61,8 +64,12 @@ class RecordLifecycleStore {
     double? value,
   }) {
     return _db.transaction(() async {
-      final validatedValue = validateOptionalFiniteValue(value);
       final activeRecord = await _getActiveTimedRecord(activityId);
+      final activity = await _activityById(activityId);
+      final validatedValue = validateRecordValue(
+        value,
+        hasUnit: activity.unit != null,
+      );
       final activeRecordId = activeRecord.id;
 
       _validateCompletedRecord(activeRecord, completedAt: stoppedAt);

@@ -97,6 +97,7 @@ void main() {
       db,
       name: 'Reading',
       careTime: true,
+      unit: 'minutes',
     );
     final startedAt = DateTime(2026, 1, 1, 8);
     final stoppedAt = DateTime(2026, 1, 1, 8, 30);
